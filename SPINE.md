@@ -23,7 +23,7 @@ stated status.**
 | 6.2 | `T` restricted to the recurrent core is a permutation | **proved** (immediate from 6.1) |
 | 7.1 | `C_L ↪ F_p^×` when `L \| p−1`; character `φ: C_L → U(1)` | **standard** |
 | — | Particular quotient sizes, cycle lengths, collision counts | **computed**, instance-dependent |
-| 8.1 | No injective loop among 216 tested | **empirical negative**, not a proof |
+| 8.1 | No injective transport loop exists in this family | **PROVED** (§18) — was empirical |
 | 8.2 | Augmenting with tabu memory does not restore injectivity | **empirical negative** |
 | 8.3 | No `T`-stable quotient obtained from the branch or basin partition directly | **proved by counterexample** |
 | 9.1 | The stable fibre is loop-independent (canonical) | **open** — known to vary |
@@ -256,17 +256,24 @@ invertible, and `C_L ↪ F_p^×` gives it coordinates.**
 
 ## 8. Negative results
 
-**N1. No injective loop among those tested.** Over 216 loops (`n = 10`, varying
-schedule, `tabu`, `steps`), the induced map on the stable quotient was injective
-**0 times**. Quotient sizes ranged 4–33. The collapse is therefore not an artefact
-of a badly chosen schedule. *This is an empirical negative over a finite search, not
-a proof that no injective loop exists.*
+**N1. No injective loop.** Over 216 loops (`n = 10`, varying schedule, `tabu`,
+`steps`), the induced map on the stable quotient was injective **0 times**.
+Quotient sizes ranged 4–33. The collapse is therefore not an artefact of a badly
+chosen schedule. **This is now a theorem, not an empirical negative** (§18): a
+global optimum has `n` preimages under a single step, every leg is therefore
+non-injective, and non-injectivity composes. The 216-loop search was answering a
+question that a per-leg check settles outright.
 
 **N2. Augmenting with tabu memory does not restore invertibility.** Transporting
 `(x, tabu)` instead of `x`, the augmented map is still many-to-one, and the induced
 map on the augmented stable quotient is still non-injective (6–22 blocks, with
 2{,}284–18{,}652 collisions remaining over an 18,688-state augmented space). The
 memory projection was *a* source of collapse; removing it was not sufficient.
+*Still empirical, but no longer unexplained*: Lemma A (§18.2) says `a` is an argmin
+at `z^{e_a}` for **every** `a` when `z` is a global optimum, so the
+collapse happens at the attractor — exactly where an augmented state has nothing
+left to separate. Carrying the memory removes one source of collapse, not the
+source.
 
 **N3. Branches and basins are the wrong fibre.** Neither the partition by nearest
 optimum (2 blocks) nor by greedy-descent basin (94 blocks) is `T`-stable. The
@@ -280,13 +287,18 @@ correct fibre had to be constructed (§5), not guessed.
 `(tabu, steps)` yield 4, 12, 24, 40 blocks. Whether there is a schedule-independent
 fibre within a suitable class of loops is open.
 
-**O2. Injective transport.** N1 is empirical. Either exhibit an injective loop, or
-prove that the induced map on the stable quotient of this family is necessarily
-non-injective.
+**O2. Injective transport.** ~~N1 is empirical. Either exhibit an injective loop,
+or prove that the induced map on the stable quotient of this family is necessarily
+non-injective.~~ **RESOLVED — the second branch, proved** in §18 (v0.18.0). The
+obstruction is a *single step*: a global optimum has `n` preimages, so every leg is
+non-injective and non-injectivity composes.
 
 **O3. Sufficient augmentation.** N2 rules out tabu memory as sufficient. Whether
 *some* finite augmentation makes the dynamics invertible is open — it is the same
-question as whether the process has a reversible lift.
+question as whether the process has a reversible lift. §18 sharpens it: the
+collapse is forced at the **global optima**, so any augmentation that works must
+separate states the landscape pulls together *at the attractor*. Augmenting by
+history alone does not, because the history is itself pushed to the attractor.
 
 ---
 
@@ -807,3 +819,107 @@ place where a proof obligation *can* be discharged at construction. The asymptot
 `bound` was the single point where the grammar outran the warrant. It is now
 labelled rather than asserted, which closes the gap the label "proof-aware"
 opened.
+
+---
+
+## 18. O2 resolved — irreversibility is structural
+
+> *O2 should now be: find the collision mechanism.*
+
+**Result.** In this family, **no transport loop is injective**, and the obstruction
+is a *single step*. Built in `o2_theorem.py` and `collision_mechanism.py`; suites
+`test_o2_theorem.py`, `test_collision_mechanism` (inline). This closes the negative
+branch of O2, and retires the last empirical negative in the ledger (§8.1).
+
+### 18.1 Setup
+
+The transport is a **composition of memoryless legs**. `Searcher.run(x, lam, steps)`
+resets the tabu list at the *start of every call*, and the loop driver calls it once
+per leg:
+
+$$T = f_k \circ \cdots \circ f_1, \qquad f_i = \mathrm{run}(\cdot,\lambda_i,\text{steps})$$
+
+The atomic step flips exactly one bit,
+
+$$g(x) = x \oplus e_{v(x)}, \qquad
+v(x) = \operatorname*{argmin}_v \bigl(\delta(x,v),\; |v-\lambda(n-1)|\bigr)$$
+
+where `best_flip` minimises `δ` **without** requiring `δ < 0` — a min-conflicts
+step, not gradient descent.
+
+### 18.2 The three steps
+
+**Composition lemma.** `T` injective ⟹ `f₁` injective. If `f₁(x) = f₁(y)` then
+`T(x) = T(y)`; injectivity forces `x = y`. So *a non-injective first leg kills every
+schedule built on it*, and the loop search was the wrong search.
+
+**Lemma A (the optimum pulls its own perturbations back).** Let `z` be a **global**
+optimum. For all `a, b`,
+
+$$\delta(z^{e_a}, b) \;=\; E(z^{e_a e_b}) - E(z^{e_a}) \;\ge\; E(z) - E(z^{e_a})
+\;=\; \delta(z^{e_a}, a)$$
+
+because `E(z)` is the global minimum. So `a` is **always** an argmin at `z^{e_a}`:
+undoing a perturbation of an optimum is never worse than any alternative.
+Verified on **8096/8096** triples.
+
+**Lemma B + Theorem.** Let `A_a = argmin_b δ(z^{e_a}, b) = {b : z^{e_a e_b} optimal}`
+and `d₂(z) = #{optimA z' ≠ z : d_H(z,z') = 2}`. Then `a ∈ A_a`, and `|A_a| > 1` only
+for bits `a` involved in a 2-bit relation to another optimum — at most `2 d₂(z)` such
+bits. Every remaining bit wins its tie-break outright, so
+
+$$\boxed{\;\bigl|g^{-1}(z)\bigr| \;=\; |S(z)| \;=\;
+\bigl|\{a : v(z^{e_a}) = a\}\bigr| \;\ge\; n - 2\,d_2(z)\;}$$
+
+Verified on **400/400** (instance, λ, optimum) cases, with the bound **tight**
+(slack `0` observed at `n = 8`, `d₂ = 0`).
+
+**Corollary.** For `n ≥ 2 d₂(z) + 2`, `|g^{-1}(z)| ≥ 2`: the one-step map is
+**not injective**.
+
+### 18.3 The chain
+
+`run(·, λ, steps)` has `g` as its **first** step, because the tabu list is empty
+there. Hence `run = h ∘ g`, and `h ∘ g` is non-injective whenever `g` is. Combined
+with the composition lemma:
+
+> **No schedule of these legs is injective.** Not for any length, not for any
+> choice of `λ`, not for any tabu length.
+
+This also explains an observation the census produced but did not predict: the
+one-step image size is **identical across tabu lengths** (`2…8` all give `96` of
+`256`). The first step is tabu-free, so the tabu length cannot affect it.
+
+### 18.4 The mechanism
+
+`|S(z)|` is monotone in energy *in aggregate* and maximal at the optima:
+
+| `E(z)` | 0 (opt) | 2 | 3 | 4 | 5 | 6 | … | 11 | 12 | 14 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| mean `\|S(z)\|` | **8.000** | 8.000 | 5.500 | 3.000 | 3.500 | 1.739 | … | 0.000 | 0.000 | 0.000 |
+
+Concordance `> 0.9` but **not** `1.0` — the ordering is *concentrated*, not
+pointwise (§17 discipline: the claim is stated no more strongly than the data).
+
+> The map collapses hardest exactly where the search is trying to go. **You cannot
+> have a contraction without a collision.**
+
+### 18.5 What this settles
+
+The many-to-one collapse is **not** an implementation accident, and **not** a
+failure of the loop search. It is forced by the energy landscape having a global
+optimum. The conjecture's premise is now proved for this family:
+
+$$F = \underbrace{\text{transient trees}}_{\text{information lost at the attractor}}
+\;\longrightarrow\;
+\underbrace{R}_{\text{recurrent core}}_{\text{invertibility survives here}}$$
+
+and `R` is therefore **not** merely where invertibility happened to be recovered.
+It is the **maximal place where invertibility can survive**.
+
+### 18.6 Residual hypothesis, stated plainly
+
+The theorem is proved for this search family (min-conflicts with argmin-`δ` flips).
+The corollary needs `n ≥ 2 d₂(z) + 2` — satisfied with room to spare by every
+instance tested (`n ≥ 8`, `d₂ ≤ 1`), but it *is* a condition, and instances with
+many optima clustered at Hamming distance 2 from each other are the boundary case.

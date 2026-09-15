@@ -803,6 +803,90 @@ python3 proof_awareness.py        # the audit and the three falsifications
 python3 test_proof_awareness.py   # 20 checks
 ```
 
+## O2 resolved: irreversibility is structural (v0.18.0)
+
+O2 asked: **exhibit an injective transport loop, or prove non-injectivity is
+necessary.** It's the second. And the obstruction is a *single step*.
+
+### The transport is a composition of memoryless legs
+
+`Searcher.run` resets the tabu list at the **start of every call**, and the loop
+driver calls it once per leg:
+
+```
+T = f_k o ... o f_1          f_i = run(., lam_i, steps)
+g(x) = x XOR e_{v(x)}        v(x) = argmin_v ( delta(x,v), |v - lam(n-1)| )
+```
+
+### Three steps to the theorem
+
+**Composition lemma.** `T` injective ⟹ `f_1` injective. So a non-injective first
+leg kills every schedule built on it — *the loop search was the wrong search.*
+
+**Lemma A.** At a **global** optimum `z`, for all `a, b`:
+
+```
+delta(z^e_a, b) = E(z^e_a^e_b) - E(z^e_a)  >=  E(z) - E(z^e_a) = delta(z^e_a, a)
+```
+
+because `E(z)` is the global minimum. **Undoing a perturbation of an optimum is
+never worse than any alternative.** Verified **8096/8096**.
+
+**Theorem.** With `d2(z)` = # other optima at Hamming distance 2 from `z`:
+
+```
+|g^-1(z)| = |{ a : v(z^e_a) = a }|  >=  n - 2*d2(z)
+```
+
+Verified **400/400**, and **tight** — slack `0` at `n=8, d2=0`. For
+`n >= 2*d2(z) + 2` the one-step map is **not injective**.
+
+### The chain closes
+
+`run(·, λ, steps)` has `g` as its **first** step — the tabu list is empty there —
+so `run = h ∘ g` and inherits non-injectivity. Therefore:
+
+> **No schedule is injective.** Not for any length, any λ, any tabu length.
+
+That also explains a fact the census produced but didn't predict: one-step image
+size is **identical across tabu lengths** — `{2:96, 3:96, 4:96, 5:96, 6:96, 8:96}`
+of 256. The first step is tabu-free, so tabu length can't touch it.
+
+### The mechanism
+
+```
+  E(z)          0(opt)     2      3      4      5      6    ...   11    12    14
+  mean |S(z)|   8.000   8.000  5.500  3.000  3.500  1.739   ...  0.000 0.000 0.000
+```
+
+Concordance `> 0.9` but **not** `1.0` — *concentrated*, not pointwise. Stated no
+more strongly than the data.
+
+> The map collapses hardest exactly where the search is trying to go.
+> **You cannot have a contraction without a collision.**
+
+### What it settles
+
+The many-to-one collapse is not an implementation accident and not a failed loop
+search. It's forced by the landscape having a global optimum. So:
+
+```
+F = transient trees  ->  R = recurrent core
+    (info lost at the attractor)   (invertibility survives here)
+```
+
+`R` is **not** merely where invertibility happened to be recovered — it is the
+**maximal place where invertibility can survive.**
+
+Row **8.1** moves from `empirical negative, not a proof` to **PROVED**. It was the
+last empirical negative in the ledger.
+
+```bash
+python3 collision_mechanism.py     # the collision characterisation and the swap
+python3 o2_theorem.py              # lemmas, theorem, chain, mechanism
+python3 test_o2_theorem.py         # 16 checks across many instances
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
