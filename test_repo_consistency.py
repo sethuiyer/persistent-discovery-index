@@ -26,6 +26,8 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# Every doc whose claims about the repository must match the repository.
+DOCS = ("SPINE.md", "README.md", "PRODUCT_README.md")
 FAILS: list[str] = []
 
 
@@ -48,13 +50,13 @@ def real_suites() -> list[str]:
 def test_cited_suites_exist() -> None:
     print("1. every cited suite exists")
     cited: set[str] = set()
-    for doc in ("SPINE.md", "README.md"):
+    for doc in DOCS:
         cited |= set(re.findall(r"\b(test_[a-z_]+\.py)\b", read(doc)))
         cited |= set(re.findall(r"\btest_([a-z_]+)\b(?!\.py)", read(doc)))
     # normalise the bare-name form back to filenames
     names = {c if c.endswith(".py") else f"test_{c}.py" for c in cited}
     missing = sorted(n for n in names if not os.path.exists(os.path.join(HERE, n)))
-    check(f"{len(names)} distinct suites cited in SPINE/README", len(names) > 0)
+    check(f"{len(names)} distinct suites cited across {len(DOCS)} docs", len(names) > 0)
     check("none are missing from disk", not missing, f"missing: {missing}")
 
 
@@ -78,9 +80,64 @@ def test_suite_count_matches() -> None:
     check("exactly one suite-count claim in the README", len(others) <= 1, str(others))
 
 
+def test_product_doc_numbers_match() -> None:
+    print("2b. PRODUCT_README's numeric claims match reality")
+    try:
+        txt = read("PRODUCT_README.md")
+    except FileNotFoundError:
+        check("PRODUCT_README.md exists", False, "missing")
+        return
+    check("PRODUCT_README.md exists", True)
+
+    # suite count, stated as a bold number
+    m = re.search(r"self-checking suites \| \*\*(\d+)\*\*", txt)
+    if m:
+        actual = len(real_suites())
+        check("stated suite count == suites on disk", int(m.group(1)) == actual,
+              f"doc says {m.group(1)}, disk has {actual}")
+
+    # ingest format count
+    m = re.search(r"ingest formats \| \*\*(\d+)\*\*", txt)
+    if m:
+        from ingest import FORMATS
+        check("stated ingest format count == FORMATS", int(m.group(1)) == len(FORMATS),
+              f"doc says {m.group(1)}, code has {len(FORMATS)}")
+
+    # the 137x claim must still be arithmetically true of the stated pair
+    m = re.search(r"\*\*(23,232)\*\*.*?\*\*(169)\*\*.*?\*\*(\d+)×\*\*", txt, re.S)
+    if m:
+        a, b, r = (int(x.replace(",", "")) for x in m.groups())
+        check("137x claim is arithmetically consistent", round(a / b) == r,
+              f"{a}/{b} = {round(a/b)}, doc says {r}x")
+
+
+def test_numbers_do_not_contradict_across_docs() -> None:
+    print("2c. docs do not contradict each other on a count")
+    # The loop count drifted 216 -> 217 between SPINE.md and collision_mechanism.py
+    # and I propagated the wrong one into PRODUCT_README.md. Any "<N> loops" claim
+    # must be the SAME N wherever it appears.
+    found: dict[str, set] = {}
+    files = list(DOCS) + [f for f in os.listdir(HERE)
+                          if f.endswith(".py") and not f.startswith("test_")]
+    for fn in files:
+        try:
+            txt = read(fn)
+        except (FileNotFoundError, UnicodeDecodeError):
+            continue
+        for m in re.finditer(r"(\d+)[- ]loops?\b|the (\d+) tested\b", txt):
+            v = m.group(1) or m.group(2)
+            if v:
+                found.setdefault(v, set()).add(fn)
+    check("at least one loop-count claim exists", bool(found), str(found))
+    check("all loop-count claims agree on one number", len(found) <= 1,
+          "conflicting: " + ", ".join(f"{k} in {sorted(v)}" for k, v in found.items()))
+
+
 def test_modules_named_in_readme_exist() -> None:
     print("3. modules named in the README exist")
-    named = set(re.findall(r"`([a-z_0-9]+\.py)`", read("README.md")))
+    named: set[str] = set()
+    for doc in DOCS:
+        named |= set(re.findall(r"`([a-z_0-9]+\.py)`", read(doc)))
     missing = sorted(n for n in named if not os.path.exists(os.path.join(HERE, n)))
     check(f"{len(named)} modules named", len(named) > 0)
     check("all present", not missing, f"missing: {missing}")
@@ -115,6 +172,8 @@ if __name__ == "__main__":
     print("=" * 70)
     test_cited_suites_exist()
     test_suite_count_matches()
+    test_product_doc_numbers_match()
+    test_numbers_do_not_contradict_across_docs()
     test_modules_named_in_readme_exist()
     test_ledger_wellformed()
     test_everything_compiles()

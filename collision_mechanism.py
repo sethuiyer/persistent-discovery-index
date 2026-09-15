@@ -3,7 +3,7 @@
 collision_mechanism.py — O2: find the collision mechanism instead of searching loops.
 
 O2 asked: does an injective transport loop exist, or is non-injectivity forced?
-217 loops have now returned no injective one. That is a clue, not a conclusion.
+216 loops have now returned no injective one. That is a clue, not a conclusion.
 This file attacks the mechanism.
 
 THE SHAPE OF THE MAP
@@ -242,7 +242,7 @@ def part4(lams=(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
           f"  at (tabu={worst[1][0]}, lam={worst[1][1]}, steps={worst[1][2]})")
     print()
     print("  -> No leg is injective. By the composition lemma, NO loop of these")
-    print("     legs can be injective either. The 217-loop search was answering a")
+    print("     legs can be injective either. The 216-loop search was answering a")
     print("     question that a per-lambda leg check settles outright.")
     print()
     return injective == 0
@@ -266,7 +266,7 @@ def part5():
   MEASURED (exhaustive over this instance, not proved for the family):
 
         264 legs, tabu 2..5 x steps 1..16 x 11 lambdas: none injective.
-        Hence no injective loop among the 217 tested, and none for any longer
+        Hence no injective loop among the 216 tested, and none for any longer
         schedule built from these legs.
 
   OPEN, AND NOW SHARPLY POSED:
