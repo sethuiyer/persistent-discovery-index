@@ -267,13 +267,15 @@ question that a per-leg check settles outright.
 **N2. Augmenting with tabu memory does not restore invertibility.** Transporting
 `(x, tabu)` instead of `x`, the augmented map is still many-to-one, and the induced
 map on the augmented stable quotient is still non-injective (6–22 blocks, with
-2{,}284–18{,}652 collisions remaining over an 18,688-state augmented space). The
+2{,}284–18{,}652 collisions remaining — 2{,}284–2{,}292 over the 2{,}304-state
+augmented space at tabu length 1, 18{,}632–18{,}652 over the 18{,}688-state space at
+tabu length 2). The
 memory projection was *a* source of collapse; removing it was not sufficient.
 *Still empirical, but no longer unexplained*: Lemma A (§18.2) says `a` is an argmin
 at `z^{e_a}` for **every** `a` when `z` is a global optimum, so the
 collapse happens at the attractor — exactly where an augmented state has nothing
 left to separate. Carrying the memory removes one source of collapse, not the
-source.
+source. Suite: `test_invertibility.py`.
 
 **N3. Branches and basins are the wrong fibre.** Neither the partition by nearest
 optimum (2 blocks) nor by greedy-descent basin (94 blocks) is `T`-stable. The

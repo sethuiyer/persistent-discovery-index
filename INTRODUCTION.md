@@ -96,7 +96,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-19 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+20 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.
@@ -196,7 +196,7 @@ visible. That is the house style, not an accident.
 | **O3 — sufficient augmentation.** Does any finite augmentation give a reversible lift? | **open**; §18 says it must separate states *at the attractor* |
 | **§10 conjecture.** A functor from tower live/transient to transport recurrent/transient | **conjecture** |
 | **Controlled corpus.** Repeated tasks per agent | the blocker for every empirical claim |
-| **`invertibility.py` has no test** | known gap; it is an entry point, not covered |
+| ~~`invertibility.py` has no test~~ | **closed (v0.21.0)** — `test_invertibility.py` pins Q1 (0 of 216, exact grid) and the §8.2 Q2 numbers |
 
 ## 10. Two things about the repository's character
 
