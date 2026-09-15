@@ -572,6 +572,59 @@ python3 one_question.py        # parts 1, 1b, 2 -- all computed
 python3 test_one_question.py   # 16 checks
 ```
 
+## Keeping both — and keeping the edges (v0.14.0)
+
+> *Keep the transient and the recurrent structure alike, because the distinction
+> between what disappears and what returns is itself information.*
+
+A distinction is information only if it is **not recoverable from either half**.
+Two negative results force it (`both_structures.py`).
+
+### 1. The core does not determine the transients
+
+Same 3-cycle `0 → 1 → 2 → 0`, same transient count (2), different arrangement:
+
+```
+  T1   transient edges 3->0, 4->0      profile {1: 2}
+  T2   transient edges 3->4->0         profile {1: 1, 2: 1}
+```
+
+### 2. The counts do not determine the structure
+
+```
+  A traces: (a,b) (a,c) (d,e) (d,f)    a has 2 children, d has 2
+  B traces: (a,b) (a,c) (a,d) (e,f)    a has 3 children, e has 1
+
+  n_j  A = [2, 4]   B = [2, 4]         identical
+  L_j  A = [2, 4]   B = [2, 4]         identical
+
+  canonical form  A = ((()())(()()))
+                  B = ((()()())(()))     NOT isomorphic
+```
+
+Every scalar PDI reports is a **level-size profile**, and a level-size profile
+cannot see the difference. **The information is in the edges.**
+
+### What this corrects
+
+v0.13.0 said the original move is the pairing of a survival-free cost with a
+survival count at the same resolution. That stands — it's why `n_j` is
+survival-free. But a pairing of two level-size profiles is still a *summary*: it
+says **how much** is transient at each resolution, never **how the transients are
+arranged**.
+
+> **Keep both, and keep the edges** — because the distinction is information
+> precisely where the counts are blind.
+
+The limitation is of the *summary*, not the structure: PDI stores the trie, so
+the edges are retained. The ledger is a projection of it, and that projection is
+not injective.
+
+```bash
+python3 both_structures.py        # two negative results
+python3 test_both_structures.py   # 13 checks, incl. non-isomorphism by AHU
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the

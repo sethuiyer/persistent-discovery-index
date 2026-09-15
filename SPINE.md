@@ -37,6 +37,9 @@ stated status.**
 | 14.2 | PDI implements **two** survival predicates (horizon, explicit) which can select disjoint branches | **verified** (§14.2) |
 | 14.3 | `Δ` moves while `L_j` and `D` are held fixed | **proved + verified** (§14.4) |
 | 14.4 | The one-question reduction holds for one column only | **conclusion, narrower than claimed** (§14.5) |
+| 15.1 | The recurrent core does not determine the transient structure | **proved by counterexample** (§15.1) |
+| 15.2 | The ledger counts do not determine the structure (`n_j`, `L_j` identical; trees non-isomorphic) | **proved by counterexample** (§15.2) |
+| 15.3 | The ledger is a lossy projection; the distinction lives in the edges | **conclusion** (§15.3) |
 
 ---
 
@@ -575,3 +578,70 @@ This is **narrower** than "everything is one question", and it is the version th
 code supports: `n_j` is invariant under the success marks (§14.3), `Δ` moves while
 survival is held fixed (§14.4), and the survival predicate itself is not unique
 (§14.2).
+
+---
+
+## 15. Keeping both — and keeping the edges
+
+> *Keep the transient and the recurrent structure alike, because the distinction
+> between what disappears and what returns is itself information.*
+
+A distinction is information only if it is not recoverable from either half. Two
+negative results force the claim. Built in `both_structures.py`; suite
+`test_both_structures.py`.
+
+### 15.1 The recurrent core does not determine the transients
+
+Two maps on five states with the **same** 3-cycle `0 → 1 → 2 → 0`:
+
+| | transient edges | profile (depth → nodes) |
+|---|---|---|
+| `T1` | `3 → 0`, `4 → 0` | `{1: 2}` |
+| `T2` | `3 → 4 → 0` | `{1: 1, 2: 1}` |
+
+Same core, same transient **count** (2), different **arrangement**. Neither the
+core nor the count recovers the shape.
+
+### 15.2 The ledger counts do not determine the structure
+
+Two tries built from four traces each:
+
+| | traces | level-1 out-degrees |
+|---|---|---|
+| `A` | `(a,b) (a,c) (d,e) (d,f)` | `a` has 2, `d` has 2 |
+| `B` | `(a,b) (a,c) (a,d) (e,f)` | `a` has 3, `e` has 1 |
+
+$$n_j = (2,4), \quad L_j = (2,4) \qquad \text{for both.}$$
+
+Their canonical (AHU) rooted-tree forms are
+
+$$A = \texttt{((()())(()()))}, \qquad B = \texttt{((()()())(()))}$$
+
+which are **not equal**, so the trees are not isomorphic. Every scalar PDI
+reports is a level-size profile, and a level-size profile cannot see the
+difference. **The information is in the edges.**
+
+### 15.3 What this corrects, and what it does not
+
+§14.4 said the original move is the **pairing** of a survival-free cost with a
+survival count at the same resolution. That stands — it is why `n_j` is
+survival-free (§14.3).
+
+But a pairing of two level-size profiles is still a **summary**. It says *how
+much* is transient at each resolution and never *how the transients are
+arranged*. So §14.4 is the statement of what makes the ledger possible; §15 is
+the statement of what the ledger leaves out.
+
+The limitation is of the **summary**, not of the structure: PDI stores the trie
+(nodes and children), so the edges are retained. The ledger is a projection of
+it, and §15.2 shows that projection is not injective.
+
+### 15.4 The statement
+
+> **Keep both, and keep the edges** — because the distinction is information
+> precisely where the counts are blind.
+
+The transport work is the reproduction of §15.1: the recurrent core is a
+permutation on its cycles (**earned**, §6.2) while the trees feeding it stay
+many-to-one (§8). Those are the two halves. PDI's value is that it reports both,
+instead of discarding the second the moment the first is found.
