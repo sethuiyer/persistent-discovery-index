@@ -28,6 +28,7 @@ stated status.**
 | 8.3 | No `T`-stable quotient obtained from the branch or basin partition directly | **proved by counterexample** |
 | 9.1 | The stable fibre is loop-independent (canonical) | **open** — known to vary |
 | 9.2 | The persistent/transient pattern recurs at two levels | **conjecture** (§10) |
+| 12 | Provenance: every layer has a verified literature underneath | **cited** (§12) |
 
 ---
 
@@ -303,3 +304,91 @@ $$\text{memory} \;\to\; \text{non-identity transport} \;\to\; \text{stable fibre
 
 with the invertible step earned on the recurrent part only, the transient remainder
 stated rather than hidden, and §10 flagged as conjecture.
+
+---
+
+## 12. Provenance — what each layer is built on
+
+Every layer of the spine has an established literature underneath it. **PDI did not
+invent these; it assembles them and keeps the accounting.** What is new here is the
+two-ledger split (§1) and following the stack until the recurrent core appears
+(§6). What is *not* claimed: a new refinement algorithm, a new persistence theory,
+or topological persistence of any kind.
+
+### Quotients and behavioural towers
+
+- **R. J. van Glabbeek**, *The Linear Time – Branching Time Spectrum I*, in
+  Handbook of Process Algebra, 2001, pp. 3–200.
+  DOI [10.1016/B978-044482830-9/50019-9](https://doi.org/10.1016/B978-044482830-9/50019-9)
+  — the spectrum of behavioural equivalences. PDI's `Q_j` tower is a refining family
+  in exactly this sense, and equation (1.1) is the refinement ordering.
+
+- **P. C. Kanellakis, S. A. Smolka**, *CCS expressions, finite state processes, and
+  three problems of equivalence*, Information and Computation 90(1), 1990.
+  DOI [10.1016/0890-5401(90)90025-D](https://doi.org/10.1016/0890-5401(90)90025-D)
+  — partition refinement for bisimulation on finite processes. **This is the
+  algorithm used in §5**, applied to a transport map rather than a transition
+  relation.
+
+- **R. Glück, B. Möller, M. Sintzoff**, *Model Refinement Using Bisimulation
+  Quotients*, AMAST 2010, LNCS 6486, pp. 76–91.
+  DOI [10.1007/978-3-642-17796-5_5](https://doi.org/10.1007/978-3-642-17796-5_5)
+  — reduce a system to a bisimulation quotient, then refine to meet a property.
+  The move in §5 — *refine `∼` until `x ∼ y ⟹ T(x) ∼ T(y)`* — is this operation.
+
+### Persistence versus transient structure
+
+- **D. Cohen-Steiner, H. Edelsbrunner, J. Harer**, *Stability of Persistence
+  Diagrams*, Discrete & Computational Geometry 37(1), 2007.
+  DOI [10.1007/s00454-006-1276-5](https://doi.org/10.1007/s00454-006-1276-5)
+  — the stability theorem that makes "persistent" quantitative rather than
+  metaphorical.
+
+- **H. Edelsbrunner, J. Harer**, *Computational Topology: An Introduction*,
+  American Mathematical Society, 2009.
+  DOI [10.1090/mbk/069](https://doi.org/10.1090/mbk/069)
+
+> **Stated to avoid a false equivalence.** PDI's "persistent" is **not**
+> topological persistence. It means *survival* — of a quotient class to an
+> observation horizon (§2), or of a state under iteration (§6). The word is shared;
+> the construction is a different one.
+
+### Growth rates and generating functions
+
+- **T. Mayama**, *Finite-state enumeration of adjacency-constrained 132-avoiding
+  permutations*, [arXiv:2605.23519](https://arxiv.org/abs/2605.23519) —
+  finite-state decomposition yielding rational ordinary generating functions.
+
+> **Characterisation corrected.** The tweet cited this for Cauchy–Hadamard. It does
+> not use Cauchy–Hadamard. It is cited here for the property that actually matters:
+> **a finite state decomposition forces rational generating-function growth**, which
+> is the same structure PDI's finite quotient has, and the reason `n_j` growth is
+> geometric when the quotient is finite.
+
+Cauchy–Hadamard itself is textbook and needs no citation.
+
+### Monodromy, holonomy, transport
+
+- **J. J. Duistermaat**, *On global action-angle coordinates*, Communications on
+  Pure and Applied Mathematics 33(6), 1980.
+  DOI [10.1002/cpa.3160330602](https://doi.org/10.1002/cpa.3160330602)
+  — the canonical example of **non-trivial monodromy with no curvature**: parallel
+  transport around a loop fails to return. This is the object §4–§6 are a finite,
+  discrete analogue of.
+
+- **S. Kanno et al.**, *Gauge Geometry of Hodge Zero-Mode Transport in
+  Parameter-Dependent Topological Data Analysis*,
+  [arXiv:2605.28326](https://arxiv.org/abs/2605.28326) — represents homological
+  features as zero modes of the combinatorial Hodge Laplacian and computes
+  **curvature and holonomy as descriptors of local reorganisation and accumulated
+  memory** in evolving topological structure. This is the closest existing work to
+  the transport experiment of §4–§6, and it is recent.
+
+### The fibre construction
+
+The "refine until `T` is a map" move is the partition-refinement line above
+(Kanellakis–Smolka; coalgebraic refinement). PDI's contribution is not the
+algorithm but the **two ledgers** (§1) and the observation that, once the fibre is
+constructed, the transport decomposes into an **invertible recurrent core** and an
+irreversible remainder (§6) — which is where the group structure and the characters
+of §7 live.

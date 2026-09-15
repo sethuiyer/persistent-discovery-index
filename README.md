@@ -613,3 +613,13 @@ memory -> non-identity transport -> stable fibre ->
 The invertible step is earned **on the recurrent core only**; the transient
 remainder is stated rather than hidden; and the persistent/transient pattern that
 recurs at two different levels is flagged as a **conjecture**, not a theorem.
+
+**§12 records the provenance.** Every layer has an established literature
+underneath it — the behavioural-equivalence spectrum (van Glabbeek), partition
+refinement (Kanellakis–Smolka; Glück–Möller–Sintzoff), stability of persistence
+diagrams (Cohen-Steiner–Edelsbrunner–Harer), monodromy without curvature
+(Duistermaat), and Hodge zero-mode holonomy for parameter-dependent TDA
+(arXiv:2605.28326). **PDI did not invent these; it assembles them and keeps the
+accounting.** The section also states two things it does *not* claim: PDI's
+"persistent" is survival, not topological persistence; and no new refinement
+algorithm is proposed.
