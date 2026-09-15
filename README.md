@@ -597,3 +597,19 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - Lind & Marcus, *An Introduction to Symbolic Dynamics and Coding* — entropy from the essential part
 
 > **Give away the instrument. Sell the laboratory.**
+
+## The spine
+
+**[`SPINE.md`](SPINE.md)** — the whole chain in mathematics, with every claim
+labelled **proved / computed / negative / open**. If you read one file in this
+repository, read that one. It states plainly which results are earned, which are
+empirical, and which are conjecture:
+
+```
+memory -> non-identity transport -> stable fibre ->
+                 recurrent invertible core -> C_L -> U(1)
+```
+
+The invertible step is earned **on the recurrent core only**; the transient
+remainder is stated rather than hidden; and the persistent/transient pattern that
+recurs at two different levels is flagged as a **conjecture**, not a theorem.
