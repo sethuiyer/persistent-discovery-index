@@ -25,7 +25,7 @@ def check(name, cond):
 
 
 FIXTURE = [
-    {"type": "session", "cwd": "/x/navokoj", "id": "s1", "timestamp": 1, "version": "1"},
+    {"type": "session", "cwd": "/x/proj", "id": "s1", "timestamp": 1, "version": "1"},
     {"type": "model_change", "modelId": "modelA", "provider": "p",
      "id": "m1", "parentId": None, "timestamp": 2},
     {"type": "message", "id": "u1", "parentId": None, "timestamp": 3,
@@ -74,7 +74,7 @@ with tempfile.TemporaryDirectory() as d:
     check("turn 1 counts as succeeded", t1.succeeded)
     check("opening prompt captured", t1.prompt == "deep research this repo")
     check("model captured", t1.model == "modelA")
-    check("project captured", t1.project == "navokoj")
+    check("project captured", t1.project == "proj")
 
     # turn 2: an errored tool result must be attributed to the right step
     check("turn 2 error attributed", t2.steps[0].error == "no such file")

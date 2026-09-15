@@ -7,7 +7,7 @@ asks the question the invariant was built to answer:
 
     Where does partition inflation begin for each agent?
 
-    python3 diagnose_agents.py [project]        # default: navokoj
+    python3 diagnose_agents.py [project]        # default: the largest project
     python3 diagnose_agents.py --all            # every project, every model
 
 The tower is explicit (Q1..Q6, see adapters.tool_tower): each level contains the
