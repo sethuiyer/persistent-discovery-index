@@ -43,6 +43,9 @@ stated status.**
 | 16.1 | PDI enforces witness-gated construction (`TowerViolation`, convergence status, `S_shallow`) | **verified** (§16.1) |
 | 16.2 | PDI does **not** have canonicity; the finite-scale number is presentation-dependent and only quarantined | **computed, negative** (§16.2) |
 | 16.3 | The five named “invariance-first” principles are **three** claims of different logical shape | **analysis** (§16.3) |
+| 17.1 | Every warrant PDI states is dischargeable, except the asymptotic `bound` | **audited** (§17.1) |
+| 17.2 | No finite prefix determines a limsup, so all three `bound` labels are falsifiable | **proved + exhibited** (§17.2) |
+| 17.3 | The `bound` labels now carry their hypothesis | **fixed** (§17.3) |
 
 ---
 
@@ -743,3 +746,64 @@ the repo is not an object that satisfies the principle but a ledger entry that
 records its absence.
 
 PDI has **one instance of (c)**, and one counterexample.
+
+---
+
+## 17. Warrant audit — "proof-aware observability system"
+
+> *So this is a proof-aware observability system.*
+
+A proof-aware system states warrants, and every warrant it states is
+**dischargeable** — either enforced at construction, or a fact about the data in
+hand. The audit asks exactly that of every warrant PDI states. Built in
+`proof_awareness.py`; suite `test_proof_awareness.py`.
+
+### 17.1 The audit
+
+| warrant | claim it makes | how it is backed | verdict |
+|---|---|---|---|
+| `TowerViolation` | refinement law (1.1) holds on the corpus | enforced at construction | **discharged** |
+| `S_shallow` / `D_shallow` | the sup was attained *inside* the horizon | fact about the observation | **discharged** |
+| convergence status | the shape of the observed tail | fact about the observation | **discharged** |
+| `bound` | a bound on the **unobserved** tail | claim about data not in hand | **NOT DISCHARGED** |
+
+Everything holds except the last. The status field is honest by construction; the
+`bound` field was a claim about a tail that had not been observed.
+
+### 17.2 No finite prefix bounds a limsup
+
+Since `limsup = inf_m sup_{j≥m} s_j`, any observation is consistent with
+continuations whose limsup lies anywhere in `[0, M₁]`. All three labels are
+therefore falsifiable, and each is falsified by exhibiting the continuation:
+
+| status | observed tail | reported value | continuation | true limsup | violated |
+|---|---|---|---|---|---|
+| `TRENDING_UP` | `0.1 0.2 0.3 0.4` | `0.400000` | `1/j` | `0.002506` | **yes** |
+| `TRENDING_DOWN` | `0.4 0.3 0.2 0.1` | `0.400000` | `9, 9, …` | `9.000000` | **yes** |
+| `STABLE` | `0.5 ×4` | `0.500000` | `9, 9, …` | `9.000000` | **yes** |
+
+This is not a coding error. It is a theorem: **the observation does not determine
+the extension**, which is why `limsup([1, 1/2, …, 1/49]) = 1/49` while the same
+prefix extended with zeros has limsup `0`.
+
+### 17.3 The fix: the labels carry their hypothesis
+
+```
+'exact'        ->  'window-exact (tail flat so far)'
+'lower bound'  ->  'lower bound IF the tail stays monotone'
+'upper bound'  ->  'upper bound IF the tail stays monotone'
+'unknown'      ->  'no bound claimed'
+```
+
+This is the same move as `S_shallow`: **do not forbid the number, attach the
+condition under which it means what it says.** The estimate is still reported —
+it is useful — but it no longer uses the grammar of a proof for something that is
+a heuristic.
+
+### 17.4 Verdict
+
+PDI is a **warrant-carrying observability system**, and it is proof-aware in every
+place where a proof obligation *can* be discharged at construction. The asymptotic
+`bound` was the single point where the grammar outran the warrant. It is now
+labelled rather than asserted, which closes the gap the label "proof-aware"
+opened.

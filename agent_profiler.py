@@ -167,23 +167,41 @@ def asymptotic(profile: dict, k: int = TAIL_K) -> dict:
     The status matters more than the number:
 
         STABLE         the tail is flat; the value is the estimate
-        TRENDING_UP    still rising; the value is a LOWER bound
-        TRENDING_DOWN  still decaying; the value is an UPPER bound
+        TRENDING_UP    still rising; the value is a LOWER bound IF the tail stays
+                       monotone -- NOT unconditionally
+        TRENDING_DOWN  still decaying; the value is an UPPER bound IF the tail
+                       stays monotone -- NOT unconditionally
         UNRESOLVED     not monotone at this horizon -- asymptotics unavailable
         NONE           no persistent classes at all
 
     UNRESOLVED is a legitimate result on a short tower, not a failure.
+
+    NO FINITE PREFIX BOUNDS A LIMSUP. `limsup = inf_m M_m`, so any observation is
+    consistent with continuations having limsup anywhere in [0, M_1]. The bound
+    labels therefore carry their hypothesis explicitly; `proof_awareness.py`
+    exhibits the falsifying continuation for each of the three.
     """
     def stat(seq: dict[int, float]) -> dict:
         js = sorted(seq)
         if not js:
-            return {"value": 0.0, "status": "NONE", "bound": "exact",
+            return {"value": 0.0, "status": "NONE",
+                    "bound": "no classes observed",
                     "window_sup": 0.0, "tail": [], "tail_from": 0, "envelope": {}}
         vals = [seq[j] for j in js]
         tail = vals[-k:]
         status = _trend(tail)
-        bound = {"STABLE": "exact", "TRENDING_UP": "lower bound",
-                 "TRENDING_DOWN": "upper bound"}.get(status, "unknown")
+        # LABELS CARRY THEIR HYPOTHESIS.
+        # No finite prefix determines a limsup: limsup = inf_m sup_{j>=m} s_j, so
+        # every observation is consistent with continuations having any limsup
+        # from 0 to the prefix sup. These labels name the assumption that makes
+        # the reading valid, rather than asserting a bound outright -- the same
+        # move as S_shallow, which attaches a condition instead of suppressing
+        # the number. See proof_awareness.py for the falsifying continuations.
+        bound = {
+            "STABLE": "window-exact (tail flat so far)",
+            "TRENDING_UP": "lower bound IF the tail stays monotone",
+            "TRENDING_DOWN": "upper bound IF the tail stays monotone",
+        }.get(status, "no bound claimed")
         envelope = {j: max(vals[i:]) for i, j in enumerate(js)}
         return {"value": max(tail), "status": status, "bound": bound,
                 "window_sup": max(vals), "tail": tail,

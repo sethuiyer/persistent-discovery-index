@@ -754,6 +754,55 @@ python3 invariance_first.py        # gate, reindexing, and what the layers do
 python3 test_invariance_first.py   # 18 checks
 ```
 
+## Proof-aware? An audit of the warrants (v0.17.0)
+
+> *So this is a proof-aware observability system.*
+
+A proof-aware system states warrants, and **every warrant it states is
+dischargeable** — enforced at construction, or a fact about the data in hand.
+Audited in `proof_awareness.py`:
+
+| warrant | claim | backing | verdict |
+|---|---|---|---|
+| `TowerViolation` | refinement law holds on the corpus | enforced at construction | **discharged** |
+| `S_shallow` / `D_shallow` | the sup was attained *inside* the horizon | fact about the observation | **discharged** |
+| convergence status | shape of the observed tail | fact about the observation | **discharged** |
+| `bound` | a bound on the **unobserved** tail | claim about data not in hand | **NOT DISCHARGED** |
+
+### The one place the grammar outran the warrant
+
+`limsup = inf_m sup_{j≥m} s_j`, so **no finite prefix determines a limsup**. Any
+observation is consistent with continuations having limsup anywhere in `[0, M₁]`.
+All three `bound` labels were falsifiable, and here they are falsified:
+
+```
+  status          observed tail        reported   continuation   true limsup
+  TRENDING_UP     0.1 0.2 0.3 0.4      0.400000   1/j            0.002506   VIOLATED
+  TRENDING_DOWN   0.4 0.3 0.2 0.1      0.400000   9,9,9,...      9.000000   VIOLATED
+  STABLE          0.5 0.5 0.5 0.5      0.500000   9,9,9,...      9.000000   VIOLATED
+```
+
+Not a coding error — a theorem. It's why `limsup([1, 1/2, …, 1/49]) = 1/49` while
+the *same prefix* extended with zeros has limsup `0`.
+
+### The fix: labels carry their hypothesis
+
+```
+  'exact'        ->  'window-exact (tail flat so far)'
+  'lower bound'  ->  'lower bound IF the tail stays monotone'
+  'upper bound'  ->  'upper bound IF the tail stays monotone'
+  'unknown'      ->  'no bound claimed'
+```
+
+Same move as `S_shallow`: **don't forbid the number, attach the condition under
+which it means what it says.** The estimate is still reported — it's useful — it
+just no longer borrows the grammar of a proof.
+
+```bash
+python3 proof_awareness.py        # the audit and the three falsifications
+python3 test_proof_awareness.py   # 20 checks
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the

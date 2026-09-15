@@ -79,8 +79,12 @@ def test_quarantine_holds() -> None:
     ab = asymptotic({"d_seq": dseq(b, Hb), "s_seq": {}, "horizon": Hb})["D"]
     check("A's tail is STABLE", aa["status"] == "STABLE", aa["status"])
     check("B's tail is TRENDING_UP", ab["status"] == "TRENDING_UP", ab["status"])
-    check("B is reported as a LOWER bound, not a value", ab["bound"] == "lower bound",
-          ab["bound"])
+    check("B is reported as a lower bound, not a value",
+          ab["bound"].startswith("lower bound"), ab["bound"])
+    check("...and the bound carries its hypothesis (no unconditional claim)",
+          "IF" in ab["bound"], ab["bound"])
+    check("A's flat tail is labelled window-exact, not exact",
+          aa["bound"].startswith("window-exact"), aa["bound"])
     # the true limsup is 1 for both, so B's lower bound is CORRECT, not wrong
     true_limsup = 1.0
     check("B's lower bound does not overclaim", ab["value"] <= true_limsup + 1e-12)
