@@ -923,7 +923,8 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - Separate `n_j` / `L_j` ledgers, maintained independently at every level.
 - **Behavioural resolution towers** (`quotient_tower.py`) with the refinement law
   enforced by `validate()` / `validate_pairs()`.
-- **Multi-framework ingest** (`ingest.py`): canonical, pi, OpenAI, LangSmith, with
+- **Multi-framework ingest** (`ingest.py`): canonical, pi, OpenAI, LangSmith, plus
+  OpenTelemetry GenAI spans, AutoGen, and CrewAI — seven loaders with
   autodetection, directory walking, and canonical round-trip export.
 - **One-command profiler** (`pdi_profile.py`) for anyone's traces.
 - `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation;
@@ -932,8 +933,9 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - Node-level caching with hierarchical reuse.
 - **Two output layers**: finite-scale diagnostics (exact) and asymptotic
   diagnostics (status-bearing).
-- **Six self-checking suites**, including closed-form toy validation and the
-  refinement law verified over a full real corpus.
+- **Sixteen self-checking suites**, including closed-form toy validation, the
+  refinement law verified over a full real corpus, and edge-preservation checks
+  on every ingest format.
 
 ## Roadmap
 
