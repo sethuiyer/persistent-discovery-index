@@ -76,6 +76,49 @@ Agent B   full presentation : D=1.000000  Delta=0.720628
           -> D invariant: True    Delta invariant: False
 ```
 
+## Use case: agent reasoning profiler
+
+`agent_profiler.py` turns the distinction into a measurement. Give it agent runs —
+a path of abstracted states plus whether the run succeeded — and it reports, per
+resolution level:
+
+```
+level       eps      full     live    yield
+    6   0.01562        60       32   53.33%
+    8   0.00391       350      112   32.00%
+   10   0.00098      1774      252   14.21%
+   11   0.00049      3624      252    6.95%
+D = 0.850919   S = 1.079279   Delta = 0.228360
+```
+
+Because the task fixes the persistent structure and the algorithm supplies the
+transient exploration, the same table is an **algorithm comparison**:
+
+```
+agent                   D         S     Delta    waste  STOP at
+shortest_only    0.850919  0.850919  0.000000     0.0%        -
+admissible       0.850919  0.850919  0.000000     0.0%        -
+slack_1          0.850919  0.850919  0.000000     0.0%        -
+slack_2          0.850919  1.010933  0.160013    15.8%        -
+unpruned         0.850919  1.079279  0.228360    21.2%       11
+```
+
+Five strategies, one task (find every shortest path on a 6x6 grid), identical
+persistent structure `D`, and a clean ordering of discovery overhead. **Presentation
+dependence is not a defect here** — it is precisely what makes `Delta` comparable
+across algorithms. The task supplies the geometry; the algorithm supplies the waste.
+
+The `STOP at` column is the profiler's other product. Persistent yield collapsing
+toward zero says: *finer than this, the strategy is generating exploration, not
+knowledge.* Point the same table at ReAct vs beam search vs MCTS, or at prompt,
+temperature and tool-policy variants, and it is a measurement rather than an
+opinion — the output of the earlier invariant, applied to real agent logs.
+
+```bash
+python3 demo_agents.py     # the benchmark table above
+python3 test_profiler.py   # 15 self-checks on the profiler
+```
+
 ## Evaluation requirement: horizons must span the transient-growth subsequence
 
 The non-invariance of `Delta` is real but can be **invisible at short horizons** —
@@ -140,16 +183,21 @@ This is where [FUTCache](https://github.com/sethuiyer/FUTCache) plugs in — FUT
 asks *"is this state close to something already computed?"*; the PDI adds *"at what
 resolution does it become meaningfully novel, and does that novelty persist?"*
 
-## What v0.1.0 implements
+## What is implemented
 
 - Separate `n_j` / `L_j` ledgers, maintained independently at every level.
 - `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation
   (`mark_live`) and an authoritative batch classifier (`recompute_statuses`).
+  Two live rules: horizon-reaching, or explicit (`insert(..., live=True)`).
 - Adaptive STOP keyed on physical resolution, discounted by the observed persistent
   yield ratio `L_j / n_j`.
 - Node-level caching with hierarchical reuse (`lookup_or_refine`).
-- Invariant checks (`live_non_decreasing`) and **15 passing self-checks**, including
-  cofinal invariance of `D`, non-invariance of `Delta`, and the two-agent result.
+- **Agent reasoning profiler** (`agent_profiler.py`): consumes agent runs, reports the
+  per-resolution yield table, `D`, `S`, `Delta`, and the STOP level; `compare()` emits
+  the cross-strategy benchmark.
+- Invariant checks (`live_non_decreasing`) and **30 passing self-checks** across
+  `test_pdi.py` and `test_profiler.py`, including cofinal invariance of `D`,
+  non-invariance of `Delta`, the two-agent result, and the five-strategy spread.
 
 The substrate is a labelled trie, with the behavioural quotient applied by the label
 map. The behavioural abstraction — resolution as a first-class coordinate, and the
@@ -159,10 +207,12 @@ implementation choice.
 ## Roadmap
 
 - **Resolution-dependent quotient towers** — refine the quotient *per level* rather
-  than only lengthening the prefix. This is the next implementation milestone.
+  than only lengthening the prefix. Next implementation milestone.
 - **Persistence-based garbage collection** — eviction driven by the `L`/`n` split
   (retain, compress, summarise, prune) instead of recency alone.
-- **Retrieval-quality evaluation** — end-to-end indexing and query benchmarks.
+- **Real agent logs** — the profiler consumes `(path, succeeded)` runs, which is the
+  shape ReAct / beam / MCTS traces already take; wiring a concrete adapter is a
+  small step, evaluating retrieval quality is a larger one.
 
 ## References
 

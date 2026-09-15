@@ -122,12 +122,16 @@ class PDI:
         return out
 
     # ---------------------------------------------------------------- insert
-    def insert(self, trace: Sequence[Any]) -> Node:
+    def insert(self, trace: Sequence[Any], live: bool = False) -> Node:
         """Descend by physical resolution, creating nodes as needed.
 
         Streaming-friendly: only ever sets LIVE (never clears it), which is
         sound at a fixed horizon. When the horizon grows, call
         recompute_statuses() (see HorizonRelativity below).
+
+        `live=True` marks the whole prefix chain as LIVE via coaccessibility
+        propagation -- use this for explicit live rules (e.g. "this prefix lies
+        on a successful agent trajectory") instead of the horizon rule.
         """
         node = self.root
         for j in range(1, len(trace) + 1):
@@ -144,7 +148,40 @@ class PDI:
 
         self.stats["inserts"] += 1
         self._finalised = False
+        if live:
+            self.mark_live(node)
         return node
+
+    def count_live(self) -> dict[int, int]:
+        """Recompute L_j from node statuses (authoritative for explicit-mode)."""
+        out: dict[int, int] = defaultdict(int)
+        stack = [self.root]
+        while stack:
+            nd = stack.pop()
+            if nd is not self.root and nd.status is Status.LIVE:
+                out[nd.level] += 1
+            stack.extend(nd.children.values())
+        return out
+
+    def finalize_explicit(self) -> "PDI":
+        """Adopt the mark_live-based (explicit) classification rather than the
+        horizon rule. Use when LIVE means something task-specific -- e.g. "this
+        prefix lies on a successful trajectory". Transient nodes are those
+        explored but on no live prefix."""
+        self.L = self.count_live()
+        self.L[0] = 1 if self.root.children else 0
+        for nd in self._all_nodes():
+            if nd is not self.root and nd.status is not Status.LIVE:
+                nd.status = Status.TRANSIENT
+        self._finalised = True
+        return self
+
+    def _all_nodes(self) -> Iterator[Node]:
+        stack = [self.root]
+        while stack:
+            nd = stack.pop()
+            yield nd
+            stack.extend(nd.children.values())
 
     def insert_all(self, traces: Iterable[Sequence[Any]]) -> "PDI":
         for t in traces:
