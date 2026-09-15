@@ -1,238 +1,149 @@
 # Persistent Discovery Index (PDI)
 
-**Persistent Discovery Index is a multiresolution data structure that separates what
-a system discovers persistently from the transient exploration structure generated
-while discovering it.**
+**A microscope for agent behaviour. It shows where useful discovery ends and
+unnecessary exploration begins — and at which behavioural resolution it happens.**
 
-It maintains two deliberately separate information channels at every resolution level:
+Two people try to find the exit from a maze. A tries 20 paths. B tries 2,000 and
+finds the same exit.
+
+Normal evaluation says: *both succeeded.* PDI says: *same result, wildly different
+discovery cost — and here is the level of behavioural detail at which B's search
+went noisy.*
+
+```text
+explored        1,000 behaviours
+persistent        100 of them led somewhere useful
+transient         900 did not
+
+most tools throw the 900 away.
+PDI keeps them, because they are what tells you about the agent —
+even though they tell you almost nothing about the solution.
+```
+
+## Two numbers, never merged
 
 | ledger | symbol | meaning |
 |---|---|---|
-| **persistent** | `L_j` | what survived to the observation horizon |
-| **exploration** | `n_j` | what was explored getting there |
+| **exploration** | `n_j` | everything the agent tried, at resolution `j` |
+| **persistent** | `L_j` | what actually led somewhere useful |
 
-> ### Same geometry. Different discovery cost.
+Every structure that exists today conflates these. DFA minimisation trims the
+transient. Sofic-shift analysis keeps the essential part. Bisimulation discards
+non-bisimilar branches. Caches drop the misses.
 
-## The invariant
+**PDI keeps both**, because the ratio between them is the measurement.
 
-The separation is not a design preference. It is a theorem:
+## Run it on your agent in five minutes
 
-```
-D     = limsup_j log L_j / (-log eps_j)   intrinsic, cofinal-invariant
-S     = limsup_j log n_j / (-log eps_j)   presentation-dependent
-Delta = S - D                             discovery overhead, presentation-dependent
-```
-
-`L` is a **covering count** — it answers a question about the boundary, so it is a
-function of *physical resolution* and cannot be moved by reindexing the tower. That
-is **cofinal invariance of the physical-scale live dimension**, and it is proved:
-using `eps_j` instead of the level index removes the arbitrary depth
-parametrisation that makes raw level-indexed quantities gauge-dependent.
-
-`n` is not a covering count. Dead-end nodes cover nothing, so `n_j` is only a
-shell-indexed sequence, and a cofinal restriction may sample a different subshell of
-it.
-
-`Delta = S - D >= 0` because `L_j <= n_j` for every `j`. Two consequences follow
-directly:
-
-- **The gap is not canonicity-open.** `Delta` is *refuted* as a cofinal invariant by
-  an explicit realizable counterexample: `L_j = 2^j` with `n_j = 4^j` on odd shells
-  and `2^j` on even shells gives `Delta = 1` for `P` and `Delta = 0` for `P' = P_{2j}`
-  — same boundary, same `D`, different overhead.
-- **`Delta` is invariant when both exponents converge** (regular variation), because
-  a limit is subsequence-invariant.
-
-The distinction is classical elsewhere — coaccessible vs all states in automata,
-essential vs transient in sofic shifts, where entropy is a function of the essential
-part only (Lind–Marcus). PDI is the data structure that keeps both.
-
-## Demonstrated
-
-Two agents reach an **identical** persistent ledger. Only the exploration ledger
-differs:
-
-| | `D` | `S` | `Delta` |
-|---|---:|---:|---:|
-| Agent A (clean discovery) | 1.000000 | 1.000000 | 0.000000 |
-| Agent B (heavy transient branching) | **1.000000** | 1.720628 | **0.720628** |
-
-```
-identical persistent ledgers L_j : True
-same D                           : True
-different S                      : True
-different Delta                  : True
+```bash
+python3 pdi_profile.py traces/                    # autodetect format
+python3 pdi_profile.py run.jsonl --format openai  # force a format
+python3 pdi_profile.py traces/ --group-by model   # compare agents
+python3 pdi_profile.py --demo                     # synthetic, no data needed
 ```
 
-**Same geometry. Different discovery cost.** `D` is held fixed while `Delta` varies,
-so the comparison is well-defined by construction rather than by convention.
+No configuration, no framework dependency, no service. Point it at JSONL.
 
-And the counterexample bites on a real tree — even-only reindexing leaves `D` alone
-and moves `Delta`:
+## One ingest layer, many frameworks
 
-```
-Agent B   full presentation : D=1.000000  Delta=0.720628
-          reindexed (even)  : D=1.000000  Delta=0.681244
-          -> D invariant: True    Delta invariant: False
-```
+PDI does not care which framework produced a trace. It needs three things per run:
+the ordered tool calls, their arguments, and the terminal outcome. Everything else
+is decoration.
 
-## Behavioural resolution towers (v0.3.0)
+| format | source | detection |
+|---|---|---|
+| `pi` | pi agent session JSONL | `type: session/message` events |
+| `openai` | OpenAI-style chat with `tool_calls` | `messages` array or `role` keys |
+| `langsmith` | LangSmith / LangGraph run exports | `run_type` / `trace_id` |
+| `canonical` | anything you write | `steps` array |
 
-Up to v0.2.0 the level index was **path length**: level *j* held length-*j* prefixes,
-and `n_j` counted them. That is a trie.
+`ingest.detect_format()` sniffs the file; `load_any()` dispatches. Add a framework
+by writing one loader that returns `list[Run]`.
 
-v0.3.0 changes what resolution *means*. The level index is now a **behavioural
-resolution**, and the levels form a genuine refinement tower of quotient maps
-`Q_j : H → X_j = H / ~_j`:
+### The canonical format — the whole contract
 
-```python
-tower = QuotientTower([
-    lambda h: reached_goal(h),                    # Q1  two classes
-    lambda h: (reached_goal(h), steps(h)),        # Q2  + step count
-    lambda h: (reached_goal(h), multiset(h)),     # Q3  + move multiset
-    lambda h: (reached_goal(h), move_seq(h)),     # Q4  + move sequence
-    lambda h: (reached_goal(h), tuple(h)),        # Q5  + full path
-])
+One JSON object per line:
 
-idx = PDI(tower=tower)
-idx.fit(runs)              # validates the refinement law, then inserts
+```json
+{"model": "my-agent", "project": "repo", "prompt": "fix the failing test",
+ "outcome": "stop",
+ "steps": [{"tool": "read",  "args": {"path": "a.py"}, "error": null},
+           {"tool": "edit",  "args": {"path": "a.py"}, "error": null},
+           {"tool": "bash",  "args": {"command": "pytest"}, "error": null}]}
 ```
 
-The required **refinement law** is checked, not assumed:
+`outcome` is the terminal state: `"stop"` means the run finished on its own terms
+and counts as a success. Anything else (`error`, `aborted`, `length`, `toolUse`)
+does not. Map your framework's success notion onto `"stop"`.
+
+`pdi_profile.py --dump-canonical out.jsonl` writes this back out, so PDI is also a
+normaliser: **any agent trace in, one behavioural-run representation out.**
+
+## The zoom levels
+
+An agent's behaviour looks different depending on how closely you look:
+
+```text
+Trace A:  search → read → answer
+Trace B:  search → read → search → answer
+```
+
+At `Q1` they are identical. At `Q3` they are not. That is what the tower encodes:
+
+```text
+Q1  terminal outcome              did it succeed?
+Q2  + tool-family multiset        what kinds of tools
+Q3  + tool-family sequence        in what order
+Q4  + per-step error classes      where it failed
+Q5  + normalised argument classes what it pointed them at
+Q6  + full normalised trace       exactly what happened
+```
+
+Each level explicitly contains the previous one, so the **refinement law**
 
 ```
 Q_{j+1}(h) = Q_{j+1}(h')   =>   Q_j(h) = Q_j(h')
 ```
 
-`QuotientTower.validate()` raises `TowerViolation` on the first finer class that
-straddles two coarser ones, and `validate_pairs()` does the exhaustive
-`O(|H|²)` version for small corpora. With the law enforced, each level-(j+1) class
-has a unique level-*j* parent, so the classes still form a tree — but now
+holds by construction — and is *checked*, not assumed (`QuotientTower.validate()`
+raises `TowerViolation`). With a tower, `n_j = |H / ~_j|` **exactly**: the number
+of behavioural classes at resolution `j`.
 
-```
-n_j = |H / ~_j|        exactly the behavioural class count
-L_j = number of resolution-j classes containing a persistent history
-```
+## The diagnostic
 
-which is the construction the invariant was always stated over. Verified: for every
-level, the PDI's `n_j` equals `|H / ~_j|` computed independently from the corpus.
-
-### The sharper diagnostic
-
-With behavioural levels, an absolute yield threshold is a poor guide at coarse
-resolutions. The informative quantity is **class inflation against a reference**:
-
-```
-class inflation relative to 'shortest_only'   (n_j / n_j_reference)
-agent             Q1      Q2      Q3      Q4      Q5
-shortest_only  1.00x   1.00x   1.00x   1.00x   1.00x
-slack_2        1.00x   1.09x   2.44x   3.49x   3.49x
-unpruned       1.00x   1.09x   5.89x   7.35x   7.35x
-
-distinction onset: at resolution 3 (Q3 + move multiset), 'slack_2' first exceeds 2x
+```text
+             FULL     LIVE
+Q1              2        2
+Q2             12       10
+Q3            200       40
+Q4          1,500       55
+Q5         10,000       60
 ```
 
-That is the v0.3.0 product, and it is a strictly stronger statement than v0.2.0
-could make: **the profiler names the behavioural resolution at which a strategy
-starts manufacturing distinctions that do not contribute to successful behaviour.**
+Useful behavioural diversity barely grows: `10 → 40 → 55 → 60`.
+Total behaviour explodes: `12 → 200 → 1,500 → 10,000`.
 
-```bash
-python3 demo_tower.py      # the behavioural tower, laws and tables above
-python3 test_tower.py      # 11 self-checks incl. rejection of invalid towers
+**After Q3 this agent is manufacturing complexity rather than discovering useful
+new behaviour** — and Q3 has a meaning (`+ tool sequence`), so you learn *where*
+it went noisy, not just that it did.
+
+The tool reports that as **class inflation against a reference**:
+
+```text
+class inflation relative to 'reference'   (n_j / n_j_reference)
+agent                  Q1          Q2          Q3          Q4          Q5          Q6
+reference           1.00x       1.00x       1.00x       1.00x       1.00x       1.00x
+candidate           1.00x       1.09x       5.89x       7.35x       7.35x       7.35x
+
+distinction onset: at resolution 3 (Q3 + tool sequence)
 ```
 
-## Real agent traces (v0.4.0)
+Level 1 is terminal outcome, so an onset there just means success rates differ.
+PDI reports a separate **behavioural onset** that ignores that level.
 
-`adapters.py` reads the **actual session transcripts** written by the pi agent
-harness — JSONL event streams with `toolCall` blocks and matching `toolResult`
-records — and reconstructs runs. A *run* is one user turn: the ordered tool calls
-between one user message and the next, with the terminal `stopReason` of the last
-assistant message as the outcome.
+## Same geometry, different discovery cost
 
-Nothing here is synthetic. The adapter was developed against a private corpus of
-the author's own agent sessions; only the **aggregate shape** is reproduced, with
-no transcripts, prompts, commands, paths or model identifiers published:
-
-```
-private corpus (aggregate shape only)
-  turns     : >1400
-  tool calls: >14000   errors: ~6%
-  terminal success (stopReason=='stop'): ~80%
-  models    : >5
-```
-
-The tower is explicit and structurally nested, so the refinement law holds by
-construction rather than by luck:
-
-```
-Q1  terminal outcome
-Q2  + tool-family multiset
-Q3  + tool-family sequence
-Q4  + per-step error classes
-Q5  + normalised argument classes
-Q6  + full normalised trace
-```
-
-```bash
-python3 diagnose_agents.py <project>          # per-model, one project
-python3 diagnose_agents.py --all              # every project
-python3 diagnose_agents.py --all --matched    # only prompts >=2 models actually ran
-```
-
-On a single project where four agents ran enough turns to profile — identifiers
-withheld:
-
-```
-agent                                              D         S     Delta    waste
-model A                                     2.863960  3.142701  0.278741     8.9%
-model B                                     2.377444  2.543731  0.166288     6.5%
-model C                                     1.850220  2.160964  0.310744    14.4%
-model D                                     1.953445  2.084963  0.131517     6.3%
-
-persistent structure differs across agents: D in [1.850220, 2.863960]
--> agents did not all find the same structure; compare with care
-```
-
-### What this pass actually established
-
-**The adapter works and the tool diagnoses real agents.** >14,000 real tool calls
-reconstructed, the refinement law verified over the whole corpus, the yield and
-inflation tables produced from live data.
-
-**But personal session logs are not a controlled corpus, and the tool says so.**
-`D` differs across models because they were doing different work, so the
-per-model comparison is *descriptive*, not experimental. The profiler prints that
-warning itself rather than hiding it:
-
-> `agents did not all find the same structure; compare with care`
-
-`--matched` restricts to opening prompts that at least two models actually ran,
-which controls for the task. On this corpus that leaves **27 of 1104 turns across
-7 shared prompts** — enough to demonstrate the mechanism, far too little to draw
-conclusions. That is the honest state of the evidence, and it defines the
-prerequisite for the next experiment:
-
-> **A task corpus with repeated tasks per agent.** The profiler is ready; the
-> corpus is what is missing. Session logs accumulate whatever work happened to
-> occur, which is exactly the confound the `--matched` flag exists to remove.
-
-## Use case: agent reasoning profiler
-
-`agent_profiler.py` turns the distinction into a measurement. Give it agent runs —
-a path of abstracted states plus whether the run succeeded — and it reports, per
-resolution level:
-
-```
-level       eps      full     live    yield
-    6   0.01562        60       32   53.33%
-    8   0.00391       350      112   32.00%
-   10   0.00098      1774      252   14.21%
-   11   0.00049      3624      252    6.95%
-D = 0.850919   S = 1.079279   Delta = 0.228360
-```
-
-Because the task fixes the persistent structure and the algorithm supplies the
-transient exploration, the same table is an **algorithm comparison**:
+Five strategies, one task (find every shortest path on a 6×6 grid):
 
 ```
 agent                   D         S     Delta    waste  STOP at
@@ -243,101 +154,101 @@ slack_2          0.850919  1.010933  0.160013    15.8%        -
 unpruned         0.850919  1.079279  0.228360    21.2%       11
 ```
 
-Five strategies, one task (find every shortest path on a 6x6 grid), identical
-persistent structure `D`, and a clean ordering of discovery overhead. **Presentation
-dependence is not a defect here** — it is precisely what makes `Delta` comparable
-across algorithms. The task supplies the geometry; the algorithm supplies the waste.
+Identical persistent structure, one clean ordering of discovery overhead. The task
+supplies the geometry; the algorithm supplies the waste. **Presentation dependence
+of `Delta` is the point** — it is what makes it comparable across algorithms.
 
-The `STOP at` column is the profiler's other product. Persistent yield collapsing
-toward zero says: *finer than this, the strategy is generating exploration, not
-knowledge.* Point the same table at ReAct vs beam search vs MCTS, or at prompt,
-temperature and tool-policy variants, and it is a measurement rather than an
-opinion — the output of the earlier invariant, applied to real agent logs.
+## The invariant underneath
 
-```bash
-python3 demo_agents.py     # the benchmark table above
-python3 test_profiler.py   # 15 self-checks on the profiler
-```
-
-## Toy validation suite
-
-`toys.py` checks the instrument against **closed forms**. Each toy has an
-analytically known `n_j` and `L_j`, hence known `D`, `S`, `Delta`; the suite
-verifies the implementation reproduces them exactly.
-
-| toy | construction | `n_j` | `L_j` | `D` | `S` | `Delta` |
-|---|---|---|---|---|---|---|
-| T1 | full tree, every leaf succeeds | `2^j` | `2^j` | 1 | 1 | 0 |
-| T2 | exactly one leaf succeeds | `2^j` | `1` | 0 | 1 | 1 |
-| T3 | half the leaves succeed | `2^j` | `2^{j-1}` | `(d-1)/d` | 1 | `1/d` |
-| T4 | nothing succeeds | `2^j` | `0` | 0 | 1 | 1 |
-| T5 | one spine + `w`-wide dead-end fan | `1+w(j-1)` | `1` | 0 | `S` | `S` |
-| T6 | genuine behavioural tower (coarse/fine) | `2,2,6` | `1,1,3` | `log2(3)/3` | 1 | `1-log2(3)/3` |
+`D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
+overhead:
 
 ```
-  toy                                   law         D     D_exp         S     S_exp        Delta     d_exp
-  T1 full tree, all leaves succeed       ok  1.000000  1.000000  1.000000  1.000000     0.000000  0.000000
-  T2 one successful leaf                 ok  0.000000  0.000000  1.000000  1.000000     1.000000  1.000000
-  T3 half the leaves succeed             ok  0.833333  0.833333  1.000000  1.000000     0.166667  0.166667
-  T4 no successful leaf                  ok  0.000000  0.000000  1.000000  1.000000     1.000000  1.000000
-  T5 spine + 3-wide dead-end fan         ok  0.000000  0.000000  1.000000  1.000000     1.000000  1.000000
-  T6 behavioural tower (coarse/fine)     ok  0.528321  0.528321  1.000000  1.000000     0.471679  0.471679
+D     = limsup_j log L_j / (-log eps_j)   intrinsic, cofinal-invariant  (proved)
+S     = limsup_j log n_j / (-log eps_j)   presentation-dependent
+Delta = S - D  >= 0                       presentation-dependent
 ```
 
-Six constructions, thirty assertions, exact agreement, and the refinement law
-validated on every one. **The instrument computes the quantity it claims to
-compute.**
+`L` is a **covering count** — it answers a question about the boundary, so it is a
+function of *physical resolution* and cannot be moved by reindexing the tower.
+`n` is not a covering count: dead ends cover nothing. Hence `D` survives cofinal
+reindexing and `Delta` does not (refuted by explicit realizable counterexample:
+`L_j = 2^j` with `n_j` exponential on odd shells gives `Delta = 1` for `P` and
+`Delta = 0` for `P' = P_{2j}`).
 
-### The toys found a real defect — fixed in v0.4.1
+The distinction is classical elsewhere — coaccessible vs all states in automata,
+essential vs transient in sofic shifts, where entropy is a function of the
+essential part only (Lind–Marcus). PDI is the data structure that keeps both.
 
-`exponents()` was reporting the **sup over the observed resolution window**:
+### Two layers, because one estimator cannot serve both
 
-$$
-\underbrace{\sup_{j\le H}\frac{\log n_j}{-\log\varepsilon_j}}_{\text{finite-window statistic}}
-\;\ne\;\underbrace{\limsup_{j\to\infty}\frac{\log n_j}{-\log\varepsilon_j}}_{\text{the actual } S}
-$$
+**Finite-scale — exact on the observed corpus:** yield `L_j/n_j`, inflation
+`n_j/n_j^ref`, distinction onset `j*`. No asymptotic claim.
 
-Under geometric growth the two coincide. Under sub-geometric growth they diverge,
-and T5 shows it: for `n_j = 1 + w(j-1)` the ratio decays to 0, so the true answer
-is `S = 0`, yet the window reported 4.98 — attained at level 2, **independent of
-depth**. That is not a noisy estimate of `S`; it is a different statistic.
-
-**The fix separates two layers rather than trying to make one estimator serve both.**
-
-**Finite-scale diagnostics** — exact on the observed corpus, no asymptotic claim:
-`yield = L_j/n_j`, `inflation = n_j/n_j^ref`, and the distinction onset `j*`.
-
-**Asymptotic diagnostics** — reported only with a convergence status. The finite
-analogue of `limsup` is the moving tail
-
-$$
-M_m \;=\; \sup_{j\ge m} s_j,
-\qquad s_j = \frac{\log n_j}{-\log\varepsilon_j},
-$$
-
-so the estimate is `M_{H-k+1}` — the max over the last `k` observed levels —
-together with the trend of that tail. No regression fitting; the trend *is* the
-information.
-
-```
-    asymptotic layer  (tail estimate, not a window sup)
-      S: 0.342783  TRENDING_DOWN (upper bound)   window sup was 4.983613
-      D: 0.000000  STABLE        (exact)         window sup was 0.000000
-```
+**Asymptotic — reported only with a convergence status.** The finite analogue of
+`limsup` is the moving tail `M_m = sup_{j≥m} s_j`, so the estimate is the max over
+the last `k` observed levels, plus its trend. No regression fitting.
 
 | status | meaning |
 |---|---|
-| `STABLE` | the tail is flat; the value is the estimate |
+| `STABLE` | tail flat; the value is the estimate |
 | `TRENDING_UP` | still rising; the value is a **lower bound** |
 | `TRENDING_DOWN` | still decaying; the value is an **upper bound** |
-| `UNRESOLVED` | not monotone at this horizon — asymptotics unavailable |
-| `NONE` | no persistent classes at all |
+| `UNRESOLVED` | not monotone at this horizon |
+| `NONE` | no persistent classes |
 
-`UNRESOLVED` is a legitimate result on a short tower, not a failure. T6 (three
-behavioural levels) is `UNRESOLVED`; T3 is `TRENDING_UP`, so its `D = 0.833` is a
-lower bound for a limit of 1.
+```text
+asymptotic layer
+  S: 0.342783  TRENDING_DOWN (upper bound)   window sup was 4.983613
+  D: 0.000000  STABLE        (exact)         window sup was 0.000000
+```
 
-**The tail converges where the window sup cannot:**
+This replaced a real defect: `sup_{j≤H}` is not `limsup`, and for sub-geometric
+growth the two diverge badly. The toy suite caught it. `UNRESOLVED` is a legitimate
+result on a short tower, not a failure.
+
+## Real traces
+
+The adapter was developed against a private corpus of the author's own agent
+sessions. Only the aggregate shape is reproduced, with no transcripts, prompts,
+commands, paths or model identifiers:
+
+```text
+runs       : >1100
+tool calls : >14000   errors: ~6%
+succeeded  : ~80%
+formats    : pi
+```
+
+Grouping by model on that corpus produces a **descriptive**, not experimental,
+comparison — the agents were doing different work, and the profiler says so:
+
+```
+persistent structure differs across agents: D in [1.85, 2.86]
+-> agents did not all find the same structure; compare with care
+```
+
+`--matched` restricts to opening prompts that at least two agents actually ran,
+which controls for the task. On that corpus it leaves a handful of turns — enough
+to demonstrate the mechanism, far too little to conclude. **The profiler is ready;
+a controlled task corpus is what is missing.**
+
+## Toy validation
+
+`toys.py` checks the instrument against **closed forms** — each toy has an
+analytically known `n_j` and `L_j`, hence known `D`, `S`, `Delta`:
+
+| toy | construction | `n_j` | `L_j` | `D` | `S` | `Delta` | status |
+|---|---|---|---|---|---|---|---|
+| T1 | every leaf succeeds | `2^j` | `2^j` | 1 | 1 | 0 | STABLE/STABLE |
+| T2 | one leaf succeeds | `2^j` | `1` | 0 | 1 | 1 | STABLE/STABLE |
+| T3 | half the leaves succeed | `2^j` | `2^{j-1}` | `(d-1)/d` | 1 | `1/d` | STABLE/UP |
+| T4 | nothing succeeds | `2^j` | `0` | 0 | 1 | 1 | STABLE/NONE |
+| T5 | spine + dead-end fan | `1+w(j-1)` | `1` | 0 | `S` | `S` | DOWN/STABLE |
+| T6 | behavioural tower | `2,2,6` | `1,1,3` | `log2(3)/3` | 1 | `1-log2(3)/3` | UNRESOLVED/UP |
+
+Exact agreement, refinement law validated on all six. T5 also demonstrated the
+estimator defect:
 
 ```
        w     d  window sup   tail est         status
@@ -347,121 +258,54 @@ lower bound for a limit of 1.
     1000    48    4.983613   0.342783  TRENDING_DOWN
 ```
 
-The window sup is frozen at a shallow shell; the tail decays toward the true
-value 0 as the horizon grows, and says so while it does. **The instruments
-unchanged — the estimator no longer claims to be something it isn't.**
+Window sup frozen at a shallow shell regardless of depth; the tail decays toward
+the true value 0 and says it is an upper bound while it does.
 
-## Evaluation requirement: horizons must span the transient-growth subsequence
+## Evaluation requirement
 
-The non-invariance of `Delta` is real but can be **invisible at short horizons** —
-and this repository's own tests are the example.
+Short horizons can hide `Delta`'s non-invariance, and this repo's own tests are the
+example: at `H = 8` the transient spike lands on an odd level and the
+non-invariance test correctly fails; at `H = 7` it lands even, reindexing agrees,
+and the test **passes spuriously**.
 
-| horizon | spike lands on | even-only reindexing | `Delta` test |
-|---|---|---|---|
-| `H = 8` | level 7 (odd) | `Delta` 0.720628 -> 0.681244 | correctly **fails** |
-| `H = 7` | level 6 (even) | `Delta` unchanged | **passes spuriously** |
-
-At `H = 7` the transient-growth spike sits on an even level, so reindexing to even
-levels happens to agree and a test asserting non-invariance passes for the wrong
-reason.
-
-**This is an evaluation requirement, not a caveat about PDI.** A single finite window
-that misses the transient-growth subsequence will report `Delta` as though it were an
-invariant. Any claim of the form *"agent X explores less than agent Y"* must therefore
-either state the horizon, or be backed by a **growth-rate estimate** rather than a
-point measurement. `D` is unaffected — an intrinsic quantity survives a badly chosen
-window; a presentation-dependent one does not. That is the theorem appearing in
-evaluation design.
-
-## Design rules
-
-1. **Never collapse the two ledgers into one counter.** They measure different things.
-2. **`LIVE` is horizon-relative.** At a fixed horizon it is monotone under additive
-   insertion and `L_j <= L_{j+1}` (the map `live(j) -> live(j+1)` selecting a
-   horizon-reaching child is injective). When the horizon grows, previously-live nodes
-   can be demoted — `TRANSIENT` means "dead given the data so far", never final.
-3. **`UNKNOWN` is a theorem, not a fallback.** Deciding live-vs-dead is the
-   stabilisation problem and is undecidable in general. A streaming index cannot
-   promise stable classification.
-4. **STOP is decided on physical resolution, not tree depth.** Depth is an
-   implementation coordinate.
-
-## Run
-
-```bash
-python3 demo.py        # two agents, same persistent ledger, different cost
-python3 test_pdi.py    # 15 self-checks, all of the above asserted
-```
-
-## API
-
-```python
-from pdi import PDI, Status
-
-idx = PDI(label=lambda action: action[0])   # behavioural quotient at resolution 0
-idx.insert(trace)                           # descend by physical resolution
-idx.recompute_statuses()                    # LIVE / TRANSIENT / UNKNOWN
-
-idx.ledgers()             # (n_j, L_j)  -- two channels, never merged
-idx.exponents()           # {'D', 'S', 'delta', 'horizon'}
-idx.live_non_decreasing() # invariant check
-idx.refine_worthwhile(j, gain, cost)        # R4: physical-resolution STOP
-idx.lookup_or_refine(query, equivalent)     # hierarchical reuse; refine on miss
-```
-
-Nodes carry a `payload`, so the index doubles as a hierarchical semantic cache:
-reuse at the coarsest resolution that is still equivalent, refine only on a miss.
-This is where [FUTCache](https://github.com/sethuiyer/FUTCache) plugs in — FUTCache
-asks *"is this state close to something already computed?"*; the PDI adds *"at what
-resolution does it become meaningfully novel, and does that novelty persist?"*
+A single finite window that misses the transient-growth subsequence will report
+`Delta` as though it were an invariant. Any claim of the form *"agent X explores
+less than Y"* must state the horizon or be backed by a growth-rate estimate.
+`D` is unaffected. **This is a requirement on measurement, not a caveat about PDI.**
 
 ## What is implemented
 
 - Separate `n_j` / `L_j` ledgers, maintained independently at every level.
-- **Behavioural resolution towers** (`quotient_tower.py`): `QuotientTower` with
-  `validate()` / `validate_pairs()` enforcing the refinement law, plus
-  `prefix_tower()` which expresses the v0.2.0 path-length indexing as a degenerate
-  tower so earlier results stay reproducible.
-- **Real trace adapter** (`adapters.py`): reads pi session JSONL transcripts,
-  reconstructs turns with tool calls paired to results and errors attributed,
-  and supplies the six-level tool tower. Verified against >14,000 real tool calls.
-- `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation
-  (`mark_live`) and an authoritative batch classifier (`recompute_statuses`).
-  Two live rules: horizon-reaching, or explicit (`insert(..., live=True)`).
-- Adaptive STOP keyed on physical resolution, discounted by the observed persistent
-  yield ratio `L_j / n_j`.
-- Node-level caching with hierarchical reuse (`lookup_or_refine`).
-- **Agent reasoning profiler** (`agent_profiler.py`): consumes agent runs, reports the
-  per-resolution yield table, `D`, `S`, `Delta`, the STOP level, the
-  `inflation_table()` distinction-onset diagnostic, and `compare()` for the
-  cross-strategy benchmark.
-- **`diagnose_agents.py`**: end-to-end diagnosis of real sessions, grouped by model,
-  with `--matched` to control for the task.
-- Invariant checks (`live_non_decreasing`), a **toy suite with closed-form
-expectations** (`toys.py`), and **five self-checking suites** (`test_pdi.py`,
-`test_profiler.py`, `test_tower.py`, `test_adapter.py`, `toys.py`) covering cofinal
-invariance of `D`, non-invariance of `Delta`, `n_j = |H / ~_j|`, rejection of invalid
-towers, the refinement law over the full real corpus, and exact agreement with
-closed-form `D`/`S`/`Delta` on six toy problems.
-
-The substrate is a labelled trie, with the behavioural quotient applied by the label
-map. The behavioural abstraction — resolution as a first-class coordinate, and the
-persistent/transient split — is what the structure *is*; the substrate is an
-implementation choice.
+- **Behavioural resolution towers** (`quotient_tower.py`) with the refinement law
+  enforced by `validate()` / `validate_pairs()`.
+- **Multi-framework ingest** (`ingest.py`): canonical, pi, OpenAI, LangSmith, with
+  autodetection, directory walking, and canonical round-trip export.
+- **One-command profiler** (`pdi_profile.py`) for anyone's traces.
+- `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation;
+  two live rules (horizon-reaching, or explicit).
+- Adaptive STOP on physical resolution, discounted by the observed persistent yield.
+- Node-level caching with hierarchical reuse.
+- **Two output layers**: finite-scale diagnostics (exact) and asymptotic
+  diagnostics (status-bearing).
+- **Six self-checking suites**, including closed-form toy validation and the
+  refinement law verified over a full real corpus.
 
 ## Roadmap
 
-- **A controlled task corpus** — the blocker for real conclusions. Repeated tasks per
-  agent, so `--matched` has something to match on.
-- **Persistence-based garbage collection** — eviction driven by the `L`/`n` split
-  (retain, compress, summarise, prune) instead of recency alone.
-- **Learned towers** — derive the behavioural levels from data while still enforcing
-  the refinement law. Deliberately sequenced after the controlled corpus, so that a
-  result can be attributed to the tower rather than to the learning algorithm.
+- **A controlled task corpus** — repeated tasks per agent. The blocker for real
+  conclusions, not the software.
+- **More ingest adapters** — CrewAI, AutoGen, OpenTelemetry GenAI spans. Each is one
+  loader returning `list[Run]`.
+- **Persistence-based GC** — eviction driven by the `L`/`n` split.
+- **Learned towers** — derive the behavioural levels from data, while still
+  enforcing the refinement law. Sequenced after the controlled corpus so a result
+  can be attributed to the tower rather than to the learning algorithm.
 
 ## References
 
-- `concepts/cofinal-invariance` — gauge-dependence of raw exponents, Cauchy–Hadamard, `Delta` non-invariance
-- `concepts/regular-growth-identification` — full vs live counts; why `q_c = 1-2^{-dim_B}` is conditional
+- `concepts/cofinal-invariance` — gauge-dependence of raw exponents, `Delta` non-invariance
+- `concepts/regular-growth-identification` — full vs live counts
 - `concepts/resolution-stop` — the quotient → completion → observer triple
 - Lind & Marcus, *An Introduction to Symbolic Dynamics and Coding* — entropy from the essential part
+
+> **Give away the instrument. Sell the laboratory.**

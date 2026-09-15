@@ -237,8 +237,11 @@ def inflation_table(
             cells.append("-" if not base else f"{rows.get(j, 0) / base:.2f}x")
         out.append(f"  {name:<{w}}" + "".join(f"{c:>12}" for c in cells))
 
-    # first level at which some agent inflates by >= 2x
-    onset = None
+    # first level at which some agent inflates by >= 2x.
+    # `onset` may land on level 1 (terminal outcome) when strategies merely
+    # differ in success rate; `behavioural_onset` ignores that level, because
+    # the interesting question is where the BEHAVIOUR inflates.
+    onset = behavioural = None
     for j in levels:
         base = refn.get(j, 0)
         if not base:
@@ -246,15 +249,24 @@ def inflation_table(
         for name in agents:
             rows = {r["level"]: r["n"] for r in agents[name].profile()["rows"]}
             if rows.get(j, 0) / base >= 2.0:
-                onset = (j, names[j - 1], name)
+                if onset is None:
+                    onset = (j, names[j - 1].strip(), name)
+                if j >= 2 and behavioural is None:
+                    behavioural = (j, names[j - 1].strip(), name)
                 break
-        if onset:
+        if onset and behavioural:
             break
     if onset:
         j, nm, who = onset
         out.append("")
-        out.append(f"  distinction onset: at resolution {j} ({nm.strip()}), "
+        out.append(f"  distinction onset: at resolution {j} ({nm}), "
                    f"'{who}' first exceeds 2x the reference")
+        if onset[0] == 1:
+            out.append("    (level 1 is terminal outcome: this says success rates differ)")
+        if behavioural and behavioural[0] != onset[0]:
+            bj, bnm, bwho = behavioural
+            out.append(f"  behavioural onset: at resolution {bj} ({bnm}), "
+                       f"'{bwho}' first exceeds 2x past the outcome level")
     return "\n".join(out)
 
 
