@@ -217,6 +217,93 @@ python3 demo_sudoku.py       # the tables above
 python3 test_sudoku.py       # 20 checks, incl. PDI n_j == solver node counts
 ```
 
+## Does discovery have holonomy? (a negative result)
+
+PDI proved that `Delta` is **presentation**-dependent. That is path dependence in
+the weak sense — *which* presentation. Holonomy needs the stronger thing:
+dependence on the **route**, so that a closed loop in parameter space returns the
+external parameter but not the internal state.
+
+Three requirements, and the Sudoku probe settled two of them:
+
+| requirement | meaning | status |
+|---|---|---|
+| **degeneracy** | more than one optimum, so "which branch" is a real question | ✅ exists |
+| **walls** | a parameter family where behaviour changes | ✅ exists (λ ∈ 0.5–0.75) |
+| **history** | a stateful process, `x_{t+1} = F(x_t, λ_t)` | ❌ absent from a memoryless solver |
+
+A memoryless solver has `x = f(λ)`, so **every closed schedule returns `f(λ₀)` by
+construction** — cross ten walls, still no residual. `transport.py` supplies the
+missing third ingredient.
+
+**Setup.** Max-Cut on n=12 with exactly **two** optimal cuts (found by enumeration
+over all 4096 configurations), a deterministic min-conflicts search with a **tabu
+list** as memory and a λ-controlled tie-break as the presentation, and the loop
+`λ: 0.10 → 0.50 → 0.90 → 0.10`.
+
+### What happened
+
+**Non-identity transport exists.** The loop applied to representatives sometimes
+maps `A → B` and `B → A` — the state genuinely does not return.
+
+**But it is not a monodromy**, and this is decisive:
+
+```
+  tabu steps           perm  bij    id  rev=inv  sq=sq  ord  branch-determined?
+     2    16       A->B B->A  True False    False  False    2  NO A:{A,B} B:{A,B}
+     3    16       A->B B->A  True False    False  False    2  NO A:{A,B} B:{A,B}
+     4     8       A->B B->A  True False    False  False    2  NO A:{A,B} B:{A,B}
+     5     8       A->B B->A  True False     True   True    2  NO A:{A,B} B:{A,B}
+```
+
+Every configuration fails **branch-determination**: the image set for branch A is
+`{A, B}` and so is the image set for branch B. Two states sitting in the same
+branch get transported to *different* branches, so there is no map on branches to
+speak of — no permutation, no order.
+
+**Refining the fibre does not repair it.** Grouping starting states by their
+greedy-descent **basin** (94 distinct basins) still leaves the loop undetermined:
+
+```
+  tabu=3 steps=16: basins=94  determined=61  ambiguous=33  largest image=2
+  tabu=4 steps=8 : basins=94  determined=58  ambiguous=36  largest image=2
+  tabu=5 steps=32: basins=94  determined=58  ambiguous=36  largest image=2
+```
+
+Roughly a third of basins have an ambiguous image. A bundle needs a fibre on which
+the transport is a map; neither candidate works here.
+
+### Verdict
+
+> **Non-identity transport exists. It is state drift, not monodromy.** There is no
+> map on branches (or on basins), so there is no permutation, no order, and nothing
+> for a Berry phase to be a phase *of*.
+
+Which is a useful thing to have ruled out, and `test_transport.py` asserts the
+negative — **13 checks that should FAIL if someone later builds a genuine branch
+map.** That is the falsifiable signature to watch for.
+
+### On BAHA
+
+BAHA's own `docs/technical/QUANTUM.md` says moving between branches is *"analogous
+to parallel transport"*, and the mechanism is enumerate → score → jump. There is no
+base space, no connection, no loop and no residual. Grepping the repo, `holonomy`
+appears in the title, a pybind docstring and the dashboard footer — nowhere in the
+algorithm.
+
+What *is* real there and unused: Lambert W has a genuine branch point at
+`z = −1/e` with a non-trivial monodromy permuting `W_0 ↔ W_{−1}`. BAHA uses the
+*existence* of two branches as two candidate basins; it never performs the loop.
+
+BAHA's actual relevance to this experiment is different: it is **stateful**, and
+stateful discovery is exactly the ingredient a transport needs to be non-trivial.
+Not the source of the holonomy — the source of the memory.
+
+```bash
+python3 transport.py        # the table above
+python3 test_transport.py   # 13 checks asserting the negative result
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
