@@ -304,6 +304,80 @@ python3 transport.py        # the table above
 python3 test_transport.py   # 13 checks asserting the negative result
 ```
 
+## Constructing the fibre: the transport-stable quotient (v0.8.0)
+
+v0.7.0 left a precise gap: **no fibre on which the transport is a map.** Two states
+in the same branch, or the same basin, were sent to different fibres.
+
+The fix is not to keep guessing fibres. It is to **construct** the coarsest one
+that works.
+
+> A partition `π` is **T-stable** if `T` is well defined on its blocks:
+> `x ~ y  ⟹  T(x) ~ T(y)`.
+
+The refinement key of a state is `(block(x), block(T(x)))`. Split blocks whose
+members disagree on that key, repeat to fixpoint. That is ordinary partition
+refinement — the same operation as DFA minimisation and bisimulation quotienting.
+
+Crucially this runs over the **full state space** (2^n states), so the quotient is
+exact rather than sampled:
+
+```
+n=12, 24 edges, 2 optima, 4096 states
+
+  tabu steps  refinement profile                stable  largest  bijective  cycles
+     2     4   2 -> 4 -> 4                          4     1731     False    2 x [1]
+     2     8   2 -> 4 -> 8 -> 16 -> 24 -> 24       24      740     False    4 x [1,1,2,4]
+     3     4   2 -> 4 -> 4                          4     1725     False    2 x [1]
+     3     8   2 -> 4 -> 8 -> 12 -> 12             12     1510     False    2 x [1,1]
+     4     8   2 -> ... -> 40                      40      548     False    ...
+```
+
+### The positive result: the fibre exists
+
+The branch partition (2 blocks) is **not** stable. Refinement terminates at
+**4–40 blocks** — not the discrete 4096. So there is a genuine quotient onto which
+the transport descends: **a 100–1000× compression of the state space onto a space
+where the loop is a well-defined function.** `block_map()` asserts stability and
+would raise if it failed.
+
+### The remaining obstruction, now exact
+
+The induced map on the quotient is **many-to-one**. It is a function but not a
+permutation — and a monodromy must be a permutation. What it actually is, is a
+**functional graph**: sometimes idempotent (all fixed points), sometimes carrying
+cycles of length 2 and 4.
+
+| | v0.7.0 | v0.8.0 |
+|---|---|---|
+| fibre | none found | **exists** — 4–40 blocks |
+| transport on the fibre | not a map | **a well-defined function** |
+| monodromy | impossible | needs **invertibility** — still missing |
+
+So the gap has moved and become singular:
+
+> **What is missing is exactly injectivity.** `T` is not one-to-one on the
+> quotient, so there is no permutation, no order, and nothing for a Berry phase to
+> be a phase of — but there *is* finite cyclic dynamics on a genuine quotient.
+
+That is a sharp, attackable target rather than a philosophical one: **find a loop
+whose induced map is injective on its stable quotient.** If one exists, the
+quotient becomes a permutation group, and the Berry-phase question finally has an
+object to be about.
+
+### One caveat
+
+The stable quotient depends on the loop: different `(tabu, steps)` give 4, 12, 24,
+40 blocks. That is expected — different transports have different maps — but it
+means the fibre is **loop-specific**, not canonical. A canonical fibre would need
+an argument that the stable quotient is independent of the schedule within some
+class, which is not established.
+
+```bash
+python3 stable_quotient.py        # the table above
+python3 test_stable_quotient.py   # 18 checks: fibre exists, map is not a permutation
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
