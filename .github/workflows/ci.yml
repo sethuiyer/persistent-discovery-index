@@ -1,6 +1,6 @@
 name: suites
 
-# 21 self-checking suites and nothing was running them. A repo whose whole claim is
+# 22 self-checking suites and nothing was running them. A repo whose whole claim is
 # "every number carries its warrant" cannot leave the warrants untested.
 on:
   push:

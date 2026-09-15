@@ -1020,7 +1020,10 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - **A negative result about zeta invariants** (`zeta_separation.py`): the
   Ihara/Bass family does not separate the §15 pair (a tree has no cycles) and is
   sharp on the recurrent core — it is a complement to the ledger, not a rival.
-- **Twenty-one self-checking suites**, including closed-form toy validation, the
+- **Core monodromy — closed, negative** (`core_monodromy.py`): `γ ↦ T_γ|_R` is a
+  monoid homomorphism but not a group representation — the core is
+  loop-dependent (O1) and the inverse axiom fails (§18).
+- **Twenty-two self-checking suites**, including closed-form toy validation, the
   refinement law verified over a full real corpus, and edge-preservation checks
   on every ingest format.
 

@@ -50,6 +50,7 @@ stated status.**
 | 19.2 | Bass determinant of a forest `= (1−u²)^{#components}` — shape-blind | **computed** (§19.2) |
 | 19.3 | Zeta separates `C3⊔C3` from `C6` (same degrees, same `(V,E)`) — sharp on cycles | **computed** (§19.3) |
 | 19.4 | The twisted zeta is void on the current construction: `χ` is length-determined, and the transport has no non-trivial `π₁ → U(1)` | **computed, negative** (§19.6) |
+| 19.5 | `γ ↦ T_γ|_R` is a monoid homomorphism but NOT a group representation: `R` is loop-dependent (O1), and the inverse axiom fails (§18) | **computed, negative** (§19.7) |
 
 ---
 
@@ -1063,16 +1064,42 @@ Every projection needs its own blind-spot statement, and "keep the edges" does
 not mean every edge-derived invariant preserves what the ledger lost: projecting
 `G → {primitive cycles}` deliberately destroys the forest.
 
-### 19.7 What is left open
+### 19.7 Core monodromy — answered, and the strand closes
 
-The remaining question is the only one that is neither void nor §8:
+The §19.7 open edge was:
 
 > **Does `γ ↦ T_γ|_R` define a homomorphism `π₁(presentation space) → Sym(R)`?**
 
-`T_γ|_R` is a genuine permutation of the recurrent core, so it is a real element;
-the open question is whether it is a *representation* (does `T_{γ₁γ₂}|_R =
-T_{γ₂}|_R ∘ T_{γ₁}|_R`, and does `T_{γ^{-1}}|_R = T_γ|_R^{-1}`?). §8's tests say
-no on the stable quotient, but the restriction to `R` is a *different* map and is
-not settled here. If it is a homomorphism and non-trivial, a twisted zeta would
-have earned content; if it is trivial or not a homomorphism, the strand is closed
-for good.
+Built in `core_monodromy.py`; suite `test_core_monodromy.py`. Over `n=10`,
+`tabu ∈ {2,3}`, `steps=8`, and the six schedules listed in `core_monodromy.LOOPS`:
+
+1. **Composition holds.** `T_{γ₁γ₂} = T_{γ₂} ∘ T_{γ₁}` exactly, on every state.
+   The assignment is a **monoid homomorphism** from the free monoid of schedules.
+   That half is earned.
+2. **The target `R` is not well-defined — this is O1.** `|R|` takes the values
+   `6, 8, 10, 12, 16` across the six loops, with different cycle structures, and
+   the intersection of all six cores is **2 states out of 1024**. There is no
+   single `R` for `π₁` to act on, so the map is not even *well-typed*. The
+   recurrent core inherits precisely the presentation-dependence O1 records for
+   the stable quotient.
+3. **The inverse axiom fails — this is §18.** `T_{γ^{-1}} ∘ T_γ ≠ id` on the
+   core, and `T_{γ^{-1}}` does not even map `core(γ)` into itself.
+4. **On the common quotient** stable under all six loops at once — a genuine
+   quotient, `332` blocks of `1024` at `tabu=2` and `369` at `tabu=3` — **every**
+   induced map is non-injective, and the cores still differ per loop.
+
+**Verdict (computed, negative).** `γ ↦ T_γ|_R` is a monoid homomorphism that is
+not a group representation: no loop-independent `R` (O1), and no inverse where it
+is typed (§18). Hence no character on `π₁` — so there is nothing for a twisted
+zeta to twist by. This is the same conclusion as §19.5–19.6, reached from the
+transport side rather than the zeta side.
+
+The zeta strand therefore closes on the repository's **central open problem**, not
+on a local defect: transport monodromy needs a *canonical* core, and canonicity is
+exactly what O1 says PDI does not have. The remaining honest statement is the
+routing law of §19.6 plus one open question, unchanged and now sharply localised:
+
+> **O1 is the whole obstruction.** Any future transport/character/phase
+> programme — twisted zeta, Berry phase, holonomy — is blocked until the stable
+> fibre is presentation-independent. §19 adds no new open problem; it removes a
+> candidate and points the arrow back at O1.

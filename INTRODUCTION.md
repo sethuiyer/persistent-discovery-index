@@ -198,7 +198,7 @@ visible. That is the house style, not an accident.
 | **§10 conjecture.** A functor from tower live/transient to transport recurrent/transient | **conjecture** |
 | **Controlled corpus.** Repeated tasks per agent | the blocker for every empirical claim |
 | **Twisted zeta.** Does `∏(1−χ(P)u^{ℓ(P)})^{-1}` separate what bare zeta cannot? | **closed, negative** — needs a non-length-determined `χ`, i.e. a non-trivial `π₁→U(1)`; PDI's transport has none (§19.6) |
-| **Monodromy on the core.** Is `γ ↦ T_γ|_R` a homomorphism `π₁ → Sym(R)`? | **open** — the one question §19 leaves live (§19.7) |
+| **Monodromy on the core.** Is `γ ↦ T_γ|_R` a homomorphism `π₁ → Sym(R)`? | **closed, negative** — it is a monoid homomorphism, not a group representation: `R` is loop-dependent (O1) and the inverse axiom fails (§18); see §19.7 |
 | ~~`invertibility.py` has no test~~ | **closed (v0.21.0)** — `test_invertibility.py` pins Q1 (0 of 216, exact grid) and the §8.2 Q2 numbers |
 
 ## 10. Two things about the repository's character
