@@ -625,6 +625,57 @@ python3 both_structures.py        # two negative results
 python3 test_both_structures.py   # 13 checks, incl. non-isomorphism by AHU
 ```
 
+## Ingest: three more frameworks (v0.15.0)
+
+`FORMATS` now has seven loaders. The three new ones, with honest confidence levels:
+
+| format | written to | confidence |
+|---|---|---|
+| `otel` | the published **OpenTelemetry GenAI semantic conventions** (`gen_ai.operation.name`, `gen_ai.tool.name`, `gen_ai.tool.call.arguments`, `gen_ai.request.model`, `error.type`) | highest — it is a spec |
+| `autogen` | the documented message schema, **both** shapes it has shipped: v0.2 `function_call` dicts and v0.4 `ToolCallRequestEvent` / `ToolCallExecutionEvent` | medium |
+| `crewai` | an **inferred** schema — CrewAI publishes no stable trace format | lowest |
+
+**None of the three was validated against a live capture.** The fixtures in
+`fixtures/` are constructed to those schemas. So the tests establish *schema
+conformance* and *edge preservation*, not field-testedness. OTel is the one to
+trust, because it is the one written to a spec — and since most frameworks are
+converging on it, it is also the one that eventually subsumes the other two.
+
+### Edge preservation is the load-bearing test
+
+The axiom says keep the **edges** — how the cost was incurred. A loader that
+collapses repeated calls, drops arguments, or mis-pairs a result with its call has
+thrown them away regardless of schema conformance. So the suite tests that, and it
+caught a real bug:
+
+```python
+# AutoGen v0.2 puts function_call on the ASSISTANT message but the id (if any) on
+# the FUNCTION message. Keying pending calls by tool_call_id alone therefore
+# mis-attributes results -- including errors -- to the wrong step.
+```
+
+```
+  before:  search          read  ERR=Error: gone      <- wrong call
+  after :  search   ERR=  read  ERR=Error: gone      <- correct
+```
+
+The loader now pairs by id when present, else by tool **name** to the oldest
+unpaired call, else FIFO. Pinned by `test_ingest_more.py`.
+
+Two more checks that exist specifically because of the edges:
+
+```
+  EDGES: repeated identical calls are NOT collapsed   (two `search` calls with
+                                                       identical args stay two steps)
+  EDGES: args survive  format -> canonical -> back    (round-trip per format)
+```
+
+```bash
+python3 ingest.py                 # demo
+python3 test_ingest.py            # original four formats
+python3 test_ingest_more.py       # otel / autogen / crewai, incl. edge preservation
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
@@ -761,8 +812,9 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 
 - **A controlled task corpus** — repeated tasks per agent. The blocker for real
   conclusions, not the software.
-- **More ingest adapters** — CrewAI, AutoGen, OpenTelemetry GenAI spans. Each is one
-  loader returning `list[Run]`.
+- ~~**More ingest adapters** — CrewAI, AutoGen, OpenTelemetry GenAI spans.~~ Done in
+  v0.15.0. The remaining gap is not code: none of the three has been run against a
+  **live capture**, only against fixtures built to the published schemas.
 - **Persistence-based GC** — eviction driven by the `L`/`n` split.
 - **Learned towers** — derive the behavioural levels from data, while still
   enforcing the refinement law. Sequenced after the controlled corpus so a result

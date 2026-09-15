@@ -1,0 +1,286 @@
+{
+ "resourceSpans": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "demo-agent"
+      }
+     }
+    ]
+   },
+   "scopeSpans": [
+    {
+     "scope": {
+      "name": "otel.genai"
+     },
+     "spans": [
+      {
+       "traceId": "aaaa0000000000000000000000000001",
+       "spanId": "s1",
+       "parentSpanId": "",
+       "name": "invoke_agent demo",
+       "startTimeUnixNano": "1700000000000000000",
+       "endTimeUnixNano": "1700000000001000000",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "invoke_agent"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "model-x"
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000001",
+       "spanId": "s2",
+       "parentSpanId": "s1",
+       "name": "chat model-x",
+       "startTimeUnixNano": "1700000000000000001",
+       "endTimeUnixNano": "1700000000001000001",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "stop"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "12"
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000001",
+       "spanId": "s3",
+       "parentSpanId": "s1",
+       "name": "execute_tool search",
+       "startTimeUnixNano": "1700000000000000002",
+       "endTimeUnixNano": "1700000000001000002",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "execute_tool"
+         }
+        },
+        {
+         "key": "gen_ai.tool.name",
+         "value": {
+          "stringValue": "search"
+         }
+        },
+        {
+         "key": "gen_ai.tool.call.id",
+         "value": {
+          "stringValue": "call_1"
+         }
+        },
+        {
+         "key": "gen_ai.tool.call.arguments",
+         "value": {
+          "stringValue": "{\"query\": \"alpha\"}"
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000001",
+       "spanId": "s4",
+       "parentSpanId": "s1",
+       "name": "execute_tool read",
+       "startTimeUnixNano": "1700000000000000003",
+       "endTimeUnixNano": "1700000000001000003",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "execute_tool"
+         }
+        },
+        {
+         "key": "gen_ai.tool.name",
+         "value": {
+          "stringValue": "read"
+         }
+        },
+        {
+         "key": "gen_ai.tool.call.id",
+         "value": {
+          "stringValue": "call_2"
+         }
+        },
+        {
+         "key": "gen_ai.tool.call.arguments",
+         "value": {
+          "stringValue": "{\"path\": \"/tmp/x\"}"
+         }
+        },
+        {
+         "key": "error.type",
+         "value": {
+          "stringValue": "FileNotFoundError"
+         }
+        }
+       ],
+       "status": {
+        "code": 2,
+        "message": "no such file"
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000002",
+       "spanId": "t1",
+       "parentSpanId": "",
+       "name": "invoke_agent demo",
+       "startTimeUnixNano": "1700000000000000010",
+       "endTimeUnixNano": "1700000000001000010",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "invoke_agent"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "model-x"
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000002",
+       "spanId": "t2",
+       "parentSpanId": "t1",
+       "name": "chat model-x",
+       "startTimeUnixNano": "1700000000000000011",
+       "endTimeUnixNano": "1700000000001000011",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "stop"
+            }
+           ]
+          }
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000002",
+       "spanId": "t3",
+       "parentSpanId": "t1",
+       "name": "execute_tool search",
+       "startTimeUnixNano": "1700000000000000012",
+       "endTimeUnixNano": "1700000000001000012",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "execute_tool"
+         }
+        },
+        {
+         "key": "gen_ai.tool.name",
+         "value": {
+          "stringValue": "search"
+         }
+        },
+        {
+         "key": "gen_ai.tool.call.arguments",
+         "value": {
+          "stringValue": "{\"query\": \"beta\"}"
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      },
+      {
+       "traceId": "aaaa0000000000000000000000000002",
+       "spanId": "t4",
+       "parentSpanId": "t1",
+       "name": "execute_tool search",
+       "startTimeUnixNano": "1700000000000000013",
+       "endTimeUnixNano": "1700000000001000013",
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "execute_tool"
+         }
+        },
+        {
+         "key": "gen_ai.tool.name",
+         "value": {
+          "stringValue": "search"
+         }
+        },
+        {
+         "key": "gen_ai.tool.call.arguments",
+         "value": {
+          "stringValue": "{\"query\": \"beta\"}"
+         }
+        }
+       ],
+       "status": {
+        "code": 1
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

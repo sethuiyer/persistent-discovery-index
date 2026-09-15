@@ -1,0 +1,40 @@
+{
+ "crew": "demo-crew",
+ "model": "model-z",
+ "final_output": "done",
+ "tasks_output": [
+  {
+   "description": "research",
+   "agent": "researcher",
+   "output": "found things",
+   "tools_used": [
+    {
+     "tool": "search",
+     "tool_input": {
+      "query": "epsilon"
+     }
+    },
+    {
+     "tool": "fetch",
+     "tool_input": {
+      "url": "https://example.invalid"
+     }
+    }
+   ]
+  },
+  {
+   "description": "summarise",
+   "agent": "writer",
+   "output": "wrote it",
+   "tools_used": [
+    {
+     "tool": "write",
+     "tool_input": {
+      "path": "/tmp/out.md",
+      "body": "s"
+     }
+    }
+   ]
+  }
+ ]
+}
