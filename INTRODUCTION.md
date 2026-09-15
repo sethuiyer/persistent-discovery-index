@@ -52,7 +52,8 @@ Concretely, when you write or change anything:
 | Why is search irreversible? | `SPINE.md` §18 (proved) |
 | Who is this for / how is it sold? | `PRODUCT_README.md` (strategy, not warrant) |
 | How do I pitch it to non-tech / sales? | `PRODUCT_BREAKDOWN.md` (battlecard, ROI, non-tech) |
-| Is there a video walkthrough of the math? | [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) (the whole chain, for a general audience) |
+| Is there a video / blog walkthrough of the math? | Video: [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) · Blog: [The Persistent Discovery Index](https://gist.github.com/shunyabarlabs/ec39c0ad4ee105d283a914b7b0a99aed) |
+| The mathematics in one narrative (long form) | `MATH.md` |
 | How do I use it? | `README.md` |
 | What does a real trace look like? | `fixtures/` |
 
@@ -98,7 +99,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-21 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+22 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.

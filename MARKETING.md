@@ -90,9 +90,9 @@ This is the part most tools leave out, so it is printed on the artefact:
 |---|---|
 | the instrument, in five minutes | [`README.md`](README.md) |
 | every claim and its warrant | [`SPINE.md`](SPINE.md) — start at §0 |
-| the whole mathematics, in one narrative | [`README.md`](README.md) → *The mathematics of PDI* |
-| the long-form math (standalone) | the essay in [`README.md`](README.md#the-mathematics-of-pdi) |
+| the whole mathematics, in one narrative | [`MATH.md`](MATH.md) |
 | the whole chain, on video | [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) |
+| the whole chain, as a blog post | [The Persistent Discovery Index](https://gist.github.com/shunyabarlabs/ec39c0ad4ee105d283a914b7b0a99aed) |
 | positioning and market hypothesis | [`PRODUCT_README.md`](PRODUCT_README.md) |
 | the numbers behind this page | `python3 demo_sudoku.py`, `python3 test_sudoku.py` |
 

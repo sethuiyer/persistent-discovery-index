@@ -27,7 +27,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Every doc whose claims about the repository must match the repository.
-DOCS = ("SPINE.md", "README.md", "PRODUCT_README.md", "INTRODUCTION.md")
+DOCS = ("SPINE.md", "README.md", "PRODUCT_README.md", "INTRODUCTION.md", "MATH.md")
 FAILS: list[str] = []
 
 
@@ -62,6 +62,7 @@ def test_cited_suites_exist() -> None:
 
 def test_suite_count_matches() -> None:
     print("2. the README's suite count is the real count")
+    actual = len(real_suites())
     txt = read("README.md")
     m = re.search(r"\*\*([A-Z][a-z]+(?:-[a-z]+)?) self-checking suites\*\*", txt)
     check("README states a suite count", m is not None)
@@ -72,12 +73,21 @@ def test_suite_count_matches() -> None:
              "Nineteen": 19, "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22}
     claimed = words.get(m.group(1))
     check("the number word is recognised", claimed is not None, m.group(1))
-    actual = len(real_suites())
     check("README count == suites on disk", claimed == actual,
           f"README says {claimed}, disk has {actual}")
     # and no OTHER stale count lurks elsewhere
     others = re.findall(r"\b(?:Ten|Eleven|Twelve|Thirteen|Fourteen|Fifteen|Sixteen|Seventeen|Eighteen|Nineteen|Twenty-one|Twenty) self-checking suites\b", txt)
     check("exactly one suite-count claim in the README", len(others) <= 1, str(others))
+
+    # INTRODUCTION states the same count as a bare number. It is NOT covered by
+    # the README check, and it drifted (21) while the disk had 22 -- this check
+    # is what closes that gap.
+    intro = read("INTRODUCTION.md")
+    mi = re.search(r"\b(\d+) suites, all exit nonzero\b", intro)
+    check("INTRODUCTION states a suite count", mi is not None)
+    if mi:
+        check("INTRODUCTION count == suites on disk", int(mi.group(1)) == actual,
+              f"INTRODUCTION says {mi.group(1)}, disk has {actual}")
 
 
 def test_product_doc_numbers_match() -> None:

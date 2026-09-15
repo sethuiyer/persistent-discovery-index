@@ -6,7 +6,7 @@
 > Traditional monitoring tools (LangSmith, Langfuse, Datadog) report: *"Both succeeded at 100%."*  
 > **PDI reports:** *"Agent B is hemorrhaging 70% of its budget on dead-end exploration — and here is the exact prompt layer where the waste begins."*
 
-> **Watch the deep dive:** [The Hidden Cost of AI Discovery — Why Modern Agent Benchmarks Lie (and the Math to Fix It)](https://www.youtube.com/watch?v=tkPmvU6x_bc) — the full argument, no mathematics background required.
+> **Watch or read the deep dive:** [The Hidden Cost of AI Discovery — Why Modern Agent Benchmarks Lie (and the Math to Fix It)](https://www.youtube.com/watch?v=tkPmvU6x_bc) (video) · [The Persistent Discovery Index](https://gist.github.com/shunyabarlabs/ec39c0ad4ee105d283a914b7b0a99aed) (blog) — the full argument, no mathematics background required.
 
 ---
 
