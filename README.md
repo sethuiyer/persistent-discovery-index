@@ -378,6 +378,74 @@ python3 stable_quotient.py        # the table above
 python3 test_stable_quotient.py   # 18 checks: fibre exists, map is not a permutation
 ```
 
+## Prime fields: where invertibility is free, and where it isn't (v0.9.0)
+
+The proposal: use `F_p^×` with `T_a(x) = a·x mod p`. Since `p` is prime, every
+`a ≠ 0` is invertible, so `T_a ∈ Sym(F)` **for free**. A loop with edge labels
+`a₁…a_k` has residual `h = Π aᵢ mod p`, of order dividing `p−1`; and since `F_p^×`
+is cyclic, `φ(h) = exp(2πik/(p−1))` is a genuine character into `U(1)`.
+
+### The algebra is correct
+
+Verified for `p = 5, 7, 11, 13`: `x → ax` is a bijection for every `a ≠ 0`;
+multiplication composes; every multiplicative order divides `p−1`; the character
+has modulus 1. And the concrete claims hold exactly — `p = 5`, `×2` is the
+4-cycle `1 → 2 → 4 → 3 → 1`, and `×4` is an involution.
+
+### But as a fix for the v0.8.0 obstruction it is circular
+
+`T_a` is invertible **because it was defined as a group action**. And a loop
+residual `h = Π aᵢ` is a property of **labels we chose**, so `h ≠ 1` carries no
+information about any search. It is a model of the target, not a construction of
+it.
+
+### What *is* earned: the recurrent core
+
+A functional graph always splits into a **recurrent core** (its cycles) and the
+transient trees feeding it. `T` restricted to a cycle is a permutation *by
+definition* — invertibility that is not posited. And that is exactly the structure
+v0.8.0 found:
+
+```
+  n=12 tabu=2 steps=8
+    stable quotient         : 24 blocks
+    recurrent core          : 8 nodes in 4 cycle(s), lengths=[1, 1, 2, 4]
+    transient (irreversible) : 16 blocks feed the core
+    T is a permutation on the core : True
+    embeds in F_p^x (L | p-1)      : {1: [3,5,7], 2: [3,5,7], 4: [5,13,17]}
+
+  n=10 tabu=3 steps=8
+    stable quotient         : 18 blocks
+    recurrent core          : 2 nodes in 2 cycle(s), lengths=[1, 1]
+    transient (irreversible) : 16 blocks feed the core
+```
+
+The observed cycle lengths divide `p−1` for small primes, so **the character
+`φ: Z/L → U(1)` genuinely exists for the structure that was found**, rather than
+for one we chose.
+
+### The honest statement, narrower than "primes give invertibility for free"
+
+> Invertibility is recovered **on the recurrent core** of the real transport, and
+> that core embeds into `F_p^×`, so the phase is a real character of a real finite
+> group. The trees feeding the core remain many-to-one, and **they are most of the
+> state space** — no prime field repairs that.
+
+The chain is now:
+
+```
+memory → non-identity transport → stable fibre → invertible core →
+cyclic group → character into U(1)
+```
+
+with the last step **earned on the recurrent part only**, and the irreversible
+remainder stated rather than hidden.
+
+```bash
+python3 prime_holonomy.py         # the laboratory, and the bridge to it
+python3 test_prime_holonomy.py    # 39 checks: algebra correct, core earned, obstruction survives
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the

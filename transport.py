@@ -117,10 +117,30 @@ class Searcher:
                 best_key, best_v = key, v
         return best_v
 
-    def run(self, x, lam: float, steps: int, tabu_len: int | None = None):
-        """Carry the state (and its tabu memory) forward under presentation lam."""
+    def run_state(self, x, tabu, lam: float, steps: int):
+        """Transport (configuration, memory) TOGETHER.
+
+        `run` projects the memory away and returns only x, which is exactly where
+        information can be destroyed: two different tabu histories reaching the
+        same x become indistinguishable, and the induced map on any quotient of x
+        alone can then be many-to-one. Carrying the tabu state through keeps that
+        information in the state.
+        """
         x = list(x)
+        tabu = list(tabu)
+        for _ in range(steps):
+            v = self.best_flip(x, lam, tabu)
+            if v is None:
+                break
+            x[v] ^= 1
+            if self.tabu_len:
+                tabu = (tabu + [v])[-self.tabu_len:]
+        return tuple(x), tuple(tabu)
+
+    def run(self, x, lam: float, steps: int, tabu_len: int | None = None):
+        """Carry the state forward under presentation lam, memory projected away."""
         tl = self.tabu_len if tabu_len is None else tabu_len
+        x = list(x)
         tabu: deque = deque(maxlen=tl)
         for _ in range(steps):
             v = self.best_flip(x, lam, tabu)
