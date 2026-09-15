@@ -5,6 +5,9 @@
 **A microscope for agent behaviour. It shows where useful discovery ends and
 unnecessary exploration begins — and at which behavioural resolution it happens.**
 
+> **Video deep dive — the math behind PDI, and why modern agent benchmarks
+> lie:** [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc)
+
 Two people try to find the exit from a maze. A tries 20 paths. B tries 2,000 and
 finds the same exit.
 
@@ -1084,6 +1087,10 @@ algorithm is proposed.
 The whole chain, in one narrative: why the tower is forced, why the two
 ledgers cannot be merged, and exactly which claims are proved, computed, or
 open. Claim-by-claim status is the ledger in [`SPINE.md`](SPINE.md) §0.
+
+*Prefer to watch? The author's walkthrough of this narrative —
+[The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) —
+covers the same chain, ending on why benchmark scores hide the discovery cost.*
 
 *Two ledgers, a tower, and the mathematics of what a finite observation licenses*
 

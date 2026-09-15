@@ -92,6 +92,7 @@ This is the part most tools leave out, so it is printed on the artefact:
 | every claim and its warrant | [`SPINE.md`](SPINE.md) — start at §0 |
 | the whole mathematics, in one narrative | [`README.md`](README.md) → *The mathematics of PDI* |
 | the long-form math (standalone) | the essay in [`README.md`](README.md#the-mathematics-of-pdi) |
+| the whole chain, on video | [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) |
 | positioning and market hypothesis | [`PRODUCT_README.md`](PRODUCT_README.md) |
 | the numbers behind this page | `python3 demo_sudoku.py`, `python3 test_sudoku.py` |
 

@@ -52,6 +52,7 @@ Concretely, when you write or change anything:
 | Why is search irreversible? | `SPINE.md` §18 (proved) |
 | Who is this for / how is it sold? | `PRODUCT_README.md` (strategy, not warrant) |
 | How do I pitch it to non-tech / sales? | `PRODUCT_BREAKDOWN.md` (battlecard, ROI, non-tech) |
+| Is there a video walkthrough of the math? | [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) (the whole chain, for a general audience) |
 | How do I use it? | `README.md` |
 | What does a real trace look like? | `fixtures/` |
 
