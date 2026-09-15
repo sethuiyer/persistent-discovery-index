@@ -76,6 +76,71 @@ Agent B   full presentation : D=1.000000  Delta=0.720628
           -> D invariant: True    Delta invariant: False
 ```
 
+## Behavioural resolution towers (v0.3.0)
+
+Up to v0.2.0 the level index was **path length**: level *j* held length-*j* prefixes,
+and `n_j` counted them. That is a trie.
+
+v0.3.0 changes what resolution *means*. The level index is now a **behavioural
+resolution**, and the levels form a genuine refinement tower of quotient maps
+`Q_j : H → X_j = H / ~_j`:
+
+```python
+tower = QuotientTower([
+    lambda h: reached_goal(h),                    # Q1  two classes
+    lambda h: (reached_goal(h), steps(h)),        # Q2  + step count
+    lambda h: (reached_goal(h), multiset(h)),     # Q3  + move multiset
+    lambda h: (reached_goal(h), move_seq(h)),     # Q4  + move sequence
+    lambda h: (reached_goal(h), tuple(h)),        # Q5  + full path
+])
+
+idx = PDI(tower=tower)
+idx.fit(runs)              # validates the refinement law, then inserts
+```
+
+The required **refinement law** is checked, not assumed:
+
+```
+Q_{j+1}(h) = Q_{j+1}(h')   =>   Q_j(h) = Q_j(h')
+```
+
+`QuotientTower.validate()` raises `TowerViolation` on the first finer class that
+straddles two coarser ones, and `validate_pairs()` does the exhaustive
+`O(|H|²)` version for small corpora. With the law enforced, each level-(j+1) class
+has a unique level-*j* parent, so the classes still form a tree — but now
+
+```
+n_j = |H / ~_j|        exactly the behavioural class count
+L_j = number of resolution-j classes containing a persistent history
+```
+
+which is the construction the invariant was always stated over. Verified: for every
+level, the PDI's `n_j` equals `|H / ~_j|` computed independently from the corpus.
+
+### The sharper diagnostic
+
+With behavioural levels, an absolute yield threshold is a poor guide at coarse
+resolutions. The informative quantity is **class inflation against a reference**:
+
+```
+class inflation relative to 'shortest_only'   (n_j / n_j_reference)
+agent             Q1      Q2      Q3      Q4      Q5
+shortest_only  1.00x   1.00x   1.00x   1.00x   1.00x
+slack_2        1.00x   1.09x   2.44x   3.49x   3.49x
+unpruned       1.00x   1.09x   5.89x   7.35x   7.35x
+
+distinction onset: at resolution 3 (Q3 + move multiset), 'slack_2' first exceeds 2x
+```
+
+That is the v0.3.0 product, and it is a strictly stronger statement than v0.2.0
+could make: **the profiler names the behavioural resolution at which a strategy
+starts manufacturing distinctions that do not contribute to successful behaviour.**
+
+```bash
+python3 demo_tower.py      # the behavioural tower, laws and tables above
+python3 test_tower.py      # 11 self-checks incl. rejection of invalid towers
+```
+
 ## Use case: agent reasoning profiler
 
 `agent_profiler.py` turns the distinction into a measurement. Give it agent runs —
@@ -186,6 +251,10 @@ resolution does it become meaningfully novel, and does that novelty persist?"*
 ## What is implemented
 
 - Separate `n_j` / `L_j` ledgers, maintained independently at every level.
+- **Behavioural resolution towers** (`quotient_tower.py`): `QuotientTower` with
+  `validate()` / `validate_pairs()` enforcing the refinement law, plus
+  `prefix_tower()` which expresses the v0.2.0 path-length indexing as a degenerate
+  tower so earlier results stay reproducible.
 - `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation
   (`mark_live`) and an authoritative batch classifier (`recompute_statuses`).
   Two live rules: horizon-reaching, or explicit (`insert(..., live=True)`).
@@ -193,11 +262,13 @@ resolution does it become meaningfully novel, and does that novelty persist?"*
   yield ratio `L_j / n_j`.
 - Node-level caching with hierarchical reuse (`lookup_or_refine`).
 - **Agent reasoning profiler** (`agent_profiler.py`): consumes agent runs, reports the
-  per-resolution yield table, `D`, `S`, `Delta`, and the STOP level; `compare()` emits
-  the cross-strategy benchmark.
-- Invariant checks (`live_non_decreasing`) and **30 passing self-checks** across
-  `test_pdi.py` and `test_profiler.py`, including cofinal invariance of `D`,
-  non-invariance of `Delta`, the two-agent result, and the five-strategy spread.
+  per-resolution yield table, `D`, `S`, `Delta`, the STOP level, and the
+  `inflation_table()` distinction-onset diagnostic; `compare()` emits the
+  cross-strategy benchmark.
+- Invariant checks (`live_non_decreasing`) and **41 passing self-checks** across
+  `test_pdi.py`, `test_profiler.py` and `test_tower.py`, including cofinal invariance
+  of `D`, non-invariance of `Delta`, the two-agent result, the five-strategy spread,
+  `n_j = |H / ~_j|`, and rejection of invalid towers.
 
 The substrate is a labelled trie, with the behavioural quotient applied by the label
 map. The behavioural abstraction — resolution as a first-class coordinate, and the
@@ -206,10 +277,11 @@ implementation choice.
 
 ## Roadmap
 
-- **Resolution-dependent quotient towers** — refine the quotient *per level* rather
-  than only lengthening the prefix. Next implementation milestone.
 - **Persistence-based garbage collection** — eviction driven by the `L`/`n` split
   (retain, compress, summarise, prune) instead of recency alone.
+- **Learned towers** — derive the behavioural levels from data (clustering the
+  observation/outcome stream) rather than declaring them, while still enforcing the
+  refinement law.
 - **Real agent logs** — the profiler consumes `(path, succeeded)` runs, which is the
   shape ReAct / beam / MCTS traces already take; wiring a concrete adapter is a
   small step, evaluating retrieval quality is a larger one.

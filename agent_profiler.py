@@ -47,8 +47,12 @@ class AgentProfiler:
         self,
         label: Optional[Callable[[Any], Hashable]] = None,
         eps: Optional[Callable[[int], float]] = None,
+        index: Optional[Any] = None,
     ) -> None:
-        self.pdi = PDI(label=label if label is not None else (lambda x: x), eps=eps)
+        if index is not None:
+            self.pdi = index
+        else:
+            self.pdi = PDI(label=label if label is not None else (lambda x: x), eps=eps)
         self.runs = 0
         self.successes = 0
 
@@ -111,6 +115,60 @@ class AgentProfiler:
             if r["yield"] < threshold:
                 return r["level"]
         return None
+
+
+def inflation_table(
+    agents: dict[str, AgentProfiler],
+    reference: str,
+    level_names: Optional[list[str]] = None,
+) -> str:
+    """Per-level class inflation against a reference strategy.
+
+    At resolution j, inflation = n_j(agent) / n_j(reference). It answers the
+    question the absolute yield cannot:
+
+        at which behavioural resolution does this strategy begin manufacturing
+        distinctions that do not contribute to successful behaviour?
+
+    The reference should be a strategy that makes only the necessary
+    distinctions (e.g. one that explores only shortest paths).
+    """
+    refn = {r["level"]: r["n"] for r in agents[reference].profile()["rows"]}
+    levels = sorted(refn)
+    names = level_names or [f"L{j}" for j in levels]
+
+    w = max(len(k) for k in agents) + 2
+    head = f"  {'agent':<{w}}" + "".join(f"{names[j-1]:>12}" for j in levels)
+    out = ["", "=" * 74,
+           f"class inflation relative to '{reference}'  (n_j / n_j_reference)",
+           "=" * 74, head]
+    for name in agents:
+        rows = {r["level"]: r["n"] for r in agents[name].profile()["rows"]}
+        cells = []
+        for j in levels:
+            base = refn.get(j, 0)
+            cells.append("-" if not base else f"{rows.get(j, 0) / base:.2f}x")
+        out.append(f"  {name:<{w}}" + "".join(f"{c:>12}" for c in cells))
+
+    # first level at which some agent inflates by >= 2x
+    onset = None
+    for j in levels:
+        base = refn.get(j, 0)
+        if not base:
+            continue
+        for name in agents:
+            rows = {r["level"]: r["n"] for r in agents[name].profile()["rows"]}
+            if rows.get(j, 0) / base >= 2.0:
+                onset = (j, names[j - 1], name)
+                break
+        if onset:
+            break
+    if onset:
+        j, nm, who = onset
+        out.append("")
+        out.append(f"  distinction onset: at resolution {j} ({nm.strip()}), "
+                   f"'{who}' first exceeds 2x the reference")
+    return "\n".join(out)
 
 
 # --------------------------------------------------------------------------

@@ -88,9 +88,13 @@ class PDI:
         self,
         label: Callable[[Any], Hashable] = lambda x: x,
         eps: Optional[Callable[[int], float]] = None,
+        tower: Optional[Any] = None,
     ) -> None:
         self.label = label
-        self.eps = eps if eps is not None else (lambda j: 2.0 ** -j)
+        self.tower = tower
+        self.eps = eps if eps is not None else (
+            tower.eps if tower is not None else (lambda j: 2.0 ** -j)
+        )
 
         self.root = Node(profile=(), level=0, status=Status.LIVE)
 
@@ -134,8 +138,11 @@ class PDI:
         on a successful agent trajectory") instead of the horizon rule.
         """
         node = self.root
-        for j in range(1, len(trace) + 1):
-            lab = self.label(trace[j - 1])
+        if self.tower is not None:
+            chain = self.tower.signature(trace)
+        else:
+            chain = [self.label(x) for x in trace]
+        for j, lab in enumerate(chain, start=1):
             child = node.children.get(lab)
             if child is None:
                 child = Node(profile=node.profile + (lab,), level=j, parent=node)
@@ -151,6 +158,16 @@ class PDI:
         if live:
             self.mark_live(node)
         return node
+
+    def fit(self, runs: Iterable[tuple], validate: bool = True) -> "PDI":
+        """Insert (history, succeeded) runs through a tower, validating the
+        refinement law on the corpus first when a tower is present."""
+        runs = list(runs)
+        if validate and self.tower is not None:
+            self.tower.validate(h for h, _ in runs)
+        for h, ok in runs:
+            self.insert(h, live=ok)
+        return self
 
     def count_live(self) -> dict[int, int]:
         """Recompute L_j from node statuses (authoritative for explicit-mode)."""
