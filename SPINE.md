@@ -40,6 +40,9 @@ stated status.**
 | 15.1 | The recurrent core does not determine the transient structure | **proved by counterexample** (§15.1) |
 | 15.2 | The ledger counts do not determine the structure (`n_j`, `L_j` identical; trees non-isomorphic) | **proved by counterexample** (§15.2) |
 | 15.3 | The ledger is a lossy projection; the distinction lives in the edges | **conclusion** (§15.3) |
+| 16.1 | PDI enforces witness-gated construction (`TowerViolation`, convergence status, `S_shallow`) | **verified** (§16.1) |
+| 16.2 | PDI does **not** have canonicity; the finite-scale number is presentation-dependent and only quarantined | **computed, negative** (§16.2) |
+| 16.3 | The five named “invariance-first” principles are **three** claims of different logical shape | **analysis** (§16.3) |
 
 ---
 
@@ -645,3 +648,98 @@ The transport work is the reproduction of §15.1: the recurrent core is a
 permutation on its cycles (**earned**, §6.2) while the trees feeding it stay
 many-to-one (§8). Those are the two halves. PDI's value is that it reports both,
 instead of discarding the second the moment the first is found.
+
+---
+
+## 16. One principle, or three?
+
+> *The invariance-first principle: build equivalence classes only modulo provable
+> indistinguishability. Lindenbaum–Tarski, Hennessy–Milner, explicit coercion,
+> "no experiment without protocol", and "make illegal states unrepresentable" are
+> the same principle, and PDI instantiates all of them.*
+
+Tested rather than agreed with, in `invariance_first.py`; suite
+`test_invariance_first.py`. **They are not one principle.** They are three, with
+different logical shapes, and PDI's standing on each is different:
+
+| | shape | sources | PDI |
+|---|---|---|---|
+| **(a)** witness-gated construction | an axiom you enforce | Lindenbaum–Tarski **form**, explicit coercion, Minsky | **strong** |
+| **(b)** canonicity | a property you hope for | Lindenbaum–Tarski **guarantee** | **absent** — row 9.1 open |
+| **(c)** agreement of two equivalences | a theorem you prove or refute | Hennessy–Milner | **conditional** — §13 |
+
+### 16.1 (a) The gate fires on the *witness*
+
+`QuotientTower.validate` raises `TowerViolation` on a non-refining tower and
+accepts a refining one. The check is on the *corpus* — the refinement law (1.1) —
+not on the output. You cannot build the object without the proof. The same shape
+appears three more times in the repo:
+
+- `exponents()` carries `S_shallow`/`D_shallow`, so a value attained *inside* the
+  horizon is not printed as a rate;
+- `agent_profiler.asymptotic` carries a convergence status
+  (`STABLE / TRENDING_UP / TRENDING_DOWN / UNRESOLVED / NONE`) and a bound
+  (`exact / lower bound / upper bound`) rather than a bare number;
+- `stopped_at` accompanies the exponents for the same reason.
+
+This is the shape shared by Lindenbaum–Tarski's construction, the explicit-coercion
+rule in Coq/Lean/Idris, and "make illegal states unrepresentable."
+
+### 16.2 (b) Canonicity is absent, and the dependence is quarantined
+
+The tower is an **input** (`pdi.py`: `tower: Optional[Any] = None`), not derived
+from a provability relation. So the Lindenbaum–Tarski *guarantee* — that the
+quotient is determined by the behaviour — is not available. Row 2.3 proves only
+**cofinal** invariance; row 9.1 leaves canonicity **open** and records it as
+**known to vary**.
+
+Same traces, same success marks, resolution index shifted by one prepended symbol.
+Both towers pass the gate.
+
+| `j` | `L_j` (A) | `log₂L_j/j` | `L_j` (B) | `log₂L_j/j` |
+|---|---|---|---|---|
+| 1 | 2 | 1.00000 | 1 | 0.00000 |
+| 2 | 4 | 1.00000 | 2 | 0.50000 |
+| ⋮ | ⋮ | ⋮ | ⋮ | ⋮ |
+| 8 | 256 | 1.00000 | 128 | 0.87500 |
+| 9 | | | 256 | 0.88889 |
+
+Finite-scale layer: `D_A = 1.000000` (`D_shallow=True`), `D_B = 0.888889`
+(`D_shallow=False`). **Presentation-dependent: yes.**
+
+Asymptotic layer: `A = 1.000000 STABLE exact`, `B = 0.888889 TRENDING_UP
+lower bound`. The true limsup is `1` for both — dropping B's first level recovers
+A — so B's bound is *correct* and A's estimate is *correct*.
+
+**This is row 3.1 firing on a presentation shift.** The finite-window sup is not
+the limsup; the asymptotic layer with its convergence status is the repo's
+response to that. The cofinal-invariant object survives; the finite-scale number
+does not, and is labelled.
+
+> PDI does not **eliminate** presentation-dependence. It **quarantines** it. The
+> principle instantiated here is not *"the quantity is invariant."* It is
+> **"you may not assert an invariance you do not have — the representation must
+> carry the status."** That is the explicit-coercion rule: the claim is not
+> forbidden, it must come with its witness.
+
+### 16.3 (c) Agreement is conditional
+
+Hennessy–Milner is an *agreement theorem* between two independently defined
+equivalences — bisimilarity (structural) and modal indistinguishability
+(observational). PDI's one instance of this shape is §13: `Ω = 0` exactly when the
+refinement axis is `T`-invariant, and `Ω ≠ 0` on the inclusion axis. So PDI has
+one instance and one counterexample, which is what a theorem of this shape
+licenses.
+
+### 16.4 The honest form of the claim
+
+PDI **enforces (a) everywhere it can** — `TowerViolation` on the refinement law, a
+convergence status on every asymptotic number, `S_shallow`/`D_shallow` so a
+non-rate is never printed as a rate.
+
+PDI **does not have (b)**, and says so in row 9.1 instead of asserting it. **That
+row is the principle applied to the ledger itself** — the deepest instantiation in
+the repo is not an object that satisfies the principle but a ledger entry that
+records its absence.
+
+PDI has **one instance of (c)**, and one counterexample.

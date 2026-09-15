@@ -676,6 +676,84 @@ python3 test_ingest.py            # original four formats
 python3 test_ingest_more.py       # otel / autogen / crewai, incl. edge preservation
 ```
 
+## One principle, or three? (v0.16.0)
+
+> *Lindenbaum–Tarski, Hennessy–Milner, explicit coercion, "no experiment without
+> protocol", and "make illegal states unrepresentable" are one principle, and PDI
+> instantiates all of them.*
+
+Tested rather than agreed with (`invariance_first.py`). **They are three**, with
+different logical shapes, and PDI's standing differs on each:
+
+| | shape | sources | PDI |
+|---|---|---|---|
+| **(a)** witness-gated construction | axiom you enforce | LT **form**, explicit coercion, Minsky | **strong** |
+| **(b)** canonicity | property you hope for | LT **guarantee** | **absent** — row 9.1 open |
+| **(c)** agreement of two equivalences | theorem you prove or refute | Hennessy–Milner | **conditional** — §13 |
+
+### (a) The gate fires on the witness, not the result
+
+`TowerViolation` on the refinement law. `S_shallow`/`D_shallow` so a value attained
+*inside* the horizon isn't printed as a rate. A convergence status on every
+asymptotic number:
+
+```
+STABLE / TRENDING_UP / TRENDING_DOWN / UNRESOLVED / NONE
+  + bound: exact / lower bound / upper bound
+```
+
+### (b) Canonicity is absent — and the dependence is *quarantined*
+
+The tower is an **input** (`tower=None`), not derived. So the LT guarantee isn't
+available: row 2.3 proves only **cofinal** invariance, row 9.1 leaves **canonicity
+open, known to vary**.
+
+Same traces, same marks, index shifted by one prepended symbol. Both pass the gate.
+
+```
+     j   L_j (A)  log2L/j     L_j (B)  log2L/j
+     1         2  1.00000           1  0.00000
+     8       256  1.00000         128  0.87500
+     9                             256  0.88889
+
+  finite-scale :  A D=1.000000 D_shallow=True
+                  B D=0.888889 D_shallow=False     <- presentation-dependent
+
+  asymptotic   :  A  1.000000  STABLE       exact
+                  B  0.888889  TRENDING_UP  lower bound
+```
+
+The true limsup is **1 for both** — dropping B's first level recovers A. So B's
+lower bound is *correct*, A's exact value is *correct*, and the asymptotic layer
+never claims a number it can't support. This is row 3.1 (*the finite-window sup is
+not the limsup*) firing on a presentation shift.
+
+> PDI does not **eliminate** presentation-dependence. It **quarantines** it.
+>
+> The principle here is not *"the quantity is invariant."* It is **"you may not
+> assert an invariance you do not have — the representation must carry the
+> status."**
+
+That's the explicit-coercion rule: the claim isn't forbidden, it must come with
+its witness.
+
+### (c) Agreement is conditional
+
+`Ω = 0` exactly when the refinement axis is `T`-invariant (v0.12.0). One instance,
+one counterexample — which is what a theorem of this shape licenses.
+
+### The honest form
+
+**PDI enforces (a) everywhere it can. It does not have (b), and says so in row 9.1
+rather than asserting it.** That row is the principle applied to the ledger itself:
+the deepest instantiation in the repo isn't an object that satisfies the principle
+— it's a ledger entry that records its absence.
+
+```bash
+python3 invariance_first.py        # gate, reindexing, and what the layers do
+python3 test_invariance_first.py   # 18 checks
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
