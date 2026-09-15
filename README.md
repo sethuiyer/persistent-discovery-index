@@ -149,14 +149,16 @@ records — and reconstructs runs. A *run* is one user turn: the ordered tool ca
 between one user message and the next, with the terminal `stopReason` of the last
 assistant message as the outcome.
 
-Nothing here is synthetic:
+Nothing here is synthetic. The adapter was developed against a private corpus of
+the author's own agent sessions; only the **aggregate shape** is reproduced, with
+no transcripts, prompts, commands, paths or model identifiers published:
 
 ```
-real traces from ~/.pi/agent/sessions
-  turns     : 1456
-  tool calls: 14422   errors: 830 (5.8%)
-  terminal success (stopReason=='stop'): 1204/1456 (82.7%)
-  models    : 10
+private corpus (aggregate shape only)
+  turns     : >1400
+  tool calls: >14000   errors: ~6%
+  terminal success (stopReason=='stop'): ~80%
+  models    : >5
 ```
 
 The tower is explicit and structurally nested, so the refinement law holds by
@@ -172,19 +174,20 @@ Q6  + full normalised trace
 ```
 
 ```bash
-python3 diagnose_agents.py navokoj          # per-model, one project
-python3 diagnose_agents.py --all            # every project
-python3 diagnose_agents.py --all --matched  # only prompts >=2 models actually ran
+python3 diagnose_agents.py <project>          # per-model, one project
+python3 diagnose_agents.py --all              # every project
+python3 diagnose_agents.py --all --matched    # only prompts >=2 models actually ran
 ```
 
-On the `navokoj` project, four models ran enough turns to profile:
+On a single project where four agents ran enough turns to profile — identifiers
+withheld:
 
 ```
 agent                                              D         S     Delta    waste
-MiniMax-M3                                  2.863960  3.142701  0.278741     8.9%
-deepseek-flash                              2.377444  2.543731  0.166288     6.5%
-z-ai/glm-5.3                                1.850220  2.160964  0.310744    14.4%
-huihui-ai/Huihui-Qwen3.8-27B-abliterated    1.953445  2.084963  0.131517     6.3%
+model A                                     2.863960  3.142701  0.278741     8.9%
+model B                                     2.377444  2.543731  0.166288     6.5%
+model C                                     1.850220  2.160964  0.310744    14.4%
+model D                                     1.953445  2.084963  0.131517     6.3%
 
 persistent structure differs across agents: D in [1.850220, 2.863960]
 -> agents did not all find the same structure; compare with care
@@ -192,7 +195,7 @@ persistent structure differs across agents: D in [1.850220, 2.863960]
 
 ### What this pass actually established
 
-**The adapter works and the tool diagnoses real agents.** 14,422 real tool calls
+**The adapter works and the tool diagnoses real agents.** >14,000 real tool calls
 reconstructed, the refinement law verified over the whole corpus, the yield and
 inflation tables produced from live data.
 
@@ -329,7 +332,7 @@ resolution does it become meaningfully novel, and does that novelty persist?"*
   tower so earlier results stay reproducible.
 - **Real trace adapter** (`adapters.py`): reads pi session JSONL transcripts,
   reconstructs turns with tool calls paired to results and errors attributed,
-  and supplies the six-level tool tower. Verified on 14,422 real tool calls.
+  and supplies the six-level tool tower. Verified against >14,000 real tool calls.
 - `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation
   (`mark_live`) and an authoritative batch classifier (`recompute_statuses`).
   Two live rules: horizon-reaching, or explicit (`insert(..., live=True)`).

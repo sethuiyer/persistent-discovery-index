@@ -47,7 +47,8 @@ def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     all_projects = "--all" in argv
     matched = "--matched" in argv
-    project = args[0] if args else "navokoj"
+    # Project name is not printed: it identifies a private workspace.
+    project = args[0] if args else None          # None => use the largest project
 
     turns = load_pi_runs()
     if not turns:
@@ -60,11 +61,14 @@ def main(argv):
     print(summarize(turns))
 
     if not all_projects:
+        if project is None:
+            project = Counter(t.project for t in turns).most_common(1)[0][0]
         turns = [t for t in turns if t.project == project]
         if not turns:
-            print(f"\n  no turns in project {project!r}")
+            print("\n  no turns in that project")
             return 1
-        print(f"\n  filtered to project {project!r}: {len(turns)} turns")
+        print(f"\n  filtered to a single project: {len(turns)} turns "
+              f"[project name withheld]")
 
     if matched:
         # keep only opening prompts that at least two models actually ran:
