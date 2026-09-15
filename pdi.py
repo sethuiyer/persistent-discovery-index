@@ -258,22 +258,37 @@ class PDI:
         return dict(self.n), dict(self.L)
 
     def exponents(self) -> dict:
-        """D (persistent), S (exploration), Delta (discovery overhead)."""
+        """D, S, Delta -- and the level at which each sup is attained.
+
+        IMPORTANT. On finite data these are *sups over the observed resolution
+        window*, not asymptotic rates. The two coincide under geometric growth
+        (n_j ~ b^j, where the sup sits at the finest level). They diverge under
+        sub-geometric growth: for n_j = 1 + w(j-1) the ratio log n_j / j decays
+        to 0, yet a finite window reports a positive number at a shallow level.
+        `S_at` / `D_at` expose the attaining level, so a shallow attainment is
+        visible as a finite-window artefact rather than read as a rate.
+        `toys.py` demonstrates this on closed-form examples.
+        """
         if not self._finalised:
             self.recompute_statuses()
         H = self.max_level
 
-        def sup(counts: dict[int, int]) -> float:
-            vals = []
+        def sup(counts: dict[int, int]) -> tuple[float, int]:
+            best, at = 0.0, 0
             for j in range(1, H + 1):
                 c = counts.get(j, 0)
                 if c > 0:
-                    vals.append(math.log(c) / (-math.log(self.eps(j))))
-            return max(vals) if vals else 0.0
+                    v = math.log(c) / (-math.log(self.eps(j)))
+                    if v > best:
+                        best, at = v, j
+            return best, at
 
-        S = sup(self.n)
-        D = sup(self.L)
-        return {"D": D, "S": S, "delta": S - D, "horizon": H}
+        S, S_at = sup(self.n)
+        D, D_at = sup(self.L)
+        return {"D": D, "S": S, "delta": S - D, "horizon": H,
+                "S_at": S_at, "D_at": D_at,
+                "S_shallow": 0 < S_at < H,   # not a rate if attained inside
+                "D_shallow": 0 < D_at < H}
 
     def live_non_decreasing(self) -> bool:
         if not self._finalised:

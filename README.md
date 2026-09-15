@@ -259,6 +259,62 @@ python3 demo_agents.py     # the benchmark table above
 python3 test_profiler.py   # 15 self-checks on the profiler
 ```
 
+## Toy validation suite
+
+`toys.py` checks the instrument against **closed forms**. Each toy has an
+analytically known `n_j` and `L_j`, hence known `D`, `S`, `Delta`; the suite
+verifies the implementation reproduces them exactly.
+
+| toy | construction | `n_j` | `L_j` | `D` | `S` | `Delta` |
+|---|---|---|---|---|---|---|
+| T1 | full tree, every leaf succeeds | `2^j` | `2^j` | 1 | 1 | 0 |
+| T2 | exactly one leaf succeeds | `2^j` | `1` | 0 | 1 | 1 |
+| T3 | half the leaves succeed | `2^j` | `2^{j-1}` | `(d-1)/d` | 1 | `1/d` |
+| T4 | nothing succeeds | `2^j` | `0` | 0 | 1 | 1 |
+| T5 | one spine + `w`-wide dead-end fan | `1+w(j-1)` | `1` | 0 | `S` | `S` |
+| T6 | genuine behavioural tower (coarse/fine) | `2,2,6` | `1,1,3` | `log2(3)/3` | 1 | `1-log2(3)/3` |
+
+```
+  toy                                   law         D     D_exp         S     S_exp        Delta     d_exp
+  T1 full tree, all leaves succeed       ok  1.000000  1.000000  1.000000  1.000000     0.000000  0.000000
+  T2 one successful leaf                 ok  0.000000  0.000000  1.000000  1.000000     1.000000  1.000000
+  T3 half the leaves succeed             ok  0.833333  0.833333  1.000000  1.000000     0.166667  0.166667
+  T4 no successful leaf                  ok  0.000000  0.000000  1.000000  1.000000     1.000000  1.000000
+  T5 spine + 3-wide dead-end fan         ok  0.000000  0.000000  1.000000  1.000000     1.000000  1.000000
+  T6 behavioural tower (coarse/fine)     ok  0.528321  0.528321  1.000000  1.000000     0.471679  0.471679
+```
+
+Six constructions, thirty assertions, exact agreement, and the refinement law
+validated on every one. **The instrument computes the quantity it claims to
+compute.**
+
+### What the toys exposed: a finite-window sup, not a limsup
+
+The suite found a real limitation, and it is the one open question in concrete
+form. `exponents()` reports the **sup over the observed resolution window**. Under
+geometric growth the sup sits at the finest level and *is* the rate. Under
+sub-geometric growth it does not. T5's sweep, varying the fan width `w`:
+
+```
+      w    n_d         S       D     Delta  level attaining S
+      3     16  0.693147   0.000  0.693147  j=2
+      3    118  0.693147   0.000  0.693147  j=2
+    100    501  2.307560   0.000  2.307560  j=2
+   1000   5001  3.454377   0.000  3.454377  j=2
+   1000  39001  3.454377   0.000  3.454377  j=2
+```
+
+For `n_j = 1 + w(j-1)` the ratio `log n_j / j` **decays to 0** — the asymptotic
+rate is zero — yet the window reports `3.45` for `w = 1000`, attained at level 2,
+and the value does not move when the depth goes from 6 to 40. That is a finite
+window artefact, not a rate.
+
+This is exactly the open question stated plainly: the summary statistics are
+settled as mathematics and unsettled as measurements. So `exponents()` now returns
+`S_at`, `D_at` and `S_shallow` / `D_shallow`, and `format_profile()` prints
+`SHALLOW -- not a rate` whenever the sup is attained strictly inside the window.
+A number that is not a rate should not be printed as if it were.
+
 ## Evaluation requirement: horizons must span the transient-growth subsequence
 
 The non-invariance of `Delta` is real but can be **invisible at short horizons** —
@@ -345,10 +401,12 @@ resolution does it become meaningfully novel, and does that novelty persist?"*
   cross-strategy benchmark.
 - **`diagnose_agents.py`**: end-to-end diagnosis of real sessions, grouped by model,
   with `--matched` to control for the task.
-- Invariant checks (`live_non_decreasing`) and **65 passing self-checks** across
-  `test_pdi.py`, `test_profiler.py`, `test_tower.py` and `test_adapter.py`,
-  including cofinal invariance of `D`, non-invariance of `Delta`, `n_j = |H / ~_j|`,
-  rejection of invalid towers, and the refinement law over the full real corpus.
+- Invariant checks (`live_non_decreasing`), a **toy suite with closed-form
+expectations** (`toys.py`), and **five self-checking suites** (`test_pdi.py`,
+`test_profiler.py`, `test_tower.py`, `test_adapter.py`, `toys.py`) covering cofinal
+invariance of `D`, non-invariance of `Delta`, `n_j = |H / ~_j|`, rejection of invalid
+towers, the refinement law over the full real corpus, and exact agreement with
+closed-form `D`/`S`/`Delta` on six toy problems.
 
 The substrate is a labelled trie, with the behavioural quotient applied by the label
 map. The behavioural abstraction — resolution as a first-class coordinate, and the

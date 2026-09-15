@@ -79,12 +79,19 @@ class AgentProfiler:
         n, L = self.pdi.ledgers()
         H = self.pdi.max_level
 
-        def sup(counts: dict[int, int]) -> float:
-            vals = [math.log(counts[j]) / (-math.log(self.pdi.eps(j)))
-                    for j in range(1, H + 1) if counts.get(j, 0) > 0]
-            return max(vals) if vals else 0.0
+        # NB: sup over the OBSERVED window, not a limsup. See PDI.exponents().
+        def sup(counts: dict[int, int]) -> tuple[float, int]:
+            best, at = 0.0, 0
+            for j in range(1, H + 1):
+                c = counts.get(j, 0)
+                if c > 0:
+                    v = math.log(c) / (-math.log(self.pdi.eps(j)))
+                    if v > best:
+                        best, at = v, j
+            return best, at
 
-        S, D = sup(n), sup(L)
+        S, S_at = sup(n)
+        D, D_at = sup(L)
 
         rows = []
         for j in range(1, H + 1):
@@ -100,6 +107,8 @@ class AgentProfiler:
         return {
             "rows": rows,
             "D": D, "S": S, "delta": S - D,
+            "D_at": D_at, "S_at": S_at,
+            "D_shallow": 0 < D_at < H, "S_shallow": 0 < S_at < H,
             "runs": self.runs, "successes": self.successes,
             "horizon": H,
         }
@@ -181,8 +190,12 @@ def format_profile(name: str, prof: dict, threshold: float = 0.10) -> str:
     for r in prof["rows"]:
         out.append(f"    {r['level']:>5} {r['eps']:>9.5f} {r['n']:>9} {r['L']:>8} "
                    f"{r['yield']*100:>7.2f}%")
-    out.append(f"    D (persistent)  = {prof['D']:.6f}")
-    out.append(f"    S (exploration) = {prof['S']:.6f}")
+    out.append(f"    D (persistent)  = {prof['D']:.6f}" + (
+        f"   [sup at level {prof.get('D_at', 0)}/{prof['horizon']}"
+        f"{' SHALLOW -- not a rate' if prof.get('D_shallow') else ''}]"))
+    out.append(f"    S (exploration) = {prof['S']:.6f}" + (
+        f"   [sup at level {prof.get('S_at', 0)}/{prof['horizon']}"
+        f"{' SHALLOW -- not a rate' if prof.get('S_shallow') else ''}]"))
     out.append(f"    Delta           = {prof['delta']:.6f}")
     return "\n".join(out)
 
