@@ -141,6 +141,78 @@ python3 demo_tower.py      # the behavioural tower, laws and tables above
 python3 test_tower.py      # 11 self-checks incl. rejection of invalid towers
 ```
 
+## Real agent traces (v0.4.0)
+
+`adapters.py` reads the **actual session transcripts** written by the pi agent
+harness — JSONL event streams with `toolCall` blocks and matching `toolResult`
+records — and reconstructs runs. A *run* is one user turn: the ordered tool calls
+between one user message and the next, with the terminal `stopReason` of the last
+assistant message as the outcome.
+
+Nothing here is synthetic:
+
+```
+real traces from ~/.pi/agent/sessions
+  turns     : 1456
+  tool calls: 14422   errors: 830 (5.8%)
+  terminal success (stopReason=='stop'): 1204/1456 (82.7%)
+  models    : 10
+```
+
+The tower is explicit and structurally nested, so the refinement law holds by
+construction rather than by luck:
+
+```
+Q1  terminal outcome
+Q2  + tool-family multiset
+Q3  + tool-family sequence
+Q4  + per-step error classes
+Q5  + normalised argument classes
+Q6  + full normalised trace
+```
+
+```bash
+python3 diagnose_agents.py navokoj          # per-model, one project
+python3 diagnose_agents.py --all            # every project
+python3 diagnose_agents.py --all --matched  # only prompts >=2 models actually ran
+```
+
+On the `navokoj` project, four models ran enough turns to profile:
+
+```
+agent                                              D         S     Delta    waste
+MiniMax-M3                                  2.863960  3.142701  0.278741     8.9%
+deepseek-flash                              2.377444  2.543731  0.166288     6.5%
+z-ai/glm-5.3                                1.850220  2.160964  0.310744    14.4%
+huihui-ai/Huihui-Qwen3.8-27B-abliterated    1.953445  2.084963  0.131517     6.3%
+
+persistent structure differs across agents: D in [1.850220, 2.863960]
+-> agents did not all find the same structure; compare with care
+```
+
+### What this pass actually established
+
+**The adapter works and the tool diagnoses real agents.** 14,422 real tool calls
+reconstructed, the refinement law verified over the whole corpus, the yield and
+inflation tables produced from live data.
+
+**But personal session logs are not a controlled corpus, and the tool says so.**
+`D` differs across models because they were doing different work, so the
+per-model comparison is *descriptive*, not experimental. The profiler prints that
+warning itself rather than hiding it:
+
+> `agents did not all find the same structure; compare with care`
+
+`--matched` restricts to opening prompts that at least two models actually ran,
+which controls for the task. On this corpus that leaves **27 of 1104 turns across
+7 shared prompts** — enough to demonstrate the mechanism, far too little to draw
+conclusions. That is the honest state of the evidence, and it defines the
+prerequisite for the next experiment:
+
+> **A task corpus with repeated tasks per agent.** The profiler is ready; the
+> corpus is what is missing. Session logs accumulate whatever work happened to
+> occur, which is exactly the confound the `--matched` flag exists to remove.
+
 ## Use case: agent reasoning profiler
 
 `agent_profiler.py` turns the distinction into a measurement. Give it agent runs —
@@ -255,6 +327,9 @@ resolution does it become meaningfully novel, and does that novelty persist?"*
   `validate()` / `validate_pairs()` enforcing the refinement law, plus
   `prefix_tower()` which expresses the v0.2.0 path-length indexing as a degenerate
   tower so earlier results stay reproducible.
+- **Real trace adapter** (`adapters.py`): reads pi session JSONL transcripts,
+  reconstructs turns with tool calls paired to results and errors attributed,
+  and supplies the six-level tool tower. Verified on 14,422 real tool calls.
 - `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation
   (`mark_live`) and an authoritative batch classifier (`recompute_statuses`).
   Two live rules: horizon-reaching, or explicit (`insert(..., live=True)`).
@@ -262,13 +337,15 @@ resolution does it become meaningfully novel, and does that novelty persist?"*
   yield ratio `L_j / n_j`.
 - Node-level caching with hierarchical reuse (`lookup_or_refine`).
 - **Agent reasoning profiler** (`agent_profiler.py`): consumes agent runs, reports the
-  per-resolution yield table, `D`, `S`, `Delta`, the STOP level, and the
-  `inflation_table()` distinction-onset diagnostic; `compare()` emits the
+  per-resolution yield table, `D`, `S`, `Delta`, the STOP level, the
+  `inflation_table()` distinction-onset diagnostic, and `compare()` for the
   cross-strategy benchmark.
-- Invariant checks (`live_non_decreasing`) and **41 passing self-checks** across
-  `test_pdi.py`, `test_profiler.py` and `test_tower.py`, including cofinal invariance
-  of `D`, non-invariance of `Delta`, the two-agent result, the five-strategy spread,
-  `n_j = |H / ~_j|`, and rejection of invalid towers.
+- **`diagnose_agents.py`**: end-to-end diagnosis of real sessions, grouped by model,
+  with `--matched` to control for the task.
+- Invariant checks (`live_non_decreasing`) and **65 passing self-checks** across
+  `test_pdi.py`, `test_profiler.py`, `test_tower.py` and `test_adapter.py`,
+  including cofinal invariance of `D`, non-invariance of `Delta`, `n_j = |H / ~_j|`,
+  rejection of invalid towers, and the refinement law over the full real corpus.
 
 The substrate is a labelled trie, with the behavioural quotient applied by the label
 map. The behavioural abstraction — resolution as a first-class coordinate, and the
@@ -277,14 +354,13 @@ implementation choice.
 
 ## Roadmap
 
+- **A controlled task corpus** — the blocker for real conclusions. Repeated tasks per
+  agent, so `--matched` has something to match on.
 - **Persistence-based garbage collection** — eviction driven by the `L`/`n` split
   (retain, compress, summarise, prune) instead of recency alone.
-- **Learned towers** — derive the behavioural levels from data (clustering the
-  observation/outcome stream) rather than declaring them, while still enforcing the
-  refinement law.
-- **Real agent logs** — the profiler consumes `(path, succeeded)` runs, which is the
-  shape ReAct / beam / MCTS traces already take; wiring a concrete adapter is a
-  small step, evaluating retrieval quality is a larger one.
+- **Learned towers** — derive the behavioural levels from data while still enforcing
+  the refinement law. Deliberately sequenced after the controlled corpus, so that a
+  result can be attributed to the tower rather than to the learning algorithm.
 
 ## References
 
