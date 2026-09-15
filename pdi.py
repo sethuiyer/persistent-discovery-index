@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """
-pdi.py — Persistent Discovery Index (prototype)
+pdi.py — Persistent Discovery Index (v0.1.0)
 
-A multiresolution quotient tree over histories, with two deliberately
-separate information channels:
+A multiresolution data structure that separates what a system discovers
+persistently from the transient exploration structure generated while
+discovering it. Two deliberately separate information channels:
 
     n_j = |X_j|      "what was explored"          (exploration ledger)
     L_j = |live(j)|  "what survived to the horizon" (persistent ledger)
 
 Motivation is a theorem, not a metaphor:
 
-    D = limsup_j log L_j / (-log eps_j)   is cofinal-invariant   (intrinsic)
-    S = limsup_j log n_j / (-log eps_j)   is NOT                 (presentation)
-    Delta = S - D                         is discovery overhead  (presentation)
+    D = limsup_j log L_j / (-log eps_j)   intrinsic, cofinal-invariant  (proved)
+    S = limsup_j log n_j / (-log eps_j)   presentation-dependent
+    Delta = S - D  >= 0                   presentation-dependent (refuted as invariant)
 
 See concepts/cofinal-invariance and concepts/regular-growth-identification.
 The full/transient distinction is classical elsewhere: coaccessible vs all
 states in automata, essential vs transient in sofic shifts, where entropy is
-a function of the essential part only (Lind-Marcus).
+a function of the essential part only (Lind-Marcus). PDI is the data structure
+that keeps both ledgers.
 
 Design rules this file obeys:
 

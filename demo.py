@@ -5,12 +5,12 @@ demo.py — the operational content of the theorem.
 Agent A and Agent B discover the SAME persistent structure (identical live set)
 but B spends far more transient work getting there. The theorem says:
 
-    D is the same for both        (intrinsic)
+    D is the same for both        (intrinsic, cofinal-invariant)
     S differs                     (presentation)
     Delta = S - D differs         (presentation)
 
-That is exactly "same geometry, different computational stupidity" -- and the
-theorem guarantees it is well-defined.
+Same geometry. Different discovery cost. And the theorem guarantees the
+comparison is well-defined: D is held fixed while Delta varies.
 """
 from __future__ import annotations
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     exB = report("Agent B  (same boundary, heavy transient branching)", B)
 
     print("\n" + "=" * 74)
-    print("theorem check")
+    print("Same geometry. Different discovery cost.")
     print("=" * 74)
     same_L = all(A.L.get(j, 0) == B.L.get(j, 0) for j in range(A.max_level + 1))
     print(f"  identical persistent ledgers L_j : {same_L}")
