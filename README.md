@@ -1017,7 +1017,7 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - Node-level caching with hierarchical reuse.
 - **Two output layers**: finite-scale diagnostics (exact) and asymptotic
   diagnostics (status-bearing).
-- **Sixteen self-checking suites**, including closed-form toy validation, the
+- **Nineteen self-checking suites**, including closed-form toy validation, the
   refinement law verified over a full real corpus, and edge-preservation checks
   on every ingest format.
 

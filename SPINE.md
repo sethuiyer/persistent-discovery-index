@@ -828,7 +828,7 @@ opened.
 
 **Result.** In this family, **no transport loop is injective**, and the obstruction
 is a *single step*. Built in `o2_theorem.py` and `collision_mechanism.py`; suites
-`test_o2_theorem.py`, `test_collision_mechanism` (inline). This closes the negative
+`test_o2_theorem.py` and `test_collision_mechanism.py`. This closes the negative
 branch of O2, and retires the last empirical negative in the ledger (§8.1).
 
 ### 18.1 Setup
