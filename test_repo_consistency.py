@@ -27,7 +27,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Every doc whose claims about the repository must match the repository.
-DOCS = ("SPINE.md", "README.md", "PRODUCT_README.md")
+DOCS = ("SPINE.md", "README.md", "PRODUCT_README.md", "INTRODUCTION.md")
 FAILS: list[str] = []
 
 
