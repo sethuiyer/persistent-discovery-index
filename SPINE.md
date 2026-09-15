@@ -29,6 +29,10 @@ stated status.**
 | 9.1 | The stable fibre is loop-independent (canonical) | **open** — known to vary |
 | 9.2 | The persistent/transient pattern recurs at two levels | **conjecture** (§10) |
 | 12 | Provenance: every layer has a verified literature underneath | **cited** (§12) |
+| 13.1 | The survival square commutes on the quotient axis (T-invariant refinement) | **proved + verified** (§13.1) |
+| 13.2 | It fails on the inclusion axis, iff some periodic point of `X` lies in the filter but leaves it | **proved + verified as an iff** (§13.2) |
+| 13.3 | T-invariance of the refinement axis is exactly what forces commutation | **proved** (§13.2) |
+| 13.4 | `Ω` has no content as a PDI quantity (identically zero on its own axis) | **negative** (§13.4) |
 
 ---
 
@@ -392,3 +396,87 @@ algorithm but the **two ledgers** (§1) and the observation that, once the fibre
 constructed, the transport decomposes into an **invertible recurrent core** and an
 irreversible remainder (§6) — which is where the group structure and the characters
 of §7 live.
+
+---
+
+## 13. The commuting square — answered
+
+Two ways to delete what does not survive. `S_res` deletes what does not survive
+**refinement**; `S_dyn` deletes what does not survive **iteration**.
+
+$$\mathcal S_{\rm res}(X) \;=\; \varprojlim_j X_j, \qquad
+\mathcal S_{\rm dyn}(X) \;=\; \operatorname{core}(X,T) \;=\; \{x : \exists n\ge 1,\; T^n(x)=x\}$$
+
+Both routes to the bottom-right of the square are computable:
+
+$$A = \mathcal S_{\rm dyn}\mathcal S_{\rm res}(X), \qquad
+B = \mathcal S_{\rm res}\mathcal S_{\rm dyn}(X), \qquad
+\Omega = \operatorname{defect}(A,B).$$
+
+The answer depends **entirely on which kind of refinement axis is used**, and the
+two axes are genuinely different. Built and searched exhaustively in
+`survival_commutation.py`; self-checking in `test_survival_commutation.py`.
+
+### 13.1 The quotient axis — `Ω = 0`, degenerately
+
+Levels are quotients of a common finite set, with surjective and `T`-invariant
+bonding maps. This is PDI's actual structure (§1). Both routes collapse, for two
+independent reasons:
+
+- Both operators act on subsets of one set, so they commute by associativity of
+  intersection — a square whose two arms are both "intersect with a fixed set"
+  cannot fail.
+- A finite tower of quotients of one finite set has **inverse limit = its finest
+  level**. So `S_res` discards nothing and both routes reduce to the same core.
+
+The one non-trivial step is a fibre argument: if a block is periodic at a coarse
+level, then `T^k` maps its fibre into itself, and a self-map of a finite set has a
+periodic point — hence the coarse core is the image of the fine core.
+
+Computed over **1,204,224** `(T, tower)` systems at `n ≤ 4`: **zero** mismatches,
+with `T` descending through the bonding maps in every single one.
+
+### 13.2 The inclusion axis — `Ω ≠ 0`, with an exact characterisation
+
+Here the filter `F` is an inclusion (a filtration, TDA-style) and is **not**
+required to be `T`-invariant. Then
+
+$$\boxed{\;\Omega \neq 0 \quad\Longleftrightarrow\quad
+\exists\, x\in F \text{ periodic with } T^n(x)\notin F \text{ for some } n\;}$$
+
+Verified as an **iff** over all 3,754 `(T,F)` pairs at `n ≤ 4`: 1,274 failures
+(33.9 %), the iff holding in 3,754/3,754 cases, and **zero** failures among the
+1,139 pairs where `F` happens to be `T`-invariant.
+
+### 13.3 Minimal witness
+
+`n = 2`. Let `X = {0,1}`, `T` be the swap (a 2-cycle), `F = {0}`.
+
+$$A = \operatorname{core}(T,F) = \varnothing, \qquad
+B = \operatorname{core}(T,X)\cap F = \{0\}, \qquad A \neq B.$$
+
+Refine first and the cycle dies; iterate first and it survives the clip. Order of
+observation genuinely matters — but only here.
+
+### 13.4 What this settles, and what it costs
+
+**T-invariance of the refinement axis is exactly the hypothesis that forces
+commutation.** The quotient axis satisfies it by construction; a TDA filtration
+does not.
+
+- **Negative (about `Ω` as a PDI quantity).** On PDI's own axis `Ω` is
+  *identically zero*. Building the square as a search for `Ω ≠ 0` over the
+  quotient tower could only ever have returned nothing, and that is now a theorem
+  rather than a guess. `Ω` is **not** a new PDI invariant.
+- **Positive (about where `Ω` lives).** `Ω` is a genuine non-zero invariant of the
+  *hybrid* setting — persistence of a Conley index across a filtration. It belongs
+  to that literature, not to PDI's tower.
+
+What survives on PDI's axis is therefore not a defect to measure but a
+**construction**: the inverse limit of the recurrent cores
+
+$$R_\infty = \varprojlim_j R_j$$
+
+together with descent of the dynamics, `π_{j+1,j} T_{j+1} = T_j π_{j+1,j}`, which
+held in every case tested. §13.1 confirms that the square is not the obstruction to
+building it.

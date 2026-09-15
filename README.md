@@ -446,6 +446,65 @@ python3 prime_holonomy.py         # the laboratory, and the bridge to it
 python3 test_prime_holonomy.py    # 39 checks: algebra correct, core earned, obstruction survives
 ```
 
+## The commuting square — and why it is the wrong question *for this axis* (v0.12.0)
+
+Two operators delete what does not survive. `S_res` deletes what fails
+**refinement**; `S_dyn` deletes what fails **iteration**. Their square has two
+routes and a defect:
+
+$$A = \mathcal S_{\rm dyn}\mathcal S_{\rm res}(X), \qquad
+B = \mathcal S_{\rm res}\mathcal S_{\rm dyn}(X), \qquad
+\Omega = \operatorname{defect}(A,B).$$
+
+The answer depends **entirely on which kind of refinement axis is used**, and the
+two axes are not the same thing:
+
+| axis | structure | `Ω` |
+|---|---|---|
+| **quotient** (PDI's own, §1) | surjective, `T`-invariant bonding maps | **0** — provably |
+| **inclusion** (TDA filtration) | injective, *not* required to be `T`-invariant | **≠ 0** |
+
+### `Ω = 0` on the quotient axis, degenerately
+
+Both arms are "intersect with a fixed set", so they commute by associativity of
+intersection. And a finite tower of quotients of one finite set has **inverse limit
+= its finest level**, so `S_res` discards nothing. Checked over **1,204,224**
+`(T, tower)` systems at `n ≤ 4`: zero mismatches, `T` descending through the
+bonding maps every time.
+
+### `Ω ≠ 0` on the inclusion axis, exactly characterised
+
+$$\Omega \neq 0 \quad\Longleftrightarrow\quad
+\exists\, x\in F \text{ periodic with } T^n(x)\notin F \text{ for some } n$$
+
+Held as an **iff** over all 3,754 `(T,F)` pairs at `n ≤ 4` (1,274 failures, 33.9 %)
+— and there were **zero** failures among the 1,139 pairs where `F` happened to be
+`T`-invariant. **`T`-invariance is exactly the hypothesis that forces commutation.**
+
+Smallest witness, `n = 2`: `X = {0,1}`, `T` the swap, `F = {0}`.
+
+```
+  A = core(T, F)      = {}      refine first  -> cycle dies
+  B = core(T, X) & F  = {0}     iterate first -> survives the clip
+```
+
+### What this settles
+
+- **`Ω` is not a PDI quantity.** On PDI's own axis it is *identically zero*.
+  Searching for `Ω ≠ 0` over the quotient tower could only ever have returned
+  nothing — now a theorem, not a guess.
+- **`Ω` is real, but it belongs to the hybrid setting** — persistence of a Conley
+  index across a filtration — not to PDI's tower.
+
+What survives on PDI's axis is not a defect to measure but a **construction**:
+`R_∞ = lim← R_j` together with descent of the dynamics through the bonding maps,
+which held in every case tested. The square is not the obstruction to building it.
+
+```bash
+python3 survival_commutation.py        # all four parts
+python3 test_survival_commutation.py   # 19 checks: commutes on one axis, fails on the other
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the
