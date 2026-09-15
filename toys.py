@@ -17,7 +17,7 @@ from __future__ import annotations
 import itertools
 import math
 
-from agent_profiler import AgentProfiler
+from agent_profiler import AgentProfiler, asymptotic, format_asymptotic
 from pdi import PDI
 from quotient_tower import QuotientTower, prefix_tower, TowerViolation
 
@@ -122,6 +122,16 @@ def toy_behavioural():
 
 TOYS = [toy_full, toy_one, toy_half, toy_none, toy_spine_fan, toy_behavioural]
 
+# expected (S_status, D_status) from the tail layer
+EXPECTED_STATUS = {
+    "T1 full tree, all leaves succeed": ("STABLE", "STABLE"),
+    "T2 one successful leaf":           ("STABLE", "STABLE"),
+    "T3 half the leaves succeed":       ("STABLE", "TRENDING_UP"),
+    "T4 no successful leaf":            ("STABLE", "NONE"),
+    "T5 spine + 3-wide dead-end fan":   ("TRENDING_DOWN", "STABLE"),
+    "T6 behavioural tower (coarse/fine)": ("UNRESOLVED", "TRENDING_UP"),
+}
+
 
 # --------------------------------------------------------------------------
 def run_toy(fn):
@@ -157,6 +167,12 @@ def run_toy(fn):
                       ("Delta", ok_d)):
         if not ok:
             FAILS.append(f"{name}: {label} mismatch")
+
+    a = asymptotic(p)
+    exp_st = EXPECTED_STATUS.get(name)
+    if exp_st and (a["S"]["status"], a["D"]["status"]) != exp_st:
+        FAILS.append(f"{name}: status {(a['S']['status'], a['D']['status'])} "
+                     f"!= {exp_st}")
     if law != "ok":
         FAILS.append(f"{name}: refinement law {law}")
 
@@ -165,6 +181,8 @@ def run_toy(fn):
         "n_ok": ok_n, "L_ok": ok_L, "S_ok": ok_S, "D_ok": ok_D, "d_ok": ok_d,
         "D": p["D"], "S": p["S"], "delta": p["delta"],
         "eD": exp_D, "eS": exp_S, "ed": exp_delta,
+        "Sst": a["S"]["status"], "Dst": a["D"]["status"],
+        "Stail": a["S"]["value"], "Dtail": a["D"]["value"],
     }
 
 
@@ -173,12 +191,13 @@ if __name__ == "__main__":
     print("toy validation suite — PDI output vs closed-form expectations")
     print("=" * 96)
     print(f"  {'toy':<36} {'law':>4} {'D':>9} {'D_exp':>9} {'S':>9} {'S_exp':>9} "
-          f"{'Delta':>9} {'d_exp':>9}  n_j L_j S D d")
+          f"{'Delta':>9} {'d_exp':>9}  checks   S_status       D_status")
     results = [run_toy(f) for f in TOYS]
     for r in results:
         flags = "".join("Y" if r[k] else "n" for k in ("n_ok", "L_ok", "S_ok", "D_ok", "d_ok"))
         print(f"  {r['name']:<36} {r['law']:>4} {r['D']:>9.6f} {r['eD']:>9.6f} "
-              f"{r['S']:>9.6f} {r['eS']:>9.6f} {r['delta']:>9.6f} {r['ed']:>9.6f}  {flags}")
+              f"{r['S']:>9.6f} {r['eS']:>9.6f} {r['delta']:>9.6f} {r['ed']:>9.6f}  {flags}"
+              f"   {r['Sst']:<14} {r['Dst']}")
 
     print()
     print("  closed forms verified:")
@@ -189,18 +208,22 @@ if __name__ == "__main__":
     print(f"    T5  D=0, Delta=S")
     print(f"    T6  D=log2(3)/3={math.log2(3)/3:.6f}, S=1")
     print()
-    print("  T5 sweep — does S behave like a summary?  (spine + w-wide fan, depth d)")
-    print(f"    {'w':>5} {'n_d':>6} {'S':>9} {'D':>7} {'Delta':>9}  level attaining S")
-    for w in (1, 3, 10, 100, 1000):
-        for d in (6, 40):
-            n = {j: 1 + w * (j - 1) for j in range(1, d + 1)}
-            L = {j: 1 for j in range(1, d + 1)}
-            best = max(range(1, d + 1), key=lambda j: math.log(n[j]) / j)
-            Sv = math.log(n[best]) / best
-            print(f"    {w:>5} {n[d]:>6} {Sv:>9.6f} {0.0:>7.3f} {Sv:>9.6f}  j={best}")
+    print("  T5 — does the TAIL estimate converge where the window sup cannot?")
+    print("       n_j = 1 + w(j-1), true asymptotic rate is 0")
+    print(f"    {'w':>6} {'d':>5} {'window sup':>11} {'tail est':>10} {'status':>14}")
+    for w in (3, 1000):
+        for d in (6, 12, 24, 48):
+            _, runs, tower, _, _ = toy_spine_fan(d=d, w=w)
+            prof = AgentProfiler(index=PDI(tower=tower))
+            for h, ok in runs:
+                prof.add_run(h, ok)
+            p = prof.profile()
+            a = asymptotic(p)
+            print(f"    {w:>6} {d:>5} {a['S']['window_sup']:>11.6f} "
+                  f"{a['S']['value']:>10.6f} {a['S']['status']:>14}")
     print()
-    print("  note: the maximum is attained at a SHALLOW level whose index does not")
-    print("  grow with d, so S tracks log2(w)/2 rather than any asymptotic rate.")
-    print()
+    print("  window sup is stuck (attained at a shallow shell, independent of d);")
+    print("  the tail estimate decays toward the true value 0 as the horizon grows.")
+
     print("ALL PASS" if not FAILS else f"{len(FAILS)} FAILED: {FAILS}")
     raise SystemExit(1 if FAILS else 0)

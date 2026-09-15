@@ -288,32 +288,68 @@ Six constructions, thirty assertions, exact agreement, and the refinement law
 validated on every one. **The instrument computes the quantity it claims to
 compute.**
 
-### What the toys exposed: a finite-window sup, not a limsup
+### The toys found a real defect — fixed in v0.4.1
 
-The suite found a real limitation, and it is the one open question in concrete
-form. `exponents()` reports the **sup over the observed resolution window**. Under
-geometric growth the sup sits at the finest level and *is* the rate. Under
-sub-geometric growth it does not. T5's sweep, varying the fan width `w`:
+`exponents()` was reporting the **sup over the observed resolution window**:
+
+$$
+\underbrace{\sup_{j\le H}\frac{\log n_j}{-\log\varepsilon_j}}_{\text{finite-window statistic}}
+\;\ne\;\underbrace{\limsup_{j\to\infty}\frac{\log n_j}{-\log\varepsilon_j}}_{\text{the actual } S}
+$$
+
+Under geometric growth the two coincide. Under sub-geometric growth they diverge,
+and T5 shows it: for `n_j = 1 + w(j-1)` the ratio decays to 0, so the true answer
+is `S = 0`, yet the window reported 4.98 — attained at level 2, **independent of
+depth**. That is not a noisy estimate of `S`; it is a different statistic.
+
+**The fix separates two layers rather than trying to make one estimator serve both.**
+
+**Finite-scale diagnostics** — exact on the observed corpus, no asymptotic claim:
+`yield = L_j/n_j`, `inflation = n_j/n_j^ref`, and the distinction onset `j*`.
+
+**Asymptotic diagnostics** — reported only with a convergence status. The finite
+analogue of `limsup` is the moving tail
+
+$$
+M_m \;=\; \sup_{j\ge m} s_j,
+\qquad s_j = \frac{\log n_j}{-\log\varepsilon_j},
+$$
+
+so the estimate is `M_{H-k+1}` — the max over the last `k` observed levels —
+together with the trend of that tail. No regression fitting; the trend *is* the
+information.
 
 ```
-      w    n_d         S       D     Delta  level attaining S
-      3     16  0.693147   0.000  0.693147  j=2
-      3    118  0.693147   0.000  0.693147  j=2
-    100    501  2.307560   0.000  2.307560  j=2
-   1000   5001  3.454377   0.000  3.454377  j=2
-   1000  39001  3.454377   0.000  3.454377  j=2
+    asymptotic layer  (tail estimate, not a window sup)
+      S: 0.342783  TRENDING_DOWN (upper bound)   window sup was 4.983613
+      D: 0.000000  STABLE        (exact)         window sup was 0.000000
 ```
 
-For `n_j = 1 + w(j-1)` the ratio `log n_j / j` **decays to 0** — the asymptotic
-rate is zero — yet the window reports `3.45` for `w = 1000`, attained at level 2,
-and the value does not move when the depth goes from 6 to 40. That is a finite
-window artefact, not a rate.
+| status | meaning |
+|---|---|
+| `STABLE` | the tail is flat; the value is the estimate |
+| `TRENDING_UP` | still rising; the value is a **lower bound** |
+| `TRENDING_DOWN` | still decaying; the value is an **upper bound** |
+| `UNRESOLVED` | not monotone at this horizon — asymptotics unavailable |
+| `NONE` | no persistent classes at all |
 
-This is exactly the open question stated plainly: the summary statistics are
-settled as mathematics and unsettled as measurements. So `exponents()` now returns
-`S_at`, `D_at` and `S_shallow` / `D_shallow`, and `format_profile()` prints
-`SHALLOW -- not a rate` whenever the sup is attained strictly inside the window.
-A number that is not a rate should not be printed as if it were.
+`UNRESOLVED` is a legitimate result on a short tower, not a failure. T6 (three
+behavioural levels) is `UNRESOLVED`; T3 is `TRENDING_UP`, so its `D = 0.833` is a
+lower bound for a limit of 1.
+
+**The tail converges where the window sup cannot:**
+
+```
+       w     d  window sup   tail est         status
+    1000     6    4.983613   3.655502  TRENDING_DOWN
+    1000    12    4.983613   1.440663  TRENDING_DOWN
+    1000    24    4.983613   0.680371  TRENDING_DOWN
+    1000    48    4.983613   0.342783  TRENDING_DOWN
+```
+
+The window sup is frozen at a shallow shell; the tail decays toward the true
+value 0 as the horizon grows, and says so while it does. **The instruments
+unchanged — the estimator no longer claims to be something it isn't.**
 
 ## Evaluation requirement: horizons must span the transient-growth subsequence
 

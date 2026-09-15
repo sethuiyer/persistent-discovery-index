@@ -73,6 +73,17 @@ class AgentProfiler:
             self.add_run(path, ok)
         return self
 
+    def stop_level(self, threshold: float = 0.10) -> Optional[int]:
+        """First resolution at which persistent yield collapses below threshold.
+
+        A FINITE-SCALE diagnostic: yield is exact on the observed corpus, so this
+        carries none of the asymptotic ambiguity that D and S do.
+        """
+        for r in self.profile()["rows"]:
+            if r["yield"] < threshold:
+                return r["level"]
+        return None
+
     # --------------------------------------------------------------- profiling
     def profile(self) -> dict:
         self.pdi.finalize_explicit()
@@ -109,21 +120,88 @@ class AgentProfiler:
             "D": D, "S": S, "delta": S - D,
             "D_at": D_at, "S_at": S_at,
             "D_shallow": 0 < D_at < H, "S_shallow": 0 < S_at < H,
+            # levelwise exponent sequences: the empirical profile itself
+            "s_seq": {j: math.log(n[j]) / (-math.log(self.pdi.eps(j)))
+                      for j in range(1, H + 1) if n.get(j, 0) > 0},
+            "d_seq": {j: math.log(L[j]) / (-math.log(self.pdi.eps(j)))
+                      for j in range(1, H + 1) if L.get(j, 0) > 0},
             "runs": self.runs, "successes": self.successes,
             "horizon": H,
         }
 
-    def stop_level(self, threshold: float = 0.10) -> Optional[int]:
-        """First resolution at which persistent yield collapses below threshold.
 
-        Everything finer than this level is mostly transient generation, so this
-        is where an adaptive policy should stop refining.
-        """
-        rows = self.profile()["rows"]
-        for r in rows:
-            if r["yield"] < threshold:
-                return r["level"]
-        return None
+# --------------------------------------------------------------------------
+# asymptotic layer: tail estimate + convergence status
+# --------------------------------------------------------------------------
+TAIL_K = 4
+
+
+def _trend(values: list[float]) -> str:
+    """Classify a levelwise exponent sequence."""
+    if not values:
+        return "NONE"
+    if len(values) == 1:
+        return "UNRESOLVED"
+    tol = 1e-9 * max(1.0, max(abs(v) for v in values))
+    diffs = [b - a for a, b in zip(values, values[1:])]
+    if all(abs(d) <= tol for d in diffs):
+        return "STABLE"
+    if all(d >= -tol for d in diffs):
+        return "TRENDING_UP"
+    if all(d <= tol for d in diffs):
+        return "TRENDING_DOWN"
+    return "UNRESOLVED"
+
+
+def asymptotic(profile: dict, k: int = TAIL_K) -> dict:
+    """Tail estimate of the asymptotic exponents, WITH convergence status.
+
+    `sup_{j<=H} s_j` is not `limsup s_j`. The finite analogue of limsup is the
+    moving tail
+
+        M_m = sup_{j >= m} s_j ,
+
+    so the estimate reported here is `M_{H-k+1}` -- the max over the last k
+    observed levels -- together with the trend of that tail.
+
+    The status matters more than the number:
+
+        STABLE         the tail is flat; the value is the estimate
+        TRENDING_UP    still rising; the value is a LOWER bound
+        TRENDING_DOWN  still decaying; the value is an UPPER bound
+        UNRESOLVED     not monotone at this horizon -- asymptotics unavailable
+        NONE           no persistent classes at all
+
+    UNRESOLVED is a legitimate result on a short tower, not a failure.
+    """
+    def stat(seq: dict[int, float]) -> dict:
+        js = sorted(seq)
+        if not js:
+            return {"value": 0.0, "status": "NONE", "bound": "exact",
+                    "window_sup": 0.0, "tail": [], "tail_from": 0, "envelope": {}}
+        vals = [seq[j] for j in js]
+        tail = vals[-k:]
+        status = _trend(tail)
+        bound = {"STABLE": "exact", "TRENDING_UP": "lower bound",
+                 "TRENDING_DOWN": "upper bound"}.get(status, "unknown")
+        envelope = {j: max(vals[i:]) for i, j in enumerate(js)}
+        return {"value": max(tail), "status": status, "bound": bound,
+                "window_sup": max(vals), "tail": tail,
+                "tail_from": js[-len(tail)], "envelope": envelope}
+
+    return {"S": stat(profile.get("s_seq", {})),
+            "D": stat(profile.get("d_seq", {})),
+            "k": k, "horizon": profile["horizon"]}
+
+
+def format_asymptotic(profile: dict, k: int = TAIL_K) -> str:
+    a = asymptotic(profile, k)
+    out = ["    asymptotic layer  (tail estimate, not a window sup)"]
+    for name, key in (("S", "S"), ("D", "D")):
+        st = a[key]
+        out.append(f"      {name}: {st['value']:.6f}  {st['status']:<13} "
+                   f"({st['bound']})   window sup was {st['window_sup']:.6f}")
+    return "\n".join(out)
 
 
 def inflation_table(
@@ -197,6 +275,10 @@ def format_profile(name: str, prof: dict, threshold: float = 0.10) -> str:
         f"   [sup at level {prof.get('S_at', 0)}/{prof['horizon']}"
         f"{' SHALLOW -- not a rate' if prof.get('S_shallow') else ''}]"))
     out.append(f"    Delta           = {prof['delta']:.6f}")
+    out.append(format_asymptotic(prof))
+    out.append("    finite-scale layer (exact on the observed corpus)")
+    out.append(f"      yield  L_j/n_j   : " + ", ".join(
+        f"{r['yield']*100:.0f}%" for r in prof["rows"]))
     return "\n".join(out)
 
 
