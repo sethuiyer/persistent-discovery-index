@@ -96,7 +96,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-20 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+21 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.
@@ -187,6 +187,7 @@ visible. That is the house style, not an accident.
 | Canonicity is **absent**; the dependence is quarantined, not eliminated | §16 |
 | No finite prefix bounds a limsup; bound labels carry hypotheses | §17 |
 | **No injective transport loop exists** — irreversibility is structural | §18 |
+| The Ihara/Bass zeta family is blind on the §15 pair and sharp on the recurrent core | §19 |
 
 ## 9. Open — where the work is
 
@@ -196,6 +197,7 @@ visible. That is the house style, not an accident.
 | **O3 — sufficient augmentation.** Does any finite augmentation give a reversible lift? | **open**; §18 says it must separate states *at the attractor* |
 | **§10 conjecture.** A functor from tower live/transient to transport recurrent/transient | **conjecture** |
 | **Controlled corpus.** Repeated tasks per agent | the blocker for every empirical claim |
+| **Twisted zeta.** Does `∏(1−χ(P)u^{ℓ(P)})^{-1}` on the recurrent core separate what bare zeta cannot? | **open** — needs a corpus with cycles, not the §15 trees |
 | ~~`invertibility.py` has no test~~ | **closed (v0.21.0)** — `test_invertibility.py` pins Q1 (0 of 216, exact grid) and the §8.2 Q2 numbers |
 
 ## 10. Two things about the repository's character

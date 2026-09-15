@@ -24,10 +24,10 @@ how strongly each number is supported.
 | | |
 |---|---|
 | core modules | **2,956 lines** (`pdi.py`, `agent_profiler.py`, `quotient_tower.py`, `ingest.py`, `adapters.py`, `stable_quotient.py`, `transport.py`, `invertibility.py`, `prime_holonomy.py`, `sudoku.py`) |
-| total Python | 8,108 lines |
+| total Python | 9,143 lines |
 | third-party dependencies | **zero** — stdlib only |
 | ingest formats | **7** (canonical, pi, OpenAI, LangSmith, OTel GenAI, AutoGen, CrewAI) |
-| self-checking suites | **20** |
+| self-checking suites | **21** |
 | licence | MIT |
 
 **What the market looks like.** Agent observability is crowded and commoditised:

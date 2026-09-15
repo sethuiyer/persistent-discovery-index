@@ -1017,7 +1017,10 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - Node-level caching with hierarchical reuse.
 - **Two output layers**: finite-scale diagnostics (exact) and asymptotic
   diagnostics (status-bearing).
-- **Twenty self-checking suites**, including closed-form toy validation, the
+- **A negative result about zeta invariants** (`zeta_separation.py`): the
+  Ihara/Bass family does not separate the §15 pair (a tree has no cycles) and is
+  sharp on the recurrent core — it is a complement to the ledger, not a rival.
+- **Twenty-one self-checking suites**, including closed-form toy validation, the
   refinement law verified over a full real corpus, and edge-preservation checks
   on every ingest format.
 

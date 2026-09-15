@@ -63,20 +63,20 @@ def test_cited_suites_exist() -> None:
 def test_suite_count_matches() -> None:
     print("2. the README's suite count is the real count")
     txt = read("README.md")
-    m = re.search(r"\*\*([A-Z][a-z]+) self-checking suites\*\*", txt)
+    m = re.search(r"\*\*([A-Z][a-z]+(?:-[a-z]+)?) self-checking suites\*\*", txt)
     check("README states a suite count", m is not None)
     if not m:
         return
     words = {"Ten": 10, "Eleven": 11, "Twelve": 12, "Thirteen": 13, "Fourteen": 14,
              "Fifteen": 15, "Sixteen": 16, "Seventeen": 17, "Eighteen": 18,
-             "Nineteen": 19, "Twenty": 20}
+             "Nineteen": 19, "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22}
     claimed = words.get(m.group(1))
     check("the number word is recognised", claimed is not None, m.group(1))
     actual = len(real_suites())
     check("README count == suites on disk", claimed == actual,
           f"README says {claimed}, disk has {actual}")
     # and no OTHER stale count lurks elsewhere
-    others = re.findall(r"\b(?:Ten|Eleven|Twelve|Thirteen|Fourteen|Fifteen|Sixteen|Seventeen|Eighteen|Nineteen|Twenty) self-checking suites\b", txt)
+    others = re.findall(r"\b(?:Ten|Eleven|Twelve|Thirteen|Fourteen|Fifteen|Sixteen|Seventeen|Eighteen|Nineteen|Twenty-one|Twenty) self-checking suites\b", txt)
     check("exactly one suite-count claim in the README", len(others) <= 1, str(others))
 
 

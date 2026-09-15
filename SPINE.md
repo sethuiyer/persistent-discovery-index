@@ -46,6 +46,9 @@ stated status.**
 | 17.1 | Every warrant PDI states is dischargeable, except the asymptotic `bound` | **audited** (§17.1) |
 | 17.2 | No finite prefix determines a limsup, so all three `bound` labels are falsifiable | **proved + exhibited** (§17.2) |
 | 17.3 | The `bound` labels now carry their hypothesis | **fixed** (§17.3) |
+| 19.1 | The Ihara/Bass zeta family does not separate the §15.2 pair: both `Z=1`, both Bass det `=1−u²` | **computed, negative** (§19.1) |
+| 19.2 | Bass determinant of a forest `= (1−u²)^{#components}` — shape-blind | **computed** (§19.2) |
+| 19.3 | Zeta separates `C3⊔C3` from `C6` (same degrees, same `(V,E)`) — sharp on cycles | **computed** (§19.3) |
 
 ---
 
@@ -925,3 +928,93 @@ The theorem is proved for this search family (min-conflicts with argmin-`δ` fli
 The corollary needs `n ≥ 2 d₂(z) + 2` — satisfied with room to spare by every
 instance tested (`n ≥ 8`, `d₂ ≤ 1`), but it *is* a condition, and instances with
 many optima clustered at Hamming distance 2 from each other are the boundary case.
+
+---
+
+## 19. Zeta functions and the §15 witness — a negative
+
+> *The ledger is blind to the edges. Use an edge-sensitive invariant: the Ihara
+> zeta.*
+
+§15.2 exhibits two traces with identical ledgers `(n_j, L_j)` and non-isomorphic
+discovery structure. The proposal is to separate them with the Ihara zeta
+
+$$Z_G(u) = \prod_{[P]} (1 - u^{\ell(P)})^{-1},$$
+
+over primitive non-backtracking closed cycles, via the Ihara–Bass closed form
+
+$$Z_G(u)^{-1} = (1-u^2)^{|E|-|V|} \det\!\left(I - uA + u^2(D-I)\right).$$
+
+Built and computed in `zeta_separation.py`; suite `test_ihara_separation.py`.
+
+### 19.1 The answer is no, and it is structural
+
+**The §15.2 pair is a tree.** A tree has no non-backtracking closed walk at all,
+so the Euler product is empty and
+
+$$Z_A(u) = Z_B(u) = 1, \qquad \det(I-uA+u^2(D-I)) = 1 - u^2 \ \text{ for both.}$$
+
+Verified in the suite: `#prime cycles = 0` for both, `Z^{-1} = 1` for both, Bass
+determinant `= 1-u^2` for both — **no separation, on the very witness §15 uses.**
+
+The mechanism, stated plainly: **zeta listens to edges only through cycles.**
+"Edges" and "cycles" are not the same information. §15's witness has edges and no
+cycles, so an invariant that reads cycles reads nothing.
+
+### 19.2 The Bass determinant of a forest is shape-blind
+
+Computed over every forest tested (paths, stars, both tries, and one- and
+two-component forests):
+
+$$\det\!\left(I-uA+u^2(D-I)\right) = (1-u^2)^{c}, \qquad c = \#\text{components}.$$
+
+On the acyclic part the Bass determinant is a function of the **number of
+components alone** — it carries *no* tree-shape information. This is a computed
+law over the tested range, not a proof; the range is `zeta_separation.FORESTS`.
+
+### 19.3 Where zeta belongs — the recurrent core
+
+Zeta is not vacuous; it is *aimed at the wrong part of the spine*. Positive
+control, in the suite: `C3 ⊔ C3` and `C6` have the same degree sequence (all 2)
+and the same `(|V|,|E|) = (6,6)`, and
+
+$$Z_{C_3\sqcup C_3}(u)^{-1} = (1-u^3)^4 \;\neq\; (1-u^6)^2 = Z_{C_6}(u)^{-1}.$$
+
+Zeta separates them. It is **blind to acyclic structure and sharp on cyclic
+structure.** By §6 the recurrent core `R` is the union of cycles and the transient
+remainder `F\setminus R` is trees, so
+
+$$Z \text{ is non-trivial exactly on } R, \text{ and provably empty on } F\setminus R.$$
+
+The ledger and the zeta family are therefore **complements, not rivals**:
+
+| invariant | sees | blind to |
+|---|---|---|
+| ledger `(n_j, L_j)` | levels | arrangement (§15.2) |
+| zeta `Z_G(u)` | cycles | acyclic structure (§19.1) |
+| characteristic polynomial | some shape | complete? no — cospectral trees exist |
+| AHU canonical form | rooted-tree shape, completely | — |
+
+What separates §15.2 today is the last row (already used in §15.2), and the char
+poly for this pair. Not a zeta.
+
+### 19.4 A caution about the analogy
+
+Ihara's standard reduction strips degree-1 vertices to reach the **2-core**; §6
+splits a functional graph into a **recurrent core** and transient trees. These are
+different constructions on different objects — a graph leaf-pruning versus the
+union of cycles of a map `T`. The word "core" is shared; the construction is not.
+Treat the resemblance as an analogy to test, not an identification — the same
+caution §12 applies to "persistent".
+
+### 19.5 What is left open
+
+The zeta that *could* have content PDI does not yet compute is the
+**transport-decorated (twisted)** one. On the recurrent core a closed cycle `P`
+carries a holonomy `χ(P) ∈ U(1)` (§7), and one can form
+
+$$Z_{G,\chi}(u) = \prod_{[P]} \left(1 - \chi(P)\,u^{\ell(P)}\right)^{-1}.$$
+
+Does the twist see structure the bare zeta does not? That is a question about `R`,
+where zeta is defined and non-trivial. It is **not** a question the §15 trees can
+answer, and it is not answered here.
