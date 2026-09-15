@@ -505,6 +505,73 @@ python3 survival_commutation.py        # all four parts
 python3 test_survival_commutation.py   # 19 checks: commutes on one axis, fails on the other
 ```
 
+## One question, or two? (v0.13.0)
+
+> *"Does it go away, or does it come back?" — everything else is a change of
+> language for that question.*
+
+Tested rather than agreed with (`one_question.py`). The test is behavioural: **a
+quantity that moves while the survival predicate is held fixed is not a
+translation of the question.**
+
+Most of the list does reduce. The persistent boundary, `D`, the functional-graph
+split (cycle vs tree), `T|R` vs `T` off `R`, `C_L`/`F_p^×`, `χ → U(1)`,
+`π(R_{j+1}) ⊆ R_j`, and `Ω` are all the same operator read in different
+coordinates. Two things are not:
+
+**1. "Comes back" is two predicates, and PDI ships both.**
+
+```
+horizon  (recompute_statuses) : LIVE iff the node reaches level H   structural
+explicit (finalize_explicit)  : LIVE iff on a successful trajectory  outcome
+```
+
+Same tree, both readings, `n_j` identical, and the level-1 live *sets* are
+`{(1,)}` and `{(0,)}` — **disjoint**. The counts agree there (both 1), so a scalar
+ledger hides what the set makes visible. The question isn't well-posed until
+"comes back" is pinned to a rule.
+
+**2. `n_j` is survival-free, and `Δ` moves while survival is fixed.**
+
+```
+                    j=1  j=2  j=3  j=4
+  n_j  marker dead    3    5    9   16      <- does not move
+  n_j  marker live    3    5    9   16
+  L_j  marker dead    2    4    8   16      <- moves
+  L_j  marker live    3    5    9   16
+```
+
+And two systems with identical `L_j` and identical `D` differ in `S` and `Δ`:
+
+```
+  A:  D = 1.0        S = 1.0        Delta = 0.0
+  B:  D = 1.0        S = 1.720628   Delta = 0.720628
+```
+
+`Δ` is not a function of the survival predicate. It is `S − D` — a survival-free
+growth rate minus a survival growth rate. This is *also* why `D` is
+cofinal-invariant and `Δ` is not: the survival side is intrinsic, the cost side
+isn't.
+
+### The sharpened thesis
+
+The dichotomy is not the original move. **It is the standard move.** Conley,
+persistence, bisimulation minimisation, dead-code elimination — every field that
+deletes what does not survive is applying it.
+
+> PDI's original move is the **pairing**: a survival-free cost and a survival
+> count **at the same resolution**, so the waste becomes a function of `j` and
+> can be **located** (`j*`) and **rated** (`D`, `S`, `Δ`) instead of merely
+> totalled.
+>
+> **Deleting gives a boolean. Pairing gives a curve. The curve is the instrument;
+> where it turns is the result.**
+
+```bash
+python3 one_question.py        # parts 1, 1b, 2 -- all computed
+python3 test_one_question.py   # 16 checks
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the

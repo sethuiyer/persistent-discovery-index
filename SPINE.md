@@ -33,6 +33,10 @@ stated status.**
 | 13.2 | It fails on the inclusion axis, iff some periodic point of `X` lies in the filter but leaves it | **proved + verified as an iff** (§13.2) |
 | 13.3 | T-invariance of the refinement axis is exactly what forces commutation | **proved** (§13.2) |
 | 13.4 | `Ω` has no content as a PDI quantity (identically zero on its own axis) | **negative** (§13.4) |
+| 14.1 | `n_j` is invariant under the survival predicate — it is survival-free | **proved + verified** (§14.3) |
+| 14.2 | PDI implements **two** survival predicates (horizon, explicit) which can select disjoint branches | **verified** (§14.2) |
+| 14.3 | `Δ` moves while `L_j` and `D` are held fixed | **proved + verified** (§14.4) |
+| 14.4 | The one-question reduction holds for one column only | **conclusion, narrower than claimed** (§14.5) |
 
 ---
 
@@ -480,3 +484,94 @@ $$R_\infty = \varprojlim_j R_j$$
 together with descent of the dynamics, `π_{j+1,j} T_{j+1} = T_j π_{j+1,j}`, which
 held in every case tested. §13.1 confirms that the square is not the obstruction to
 building it.
+
+---
+
+## 14. The motherboard question — and its residue
+
+> *"Does it go away, or does it come back?" — everything else is a change of
+> language for that question.*
+
+Tested rather than agreed with, in `one_question.py`; suite
+`test_one_question.py`. The test is behavioural: **a quantity that moves while the
+survival predicate is held fixed is not a translation of the question.**
+
+### 14.1 The table
+
+| item | reduces to the dichotomy? |
+|---|---|
+| persistent boundary vs interior | **yes** — what survives refinement |
+| `D` | **yes** — the rate of what comes back |
+| functional graph (cycle vs tree feeding a cycle) | **yes** |
+| `T\|R` vs `T` off `R` (permutation vs many-to-one) | **yes** |
+| `C_L`, `F_p^×` | **yes**, downstream — structure *on* what returns |
+| `χ: C_L → U(1)` | **yes**, downstream — the phase of what returns |
+| `π(R_{j+1}) ⊆ R_j` | **yes** — does a return survive a change of resolution |
+| `Ω` | **yes** — the failure of the previous line (§13) |
+| `n_j` | **no** — there is no success mark in it |
+| `S`, `Δ` | **no** — `S − D` needs a survival-free cost |
+| `j*` (onset) | **no** — a location needs both columns |
+
+### 14.2 The question is not yet one question: "comes back" is two predicates
+
+PDI ships two, and they are not the same thing:
+
+- **horizon rule** (`recompute_statuses`) — LIVE ⟺ the node has a descendant at
+  level `H`. *Structural.*
+- **explicit rule** (`finalize_explicit`) — LIVE ⟺ the node lies on a chain
+  declared successful. *Outcome.*
+
+Same tree, both readings, `n_j` identical, and the level-1 live sets are
+`{(1,)}` versus `{(0,)}` — **disjoint**. The *counts* agree at that level (both
+1), so a scalar ledger hides what the set makes visible; the counts diverge from
+level 4 onward.
+
+So the motherboard question is well-posed only once "comes back" is pinned to a
+rule. That is not a philosophical caveat — it is a code path.
+
+### 14.3 `n_j` is survival-free
+
+Fixed node set; only the success marks varied:
+
+| `j` | 1 | 2 | 3 | 4 | … |
+|---|---|---|---|---|---|
+| `n_j` (marker branch dead) | 3 | 5 | 9 | 16 | … |
+| `n_j` (marker branch live) | 3 | 5 | 9 | 16 | … |
+| `L_j` (marker branch dead) | 2 | 4 | 8 | 16 | … |
+| `L_j` (marker branch live) | 3 | 5 | 9 | 16 | … |
+
+`n_j` does not move. It is decided by the **node set**, not by any survival
+predicate. The dichotomy cannot produce it — there is nothing for it to be a
+translation *of*.
+
+### 14.4 `Δ` moves while survival is fixed
+
+Two systems with identical `L_j` and identical `D`:
+
+$$A:\; D=1.0,\; S=1.0,\; \Delta=0.0
+\qquad
+B:\; D=1.0,\; S=1.720628,\; \Delta=0.720628$$
+
+`Δ` is therefore not a function of the survival predicate. It is `S − D`: a
+survival-free growth rate minus a survival growth rate. This is also why `D` is
+cofinal-invariant (2.3) while `Δ` is not (2.4) — the survival side is intrinsic,
+the cost side is not.
+
+### 14.5 The sharpened thesis
+
+The dichotomy is not the original move. It is the **standard** move. Conley
+invariant sets, topological persistence, bisimulation minimisation, dead-code
+elimination: every field that deletes what does not survive is applying it.
+
+> **PDI's original move is the pairing**: a survival-free cost and a survival
+> count **at the same resolution**, so that the waste becomes a function of `j`
+> and can be **located** (onset `j*`) and **rated** (`D`, `S`, `Δ`) instead of
+> merely totalled.
+>
+> Deleting gives a boolean. Pairing gives a curve. The curve is the instrument;
+> where it turns is the result.
+
+This is **narrower** than "everything is one question", and it is the version the
+code supports: `n_j` is invariant under the success marks (§14.3), `Δ` moves while
+survival is held fixed (§14.4), and the survival predicate itself is not unique
+(§14.2).
