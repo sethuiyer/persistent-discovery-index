@@ -30,9 +30,13 @@ from __future__ import annotations
 import sys
 from itertools import combinations
 
+from collections import Counter
+from fractions import Fraction as F
+
 from zeta_separation import (CYCLIC, FORESTS, TRIE_A, TRIE_B, _p1_minus_u2_pow,
-                             ahu, bass_determinant, charpoly, ihara_from_bass,
-                             ihara_from_cycles, prime_cycles, show, trunc)
+                             ahu, bass_determinant, charpoly, gain_twisted,
+                             ihara_from_bass, ihara_from_cycles, length_twisted,
+                             mul, prime_cycles, show, trunc)
 
 FAILS: list[str] = []
 
@@ -122,6 +126,42 @@ def test_positive_control_and_what_does_separate() -> None:
     print()
 
 
+def test_twisted_criterion() -> None:
+    print("=" * 72)
+    print("THE TWISTED CRITERION  content iff chi does not factor through length")
+    print("=" * 72)
+    n, ed = 6, [(0, 1), (1, 2), (0, 2), (3, 4), (4, 5), (3, 5)]     # C3 + C3
+    bare = ihara_from_bass(n, ed)
+    mixed = {(0, 1): F(1), (1, 2): F(1), (0, 2): F(1),
+             (3, 4): F(1), (4, 5): F(1), (3, 5): F(-1)}          # one triangle inverted
+    gt, chi = gain_twisted(n, ed, mixed, 2 * n)
+
+    # (i) a gain that is NOT constant on cycles of equal length is READ.
+    check("edge gain takes TWO distinct values on length-3 cycles",
+          len(set(chi[3])) == 2, str(chi.get(3)))
+    check("a non-length-determined gain changes the product (gain IS read)",
+          gt != bare, f"{show(gt)} vs {show(bare)}")
+
+    # (ii) a length-determined chi is a function of the length MULTISET alone.
+    multiset = Counter(len(c) for c in prime_cycles(n, ed, 2 * n))
+    for fv in (1, -1):
+        f = lambda k, fv=fv: F(fv)
+        rebuilt = [F(1)]
+        for k, m in multiset.items():
+            for _ in range(m):
+                rebuilt = mul(rebuilt, [F(1)] + [F(0)] * (k - 1) + [-f(k)])
+        check(f"length-chi f={fv:+d} == function of the length multiset alone (void)",
+              length_twisted(n, ed, f, 2 * n) == rebuilt)
+
+    # (iii) the non-length-determined gain is OUTSIDE the reach of any length-chi
+    #       on this witness: it factors with two distinct length-3 weights.
+    lt_p = length_twisted(n, ed, lambda k: F(1), 2 * n)
+    lt_m = length_twisted(n, ed, lambda k: F(-1), 2 * n)
+    check("mixed-gain product is not reachable by a constant-per-length chi",
+          gt != lt_p and gt != lt_m, f"{show(gt)}")
+    print()
+
+
 if __name__ == "__main__":
     print("=" * 72)
     print("test_ihara_separation")
@@ -130,6 +170,7 @@ if __name__ == "__main__":
     test_witness_no_separation()
     test_forest_law()
     test_positive_control_and_what_does_separate()
+    test_twisted_criterion()
     print("=" * 72)
     if FAILS:
         print(f"FAILED: {len(FAILS)} -> {FAILS}")

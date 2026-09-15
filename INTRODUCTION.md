@@ -197,7 +197,8 @@ visible. That is the house style, not an accident.
 | **O3 — sufficient augmentation.** Does any finite augmentation give a reversible lift? | **open**; §18 says it must separate states *at the attractor* |
 | **§10 conjecture.** A functor from tower live/transient to transport recurrent/transient | **conjecture** |
 | **Controlled corpus.** Repeated tasks per agent | the blocker for every empirical claim |
-| **Twisted zeta.** Does `∏(1−χ(P)u^{ℓ(P)})^{-1}` on the recurrent core separate what bare zeta cannot? | **open** — needs a corpus with cycles, not the §15 trees |
+| **Twisted zeta.** Does `∏(1−χ(P)u^{ℓ(P)})^{-1}` separate what bare zeta cannot? | **closed, negative** — needs a non-length-determined `χ`, i.e. a non-trivial `π₁→U(1)`; PDI's transport has none (§19.6) |
+| **Monodromy on the core.** Is `γ ↦ T_γ|_R` a homomorphism `π₁ → Sym(R)`? | **open** — the one question §19 leaves live (§19.7) |
 | ~~`invertibility.py` has no test~~ | **closed (v0.21.0)** — `test_invertibility.py` pins Q1 (0 of 216, exact grid) and the §8.2 Q2 numbers |
 
 ## 10. Two things about the repository's character

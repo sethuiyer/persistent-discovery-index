@@ -24,7 +24,7 @@ how strongly each number is supported.
 | | |
 |---|---|
 | core modules | **2,956 lines** (`pdi.py`, `agent_profiler.py`, `quotient_tower.py`, `ingest.py`, `adapters.py`, `stable_quotient.py`, `transport.py`, `invertibility.py`, `prime_holonomy.py`, `sudoku.py`) |
-| total Python | 9,143 lines |
+| total Python | 9,255 lines |
 | third-party dependencies | **zero** — stdlib only |
 | ingest formats | **7** (canonical, pi, OpenAI, LangSmith, OTel GenAI, AutoGen, CrewAI) |
 | self-checking suites | **21** |

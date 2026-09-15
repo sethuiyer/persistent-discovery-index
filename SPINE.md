@@ -49,6 +49,7 @@ stated status.**
 | 19.1 | The Ihara/Bass zeta family does not separate the §15.2 pair: both `Z=1`, both Bass det `=1−u²` | **computed, negative** (§19.1) |
 | 19.2 | Bass determinant of a forest `= (1−u²)^{#components}` — shape-blind | **computed** (§19.2) |
 | 19.3 | Zeta separates `C3⊔C3` from `C6` (same degrees, same `(V,E)`) — sharp on cycles | **computed** (§19.3) |
+| 19.4 | The twisted zeta is void on the current construction: `χ` is length-determined, and the transport has no non-trivial `π₁ → U(1)` | **computed, negative** (§19.6) |
 
 ---
 
@@ -992,6 +993,7 @@ The ledger and the zeta family are therefore **complements, not rivals**:
 |---|---|---|
 | ledger `(n_j, L_j)` | levels | arrangement (§15.2) |
 | zeta `Z_G(u)` | cycles | acyclic structure (§19.1) |
+| twisted zeta `Z_{G,χ}` | cycles **plus edge gains** | needs a gain PDI does not have (§19.6) |
 | characteristic polynomial | some shape | complete? no — cospectral trees exist |
 | AHU canonical form | rooted-tree shape, completely | — |
 
@@ -1007,14 +1009,70 @@ union of cycles of a map `T`. The word "core" is shared; the construction is not
 Treat the resemblance as an analogy to test, not an identification — the same
 caution §12 applies to "persistent".
 
-### 19.5 What is left open
+### 19.5 The twisted zeta — the same answer, one level up
 
-The zeta that *could* have content PDI does not yet compute is the
-**transport-decorated (twisted)** one. On the recurrent core a closed cycle `P`
-carries a holonomy `χ(P) ∈ U(1)` (§7), and one can form
+A twisted product
 
-$$Z_{G,\chi}(u) = \prod_{[P]} \left(1 - \chi(P)\,u^{\ell(P)}\right)^{-1}.$$
+$$Z_{G,\chi}(u) = \prod_{[P]} \left(1 - \chi(P)\,u^{\ell(P)}\right)^{-1}$$
 
-Does the twist see structure the bare zeta does not? That is a question about `R`,
-where zeta is defined and non-trivial. It is **not** a question the §15 trees can
-answer, and it is not answered here.
+has content **iff `χ` does not factor through the cycle length.** If `χ(P) =
+f(\ell(P))` then the product is a function of the prime-cycle length multiset
+$(m_\ell)$, which `Z_G` already determines — so it separates nothing new. This
+is a proof, not an estimate.
+
+The criterion is therefore operational: **`χ` must not be constant on prime
+cycles of the same length.** Computed in `zeta_separation.py` panel 5 on
+`C3 ⊔ C3`, with a `{±1}` edge gain that inverts one triangle:
+
+| object | `Z^{-1}` |
+|---|---|
+| bare | `(1-u³)⁴` |
+| length-`χ`, `f(3)=+1` | `(1-u³)⁴` |
+| length-`χ`, `f(3)=-1` | `(1+u³)⁴` |
+| **edge gain**, mixed | `(1-u³)²(1+u³)²` |
+
+`χ` takes two values on length-3 cycles, and the mixed product is outside the
+reach of any constant-per-length `χ` — so a gain *is* read, and a length-character
+is not. Pinned in `test_ihara_separation.py`.
+
+**PDI has no such gain.** Two readings of `χ`, both void:
+
+1. **`χ` from §7.** It is built on `C_L ↪ F_p^×`, i.e. through the cycle
+   *order*, hence through `ℓ(P)`. And `prime_holonomy.character()` is called
+   exactly once in the whole repo, on a hand-made residual (`h = 2³`) — never on
+   a trajectory. So it is length-determined, and the criterion fails.
+2. **`χ(P)` = transport holonomy around `P`.** On `R`, `T|_R` is a permutation
+   (§6.2): traversing a cycle returns *exactly*, so `χ(P) = id`. Across loops it
+   is not even a homomorphism — `test_transport.py` asserts `rev ≠ inv` and
+   `sq ≠ sq`. Not a representation, so no character exists.
+
+### 19.6 What this settles, and the routing law
+
+The twisted zeta is **not an independent fourth arrow.** It is §8 in new clothes:
+it needs a non-trivial representation `π₁ → U(1)`, i.e. a genuine monodromy, and
+§8 found state drift instead. It inherits that negative — and inherits §18,
+because the failure of reversibility is the same irreversibility.
+
+The durable result of §19 is a **routing law**, not an invariant:
+
+$$\text{transient arrangement} \to \text{edge/tree invariants (AHU, zeta deaf)}
+\qquad
+\text{recurrent arrangement} \to \text{cycle invariants (}Z_G\text{, deaf to trees)}$$
+
+Every projection needs its own blind-spot statement, and "keep the edges" does
+not mean every edge-derived invariant preserves what the ledger lost: projecting
+`G → {primitive cycles}` deliberately destroys the forest.
+
+### 19.7 What is left open
+
+The remaining question is the only one that is neither void nor §8:
+
+> **Does `γ ↦ T_γ|_R` define a homomorphism `π₁(presentation space) → Sym(R)`?**
+
+`T_γ|_R` is a genuine permutation of the recurrent core, so it is a real element;
+the open question is whether it is a *representation* (does `T_{γ₁γ₂}|_R =
+T_{γ₂}|_R ∘ T_{γ₁}|_R`, and does `T_{γ^{-1}}|_R = T_γ|_R^{-1}`?). §8's tests say
+no on the stable quotient, but the restriction to `R` is a *different* map and is
+not settled here. If it is a homomorphism and non-trivial, a twisted zeta would
+have earned content; if it is trivial or not a homomorphism, the strand is closed
+for good.

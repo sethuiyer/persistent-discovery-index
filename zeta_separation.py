@@ -237,6 +237,39 @@ def ihara_from_bass(n: int, edges: list) -> list:
     return cut(mul(pref, bass_determinant(n, edges)))
 
 
+def gain_twisted(n: int, edges: list, gain: dict, maxlen: int):
+    """Twisted zeta^{-1} = prod (1 - chi(P) u^{len P}) over prime cycles, with
+    chi(P) = product of edge gains around P. Returns (poly, chi_by_length).
+
+    `gain` maps an edge (u<v) to a value in U(1); {+1,-1} keeps it exact."""
+    G = [[F(0)] * n for _ in range(n)]
+    for u, v in edges:
+        g = gain[(min(u, v), max(u, v))]
+        G[u][v] = g
+        G[v][u] = g
+    chi_by_len: dict[int, list] = {}
+    z = [F(1)]
+    for c in prime_cycles(n, edges, maxlen):
+        k = len(c)
+        chi = F(1)
+        for i in range(k):
+            chi *= G[c[i]][c[(i + 1) % k]]
+        chi_by_len.setdefault(k, []).append(chi)
+        z = mul(z, [F(1)] + [F(0)] * (k - 1) + [-chi])
+    return cut(z), chi_by_len
+
+
+def length_twisted(n: int, edges: list, f, maxlen: int) -> list:
+    """chi(P) = f(len(P)) -- the LENGTH-DETERMINED case, i.e. the VOID case.
+    Any such chi gives a product that is a function of the prime-cycle length
+    multiset alone, hence of Z_G: it cannot separate what bare zeta cannot."""
+    z = [F(1)]
+    for c in prime_cycles(n, edges, maxlen):
+        k = len(c)
+        z = mul(z, [F(1)] + [F(0)] * (k - 1) + [-f(k)])
+    return cut(z)
+
+
 def ahu(n: int, edges: list, root: int = 0) -> str:
     """Canonical form (AHU) of a rooted tree — complete for rooted trees."""
     children: dict[int, list[int]] = {i: [] for i in range(n)}
@@ -354,6 +387,24 @@ def main() -> int:
     print("   -> C3+C3 and C6 share degree sequence and (|V|,|E|); zeta separates them.")
     print("      Zeta is sharp on cycles, empty on trees.")
 
+    print("\n5. THE TWISTED ZETA  Z_{G,chi}^{-1} = prod (1 - chi(P) u^len)\n")
+    TRI = (6, [(0, 1), (1, 2), (0, 2), (3, 4), (4, 5), (3, 5)])   # C3 + C3
+    nn, te = TRI
+    mixed = {(0, 1): F(1), (1, 2): F(1), (0, 2): F(1),
+             (3, 4): F(1), (4, 5): F(1), (3, 5): F(-1)}
+    gt, chi = gain_twisted(nn, te, mixed, 2 * nn)
+    print(f"   bare Z^-1                             = {show(ihara_from_bass(nn, te))}")
+    print(f"   length chi, f(3)=+1                   = "
+          f"{show(length_twisted(nn, te, lambda k: F(1), 2 * nn))}")
+    print(f"   length chi, f(3)=-1                   = "
+          f"{show(length_twisted(nn, te, lambda k: F(-1), 2 * nn))}")
+    print(f"   EDGE GAIN, mixed across the triangles = {show(gt)}")
+    print(f"   chi by length = "
+          f"{{ {', '.join(f'{k}: {[str(x) for x in v]}' for k, v in chi.items())} }}")
+    print("   -> chi takes TWO values on cycles of the SAME length: this gain is")
+    print("      genuinely non-length-determined, so a gain IS read. A length-character")
+    print("      is not (both length rows above are functions of the length multiset).")
+
     print("\n" + "=" * 78)
     print("VERDICT")
     print("=" * 78)
@@ -376,11 +427,31 @@ def main() -> int:
       AHU      sees tree shape,  complete on rooted trees
 
   What separates §15.2 today is the last one (and the char poly for this pair) --
-  not a zeta. The next question is the TRANSPORT-DECORATED one: on the recurrent
-  core, a closed cycle P carries a holonomy chi(P); does the twisted product
-  prod (1 - chi(P) u^{len P})^{-1} see structure the bare zeta does not? That is
-  a question about R, where zeta is defined and non-trivial. It is not a question
-  §15's trees can answer.
+  not a zeta. That closes the acyclic channel.
+
+  THE TWISTED STRAND, ANSWERED THE SAME WAY. The twisted product
+  prod (1 - chi(P) u^{len P})^{-1} has content only if chi is NOT a function of
+  the cycle LENGTH; if chi(P) = f(len P) the product is determined by the prime-
+  cycle length multiset, hence by Z_G (panel 5 shows a gain that DOES change the
+  product, and two length-characters that cannot reach it).
+
+  PDI has no such gain. §7 builds chi from C_L -> F_p^x, i.e. through the cycle
+  ORDER; and prime_holonomy.character() is called exactly once, on a handmade
+  residual (h = 2^3), never on a trajectory. The other reading -- chi(P) = the
+  transport holonomy around P -- is trivial on R, because T restricted to R is a
+  permutation (§6.2): traversing a cycle returns exactly, so chi = id. And across
+  loops it is not even a homomorphism (test_transport asserts rev != inv and
+  sq != sq), so it is not a representation and no character exists.
+
+  So the twisted zeta is NOT an independent fourth arrow. It is §8 in new clothes:
+  it needs a non-trivial representation pi_1 -> U(1), i.e. a genuine monodromy,
+  and §8 found state drift instead. It inherits that negative -- and inherits §18,
+  since the failure of reversibility is the same irreversibility.
+
+  THE ROUTING LAW this yields:
+      transient arrangement  -> edge/tree invariants (AHU), zeta is deaf here
+      recurrent arrangement  -> cycle invariants (Z_G), and Z_G is deaf to trees
+  Every projection needs its own blind-spot statement. That is the whole method.
 """)
     return 0 if (same_zeta and same_bass and law_ok and diff_char) else 1
 
