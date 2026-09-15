@@ -158,6 +158,65 @@ Identical persistent structure, one clean ordering of discovery overhead. The ta
 supplies the geometry; the algorithm supplies the waste. **Presentation dependence
 of `Delta` is the point** — it is what makes it comparable across algorithms.
 
+## Worked example: Sudoku
+
+Sudoku is the purest case in this repo: **the solution is unique**, so the
+persistent ledger is one thin path per puzzle and everything else the solver does
+is transient. Every number below is a statement about waste. Three strategies, the
+same two puzzles:
+
+```
+strategy            total nodes   backtracks
+first/asc                23,232       23,231
+first/random              3,992        3,991
+mrv/asc                     169           63      <- 137x less than first/asc
+```
+
+**Where the nodes are** — share of all visits, by depth band:
+
+```
+strategy            total        d1-10      d11-20      d21-30      d31-40      d41-53
+first/asc          23,232         5.8%        8.6%       76.2%        9.2%        0.2%
+first/random        3,992        15.7%       10.0%       60.7%       12.5%        1.2%
+mrv/asc               169        16.2%       16.8%       28.1%       24.0%       15.0%
+```
+
+**76.2% of `first/asc`'s entire search sits in depths 21–30.** That band is where
+it stops deducing and starts guessing. MRV never enters that regime — its visits
+are spread evenly across the whole depth range, because it never has a cell with
+many candidates to guess from.
+
+**Inflation against MRV, at selected depths:**
+
+```
+strategy              d1      d10      d15      d20      d25      d27      d30
+first/asc          3.00x  142.00x   40.00x  260.00x  492.75x  627.00x   89.40x
+first/random       1.50x   56.33x    8.50x   49.67x   72.00x   74.20x   17.40x
+mrv/asc            1.00x    1.00x    1.00x    1.00x    1.00x    1.00x    1.00x
+```
+
+At depth 27 the naive solver is generating **627×** the search structure of MRV for
+the same two solutions. `test_sudoku.py` also verifies that PDI's `n_j` equals the
+solver's own per-depth node counts **exactly** at every depth, so the profile is
+not an artefact of the profiling.
+
+### And the honest caveat, which this example makes unavoidable
+
+`D` and `S` both take their sup at **depth 1** here. They are reporting how many
+values were tried in the *first cell* — not how large the search became. They happen
+to order the strategies correctly, by correlation with shallow branching, but they
+do not measure the thing anyone cares about. The per-depth profile and the totals
+do.
+
+**This is the open question in its most concrete form yet: at this scale the
+asymptotic summaries are the wrong instrument and the finite-scale diagnostics are
+the right one.** Run it yourself:
+
+```bash
+python3 demo_sudoku.py       # the tables above
+python3 test_sudoku.py       # 20 checks, incl. PDI n_j == solver node counts
+```
+
 ## The invariant underneath
 
 `D` is a property of the task; `S` is a property of the algorithm; `Delta` is the

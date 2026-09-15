@@ -124,7 +124,10 @@ class _PrefixTower:
         return 2.0 ** -j
 
     def signature(self, h: Sequence[Any]) -> tuple:
-        return tuple(self.label(x) for x in h)
+        # accept either a bare step sequence or a Run/Turn carrying .steps, so
+        # callers do not have to remember which the tower wants
+        steps = getattr(h, "steps", h)
+        return tuple(self.label(x) for x in steps)
 
     def validate(self, histories: Iterable[Any]) -> int:
         n = 0
