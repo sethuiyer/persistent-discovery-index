@@ -50,14 +50,18 @@ evaluation.**
 
 ### Why it matters
 
-- It is a **concrete experimental comparator** whose results show exactly why cost
-  and quality must be assessed together. Their published outcome is essentially PDI's
-  accepted outcome **B** (cost down / quality regressed) — the failure mode is real
-  and on the record.
+- It is a **concrete experimental comparator** whose results show that cost and
+  quality must be assessed together. Their data show a **trade-off** (cost reductions
+  alongside regressions). That is **not** automatically PDI's outcome **B**: assigning
+  a category requires applying PDI's declared statistical rule to comparable data,
+  which has not been done.
 - Their mechanism proposes removals using **argument-similarity heuristics plus
-  LLM-generated explanations** — counterfactual *arguments*, **not executed
-  step-deletion experiments**. That is the gap PDI's independent evaluator and runner
-  are built to close: *run the deletion, don't argue it.*
+  LLM-generated explanations**. They **do** execute held-out agents with the modified
+  skills; what is absent is **isolated step-deletion evidence** — evidence that a
+  *specific* step was unnecessary. **PDI has not run that experiment either**, and
+  independent grading of a whole run does not by itself establish an individual
+  step's causal contribution. Treat this as the intended distinction, not an
+  established one.
 
 ---
 
@@ -81,9 +85,10 @@ This one is a positioning hit, not a tool match. It:
 **Consequence:** the **"two ledgers" framing is prior art.** PDI must not lead with
 it. PDI's remaining distinctiveness is narrower: *refining quotients with total/live
 class counts*, *weighted multiresolution energies with exact residual and
-reconstruction identities*, and *evidence requirements on the inputs*. Their
-evidence ladder is also a cleaner warrant vocabulary than PDI currently has for its
-own diagnoses, and it composes with `verified_outcome`.
+reconstruction identities*, and *evidence requirements on the inputs*. Their evidence
+ladder — proxy signals → information dependency → **counterfactual intervention** —
+is a **cited framework** PDI can adopt as warrant vocabulary for its own diagnoses,
+and it composes with `verified_outcome`.
 
 ---
 
@@ -107,11 +112,15 @@ own diagnoses, and it composes with `verified_outcome`.
    currently defines H as "rank refinements by mean allocated cost of the targeted
    events." ClawTrace's Preserve/Prune/Repair is ordinary guidance *at the state of
    the art*. If P beats only a naive H, the result is uninformative.
-3. **The exploitable gap is methodological and concrete:** ClawTrace argues
-   removals counterfactually; PDI can **execute** a removal and grade it with an
-   independent verifier. *"We ran the deletion; they argued it."*
-4. **PDI's accepted-outcomes table is validated by their data** (§1): cost down,
-   quality regressed, is the real-world failure mode.
+3. **A possible methodological gap, stated as a hypothesis:** ClawTrace's removals
+   rest on argument similarity plus LLM explanations, and what is missing from the
+   literature is **isolated step-deletion evidence**. PDI's evaluator and runner
+   could produce that — but it has not, and independent grading of a whole run does
+   not establish a single step's causal contribution. Hypothesis, not result.
+4. **Their data show the cost/quality trade-off is real**, which is *why* PDI's
+   accepted-outcomes table exists. It does **not** license calling their result
+   outcome B: that requires PDI's declared statistical rule applied to comparable
+   data.
 5. **Adopt the attribution ladder** (proxy → dependency → counterfactual) as the
    warrant vocabulary for PDI's own diagnoses.
 

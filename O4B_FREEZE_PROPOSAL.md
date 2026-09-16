@@ -12,6 +12,20 @@ Ruler: [`o4b_stat.py`](o4b_stat.py). Cost statistic: [`o4b_cost.py`](o4b_cost.py
 > ordinary success-and-cost guidance**? A P-vs-baseline win alone is insufficient;
 > the claim needs the **(P − H)** contrast.
 
+### 1.1 Related work (cited, not claimed)
+
+- **ClawTrace + CostCraft** (arXiv 2604.23853) — the product comparator. TraceCards
+  feed **Preserve / Prune / Repair** instruction changes; their single-seed results
+  show cost reductions alongside quality regressions. **Not compared in this pilot:**
+  H is deliberately the simple-cost baseline (§5), and a CostCraft-grade comparison
+  comes afterwards.
+- **Cost–Utility Alignment** (arXiv 2608.26195) — **prior art for the "two
+  ledgers" framing** ("resource consumption and task contribution as dual ledgers
+  over the same execution"). PDI must not lead with that phrase. Its **attribution
+  ladder** (proxy → information dependency → counterfactual intervention) is adopted
+  as a cited framework for warranting a diagnosis.
+- Full survey and sources: [`MARKET_SURVEY.md`](MARKET_SURVEY.md).
+
 ## 2. Difficulty — structural challenge bands
 
 Axes (mechanical): **mutation count** (one / two composed), **dependency span** (one
@@ -137,13 +151,20 @@ and the contrast is reported as *P selected where H could not* — weaker than P
 beating H. **H abstains** when its top refinement does not exceed the runner-up by
 the declared margin.
 
-**H (ordinary guidance).** Rank the **same three refinements** by the **mean
-allocated cost of the events that refinement targets** — refinement 1 → search
-events, 2 → read events, 3 → error/recovery events — with the **same `μ`**.
-Attribution is frozen: **an assistant message's `usage` is split equally across the
-tool calls that message issued** (captures carry **no per-event cost**; labelled an
-assumption). Candidates may overlap; each refinement is scored **independently**,
-no double-counting correction. H abstains under its own threshold.
+**H (ordinary guidance) — deliberately the SIMPLE-COST baseline.** Rank the **same
+three refinements** by the **mean allocated cost of the events that refinement
+targets** — refinement 1 → search events, 2 → read events, 3 → error/recovery events
+— with the **same `μ`**. Attribution is frozen: **an assistant message's `usage` is
+split equally across the tool calls that message issued** (captures carry **no
+per-event cost**; labelled an assumption). Candidates may overlap; each refinement is
+scored **independently**, no double-counting correction. H abstains under its own
+threshold.
+
+**Scope of the P-vs-H claim.** Beating H establishes improvement over **this simple
+heuristic only**. A ClawTrace/CostCraft-grade comparator is a **later** comparison,
+not this one; keeping H simple is a deliberate choice so the bounded pilot actually
+runs. A diagnosis's evidential strength is reported on the cited attribution ladder
+(§1.1).
 
 **Shared:** tie-break coarser-first; budget `N_cand`; abstention → **C**, never
 descend.
