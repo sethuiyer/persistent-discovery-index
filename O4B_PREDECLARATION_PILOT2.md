@@ -19,17 +19,64 @@ listed in §10.
 A P-vs-baseline improvement **alone is insufficient**. Added value requires P to
 beat H, or to succeed where H abstains, on identical held-out tasks (§6).
 
-## 2. Difficulty — mechanical, fixed before any outcome
+## 2. Difficulty — STRUCTURAL CHALLENGE BANDS (not validated levels)
 
-- Task families defined by a **mechanical rule over the mutation, not agent
-  behaviour**: `(operator × module-size band × interacting-function count)`.
-  **`[CHOICE]`** the axes.
-- A **difficulty ladder** spanning a range, declared before any run. **`[CHOICE]`**
-  bands and counts.
-- Task identities and split **sealed before running**.
-- **Forbidden:** selecting a task because some agent failed it.
-- **Mandatory:** every run persists its full trace; a run without a persisted trace
-  is ineligible (coverage), never silently used.
+Three mechanical axes, applied to the mutation and the module only:
+
+| axis | values | role |
+|---|---|---|
+| **mutation count** | one defect / two composed defects | challenge |
+| **dependency span** | one function / crossing a declared call edge | challenge |
+| **module size** | fixed source-line bands | **covariate, recorded — not difficulty** |
+
+**"Interacting" is mechanical:** functions `f, g` in the same module such that `g`'s
+body contains a `Call` to `f` (an AST call edge). No other sense of "interacting"
+is admissible.
+
+**Bands** (target 24 tasks, 8 per band):
+
+| band | construction | discovery / held-out |
+|---|---|---|
+| **A** | one defect, one function | 4 / 4 |
+| **B** | one defect affecting a cross-function contract (at a declared call edge) | 4 / 4 |
+| **C** | two defects in interacting functions | 4 / 4 |
+
+These are **structural challenge bands, not validated difficulty levels**: actual
+difficulty is an experimental result (measured as baseline success), not an
+assumption.
+
+**Band C construction gate (all four required):**
+1. clean tree PASS;
+2. mutation 1 alone FAIL;
+3. mutation 2 alone FAIL;
+4. combined FAIL.
+A pair whose defects **cancel** (combined PASS) is rejected, as is a pair with no
+declared call edge between them.
+
+**Cluster discipline.** The cluster is the **module**; clusters are **disjoint
+across splits**, and every task of a module stays on that module's side. Module
+size is recorded per task as a covariate.
+
+**Quota honesty.** Only ~21 production modules currently have a dedicated verifier,
+so 24 tasks require some modules to carry more than one task (same side). Every
+unsuccessful construction attempt is recorded, and **rules are never relaxed to
+fill a quota**; a shortfall is reported as a shortfall.
+
+### 2.4 Gates before freezing
+
+**Gate 1 — trace persistence: PASS.** The committed runner was exercised end to end
+against a fake `pi` on PATH (no paid agent): fresh mutated tree → RPC until
+`agent_settled` → usage → trace copied out of the workdir → verifier → workdir
+cleaned. The recorded trace is readable after cleanup, its cost is captured, and a
+second run writes a distinct trace. Evidence: `test_o4b_run.py`.
+
+**Gate 2 — cost attribution: FAILS the naive form, so an assumption is required.**
+In a real capture: usage is recorded **only on assistant messages** (335/335); **no
+`toolCall` block carries its own cost** (0 of 388); `toolResult` messages carry
+none; and **66 of 335** assistant messages issued **more than one** tool call. So
+**per-event cost does not exist**, and even message-level cost is not 1:1 with
+events. H cannot rank targeted events from total session cost. The assumption is
+fixed in §5 and labelled as an assumption.
 
 ## 3. RESOLVED (draft) — the diagnostic tower, and cost variation
 
@@ -122,10 +169,13 @@ abstention thresholds** (their scores mean different things).
   `≥ K` discovery tasks **`[FIX BEFORE RUN]`**. Abstains if `total = 0` (§3.3).
 - **H (ordinary guidance):** rank the **same candidate interventions** by the
   **mean measured cost of the events each candidate targets**, using the **same
-  task weighting** (equal per task, split across eligible runs). Two things are
-  frozen with H: **event attribution** (how a run's cost is assigned to the events
-  a candidate targets) and **overlapping-cost handling** (when candidate event
-  sets overlap). **`[FIX BEFORE RUN]`** both, plus H's own abstention threshold.
+  task weighting** (equal per task, split across eligible runs).
+  **Event attribution (frozen, and labelled an assumption):** an assistant
+  message's `usage` is split **equally across the tool calls that message issued**;
+  a message with no tool call attributes its cost to no event. This follows from
+  Gate 2 — captures carry no per-event cost. **Overlapping-cost handling** (when
+  candidate event sets overlap) and **H's own abstention threshold** remain
+  **`[FIX BEFORE RUN]`**.
 - **Tie-breaking (both):** coarser level first, then lexicographic name.
 - **Abstention (both):** record **C**; never descend to another level.
 
@@ -173,14 +223,12 @@ The **P-vs-H contrast is reported** in every outcome, including B and D.
 
 | # | item | mark |
 |---|---|---|
-| 1 | difficulty axes (mechanical task-family rule) | `[CHOICE]` |
-| 2 | difficulty ladder bands and counts | `[CHOICE]` |
-| 3 | diagnostic tower level list | `[FIX BEFORE RUN]` |
-| 4 | singleton/admissibility bound | `[FIX BEFORE RUN]` |
-| 5 | `R_min` (minimum eligible repetitions) | `[FIX BEFORE RUN]` |
-| 6 | H: event-attribution rule | `[FIX BEFORE RUN]` |
-| 7 | H: overlapping-cost handling | `[FIX BEFORE RUN]` |
-| 8 | H abstention threshold; P `s_min` and `K` | `[FIX BEFORE RUN]` |
-| 9 | `N_cand`, `R`, `δ`, split seed, model/config | `[FIX BEFORE RUN]` |
-| 10 | corpus construction (modules, operators, kill rules) | `[FIX BEFORE RUN]` |
-| 11 | implementation of the cost-variation share **and its §4.1 audit** | `[FIX BEFORE RUN]` |
+| 1 | module → side assignment and multi-task modules (only ~21 modules) | `[CHOICE]` |
+| 2 | diagnostic tower level list | `[FIX BEFORE RUN]` |
+| 3 | singleton/admissibility bound | `[FIX BEFORE RUN]` |
+| 4 | `R_min` (minimum eligible repetitions) | `[FIX BEFORE RUN]` |
+| 5 | H: overlapping-cost handling | `[FIX BEFORE RUN]` |
+| 6 | H abstention threshold; P `s_min` and `K` | `[FIX BEFORE RUN]` |
+| 7 | `N_cand`, `R`, `δ`, split seed, model/config | `[FIX BEFORE RUN]` |
+| 8 | module-size line bands (covariate) | `[FIX BEFORE RUN]` |
+| 9 | implementation of the cost-variation share **and its §4.1 audit** | `[FIX BEFORE RUN]` |

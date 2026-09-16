@@ -73,7 +73,7 @@ def test_suite_count_matches() -> None:
              "Nineteen": 19, "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
              "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
              "Twenty-six": 26, "Twenty-seven": 27, "Twenty-eight": 28,
-             "Twenty-nine": 29, "Thirty": 30}
+             "Twenty-nine": 29, "Thirty": 30, "Thirty-one": 31}
     claimed = words.get(m.group(1))
     check("the number word is recognised", claimed is not None, m.group(1))
     check("README count == suites on disk", claimed == actual,

@@ -111,7 +111,19 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-30 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+31 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+
+### 4a. Release check — sequential, and it inspects the COMMITTED diff
+
+**Edit → verify → stage → commit → inspect the committed diff**
+(`git show --stat HEAD`, then `git show HEAD -- <files>`).
+
+Working-tree verification is **not** sufficient. If an edit and the commit that
+should carry it are issued in the same batch, the edit can land *after* the commit
+and the change is **silently absent from history** while the working tree looks
+right. That happened here: a trace-persistence fix was believed committed and
+was not (see the commit *"land edits missed by a parallel commit race"*). Never
+batch an edit with the commit that must carry it.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.
