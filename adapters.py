@@ -31,8 +31,29 @@ from typing import Any, Iterable, Iterator, Optional
 
 PI_SESSIONS = os.path.expanduser("~/.pi/agent/sessions")
 
+# Verified outcomes are supplied by an evaluator, distinct from the agent's own
+# terminal stop reason (`Turn.outcome`). O4_SCOPE.md §4.
+VERIFIED_OUTCOMES = ("success", "failure", "unknown")
+
 
 # --------------------------------------------------------------------------
+@dataclass(frozen=True)
+class Evaluator:
+    """Provenance of an independent success label.
+
+    Identity, version and method must be frozen across a comparison: changing the
+    evaluator changes `p`, hence `L_j`, `D` and `Delta`, even at a fixed corpus
+    (O4_SCOPE.md §1).
+    """
+    id: str
+    version: str = ""
+    method: str = ""
+
+    def __str__(self) -> str:
+        tag = f"{self.id}@{self.version}" if self.version else self.id
+        return f"{tag} [{self.method}]" if self.method else tag
+
+
 @dataclass
 class Step:
     """One tool invocation, paired with its result."""
@@ -56,6 +77,25 @@ class Turn:
     cwd: str = ""
     session: str = ""
     prompt: str = ""             # normalised opening user text (the task)
+    # --- independent label (optional; absent means "not evaluated") ---------
+    verified_outcome: Optional[str] = None   # success | failure | unknown
+    evaluator: Optional[Evaluator] = None    # provenance of verified_outcome
+
+    def __post_init__(self) -> None:
+        if self.verified_outcome is not None and self.verified_outcome not in VERIFIED_OUTCOMES:
+            raise ValueError(
+                f"verified_outcome must be one of {VERIFIED_OUTCOMES}, "
+                f"got {self.verified_outcome!r}")
+        if self.verified_outcome is not None and self.evaluator is None:
+            raise ValueError("verified_outcome requires evaluator provenance")
+
+    @property
+    def labelled(self) -> bool:
+        """True iff an independent evaluator marked this run success/failure.
+
+        `unknown` is NOT a label and is never folded into failure (O4_SCOPE §4).
+        """
+        return self.verified_outcome in ("success", "failure")
 
     @property
     def succeeded(self) -> bool:

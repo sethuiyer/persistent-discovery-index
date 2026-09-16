@@ -52,7 +52,7 @@ import json
 import os
 from typing import Any, Iterable, Iterator, Optional
 
-from adapters import Step, Turn as Run, load_pi_session
+from adapters import Evaluator, Step, Turn as Run, load_pi_session
 
 CANONICAL, PI, OPENAI, LANGSMITH = "canonical", "pi", "openai", "langsmith"
 OTEL, AUTOGEN, CREWAI = "otel", "autogen", "crewai"
@@ -114,10 +114,24 @@ def _mk(tool: str, args: Any, error: Optional[str] = None) -> Step:
                 error=error)
 
 
-def _run(steps, outcome, model="unknown", project="unknown", path="", prompt=""):
+def _run(steps, outcome, model="unknown", project="unknown", path="", prompt="",
+         verified_outcome=None, evaluator=None):
     return Run(steps=list(steps), outcome=outcome or "unknown", model=model or "unknown",
                project=project or "unknown",
-               session=os.path.basename(path), prompt=prompt, cwd=project or "")
+               session=os.path.basename(path), prompt=prompt, cwd=project or "",
+               verified_outcome=verified_outcome, evaluator=evaluator)
+
+
+def _evaluator(x):
+    """Parse an evaluator provenance field from canonical JSON."""
+    if x is None:
+        return None
+    if isinstance(x, str):
+        return Evaluator(id=x)
+    if isinstance(x, dict):
+        return Evaluator(id=str(x.get("id", "")), version=str(x.get("version", "")),
+                         method=str(x.get("method", "")))
+    raise ValueError(f"evaluator must be a string or object, got {type(x).__name__}")
 
 
 # --------------------------------------------------------------------------
@@ -134,17 +148,25 @@ def load_canonical(path: str) -> list[Run]:
         if "steps" not in o:
             continue
         out.append(_run(steps, o.get("outcome"), o.get("model"), o.get("project"),
-                        path, o.get("prompt", "")))
+                        path, o.get("prompt", ""),
+                        verified_outcome=o.get("verified_outcome"),
+                        evaluator=_evaluator(o.get("evaluator"))))
     return out
 
 
 def to_canonical(run: Run) -> dict:
     """Emit the canonical form — so any tool can write what PDI reads."""
-    return {
+    d = {
         "model": run.model, "project": run.project, "prompt": run.prompt,
         "outcome": run.outcome,
         "steps": [{"tool": s.tool, "args": s.args, "error": s.error} for s in run.steps],
     }
+    if run.verified_outcome is not None:
+        d["verified_outcome"] = run.verified_outcome
+    if run.evaluator is not None:
+        d["evaluator"] = {"id": run.evaluator.id, "version": run.evaluator.version,
+                          "method": run.evaluator.method}
+    return d
 
 
 def write_canonical(runs: Iterable[Run], path: str) -> int:

@@ -27,7 +27,7 @@ how strongly each number is supported.
 | total Python | 9,589 lines |
 | third-party dependencies | **zero** — stdlib only |
 | ingest formats | **7** (canonical, pi, OpenAI, LangSmith, OTel GenAI, AutoGen, CrewAI) |
-| self-checking suites | **25** |
+| self-checking suites | **26** |
 | licence | MIT |
 
 **What the market looks like.** Agent observability is crowded and commoditised:
