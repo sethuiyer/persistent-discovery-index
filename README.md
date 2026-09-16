@@ -10,6 +10,10 @@ unnecessary exploration begins — and at which behavioural resolution it happen
 > [read the essay](https://gist.github.com/shunyabarlabs/ec39c0ad4ee105d283a914b7b0a99aed)
 > (both also in-repo as [`MATH.md`](MATH.md))
 
+**Where the value is:** [`CEO.md`](CEO.md) is the commercial read, and
+[`usecases/`](usecases/README.md) holds six concrete applications with their proof
+status and pilot plans.
+
 Two people try to find the exit from a maze. A tries 20 paths. B tries 2,000 and
 finds the same exit.
 

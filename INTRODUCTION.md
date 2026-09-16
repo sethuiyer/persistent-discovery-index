@@ -51,6 +51,8 @@ Concretely, when you write or change anything:
 | Is quantity X canonical? | `SPINE.md` §16 (canonicity is **absent**, quarantined) |
 | Why is search irreversible? | `SPINE.md` §18 (proved) |
 | Who is this for / how is it sold? | `PRODUCT_README.md` (strategy, not warrant) |
+| What is the commercial read / where is the value? | `CEO.md` (strategy, not warrant) |
+| Concrete applications (six) | `usecases/README.md` |
 | How do I pitch it to non-tech / sales? | `PRODUCT_BREAKDOWN.md` (battlecard, ROI, non-tech) |
 | Is there a video / blog walkthrough of the math? | Video: [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) · Blog: [The Persistent Discovery Index](https://gist.github.com/shunyabarlabs/ec39c0ad4ee105d283a914b7b0a99aed) |
 | What is O4 / why is the success signal vacuous? | `O4_SCOPE.md` |
