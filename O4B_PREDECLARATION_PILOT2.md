@@ -31,7 +31,8 @@ Three mechanical axes, applied to the mutation and the module only:
 
 **"Interacting" is mechanical:** functions `f, g` in the same module such that `g`'s
 body contains a `Call` to `f` (an AST call edge). No other sense of "interacting"
-is admissible.
+is admissible. **Band C therefore means *two composed defects across a declared
+call edge* — it does not claim the defects were shown to interact.**
 
 **Bands** (target 24 tasks, 8 per band):
 
@@ -39,7 +40,7 @@ is admissible.
 |---|---|---|
 | **A** | one defect, one function | 4 / 4 |
 | **B** | one defect affecting a cross-function contract (at a declared call edge) | 4 / 4 |
-| **C** | two defects in interacting functions | 4 / 4 |
+| **C** | two composed defects across a declared call edge | 4 / 4 |
 
 These are **structural challenge bands, not validated difficulty levels**: actual
 difficulty is an experimental result (measured as baseline success), not an
@@ -134,6 +135,11 @@ stated rather than hidden.
 > work, a harder task, or an inefficient policy. `s_j` localises where observed
 > cost variance is *resolved by behavioural refinement*.
 
+**Implemented and audited.** The statistic is `o4b_cost.py`; its synthetic audit is
+`test_o4b_cost.py` (zero variance → abstain; currency scaling; equal-task weighting
+with a 1-run task excluded; unresolved residual; singleton refinement
+inadmissible; within-task centring invariance; nesting enforced).
+
 ## 4. RESOLVED (draft) — mathematical guardrail (cost is not a binary label)
 
 - The binary bound `Σ E_j ≤ Var_μ(p) ≤ 1/4` applies to a `{0,1}` label **only**.
@@ -170,12 +176,13 @@ abstention thresholds** (their scores mean different things).
 - **H (ordinary guidance):** rank the **same candidate interventions** by the
   **mean measured cost of the events each candidate targets**, using the **same
   task weighting** (equal per task, split across eligible runs).
-  **Event attribution (frozen, and labelled an assumption):** an assistant
-  message's `usage` is split **equally across the tool calls that message issued**;
-  a message with no tool call attributes its cost to no event. This follows from
-  Gate 2 — captures carry no per-event cost. **Overlapping-cost handling** (when
-  candidate event sets overlap) and **H's own abstention threshold** remain
-  **`[FIX BEFORE RUN]`**.
+  **Event attribution (frozen, and labelled an assumption): H allocates
+  ASSISTANT-MESSAGE cost, not measured tool cost.** An assistant message's `usage`
+  is split **equally across the tool calls that message issued**; a message with no
+  tool call attributes its cost to no event. This follows from Gate 2 — captures
+  carry no per-event cost, so H could not rank events from measured tool cost.
+  **Overlapping-cost handling** (when candidate event sets overlap) and **H's own
+  abstention threshold** remain **`[FIX BEFORE RUN]`**.
 - **Tie-breaking (both):** coarser level first, then lexicographic name.
 - **Abstention (both):** record **C**; never descend to another level.
 
@@ -231,4 +238,3 @@ The **P-vs-H contrast is reported** in every outcome, including B and D.
 | 6 | H abstention threshold; P `s_min` and `K` | `[FIX BEFORE RUN]` |
 | 7 | `N_cand`, `R`, `δ`, split seed, model/config | `[FIX BEFORE RUN]` |
 | 8 | module-size line bands (covariate) | `[FIX BEFORE RUN]` |
-| 9 | implementation of the cost-variation share **and its §4.1 audit** | `[FIX BEFORE RUN]` |

@@ -81,6 +81,7 @@ MIDDLE
   ingest.py             <-- adapters       11 trace-format loaders
   o4b.py                <-- adapters, ingest  O4b protocol harness (preconditions only)
   o4b_stat.py           (none)            the frozen decision statistic
+  o4b_cost.py           <-- multiresolution  cost-variation statistic (pilot 2)
   o4b_inject.py         (none)            seeded defect injector + sealed corpus
   o4b_run.py            <-- o4b_inject      discovery-baseline runner (pi RPC, fresh
                                            trees, verifier protection)
@@ -111,7 +112,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-31 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+32 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 ### 4a. Release check — sequential, and it inspects the COMMITTED diff
 
