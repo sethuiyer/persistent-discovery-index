@@ -364,14 +364,20 @@ identically zero. O4 is to construct a diagnostic tower whose features exclude
 the success label and every deterministic encoding of the evaluator result, and
 to validate it. It is discharged in two independent stages:
 
-- **O4a — synthetic correctness.** The detail-energy machinery is correct and
-  sensitive to planted structure. **Dischargeable now**, with no real data.
-- **O4b — real-data usefulness.** The diagnoses reduce cost at preserved task
-  quality. Requires an independently evaluated, **matched-task** corpus; **not**
-  inferable from O4a.
+- **O4a — synthetic correctness: DISCHARGED (v0.29.0).** The finite weighted
+  multiresolution identities and the synthetic acceptance criteria are verified by
+  `test_multiresolution.py`. Scope: this discharges the **algebra** (valid nested
+  projections, exact energies/identities, the permutation null, planted
+  structure), **not feature provenance**. The module consumes caller-supplied
+  partitions; it does not build features and cannot establish that they exclude
+  the evaluator outcome.
+- **O4b — real-data usefulness: OPEN.** The diagnoses reduce cost at preserved
+  task quality. Requires an independently evaluated, **matched-task** corpus;
+  **not** inferable from O4a. Nothing here demonstrates real-data usefulness.
 
 Scope, schema, feature-provenance rule and acceptance fixtures: `O4_SCOPE.md`.
-The descriptive tower `Q1`–`Q6` is unchanged.
+Feature exclusion (§4) remains a **separate warrant**. The descriptive tower
+`Q1`–`Q6` is unchanged.
 
 ---
 

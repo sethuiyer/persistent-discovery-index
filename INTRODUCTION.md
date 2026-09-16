@@ -67,6 +67,7 @@ LEAF MODULES (stdlib only — safe to change, nothing depends on your edits
   pdi.py                the index, ledgers, exponents, statuses
   quotient_tower.py     the refinement law + TowerViolation
   cofinal_mesh.py       §2.3 dense-mesh theorem + §2.4 sparse witness
+  multiresolution.py    the weighted detail operator (O4)
   transport.py          the stateful min-conflicts searcher
   adapters.py           trace dataclasses, pi-session loader
   sudoku.py             the worked stress case
@@ -101,7 +102,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-24 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+25 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.
@@ -202,7 +203,7 @@ visible. That is the house style, not an accident.
 |---|---|
 | **O1 — canonical fibre.** Is the stable quotient presentation-independent? | **open**, known to vary; this *is* the Lindenbaum–Tarski gap |
 | **O3 — sufficient augmentation.** Does any finite augmentation give a reversible lift? | **open**; §18 says it must separate states *at the attractor* |
-| **O4 — outcome-independent diagnostic tower.** Exclude the success label and its encodings; validate detail energies | **open** — O4a (synthetic correctness) dischargeable now; O4b (real-data usefulness) needs matched-task evaluated data; see `O4_SCOPE.md` |
+| **O4 — outcome-independent diagnostic tower.** Exclude the success label and its encodings; validate detail energies | **partly discharged** — O4a (synthetic correctness; algebra only, not feature provenance) **discharged (v0.29.0)** by `test_multiresolution.py`; O4b (real-data usefulness) **open** — needs matched-task evaluated data; see `O4_SCOPE.md` |
 | **§10 conjecture.** A functor from tower live/transient to transport recurrent/transient | **conjecture** |
 | **Controlled corpus.** Repeated tasks per agent | the blocker for every empirical claim |
 | **Twisted zeta.** Does `∏(1−χ(P)u^{ℓ(P)})^{-1}` separate what bare zeta cannot? | **closed, negative** — needs a non-length-determined `χ`, i.e. a non-trivial `π₁→U(1)`; PDI's transport has none (§19.6) |

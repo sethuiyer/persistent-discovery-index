@@ -85,14 +85,17 @@ level**; no renormalisation per level. The choice of `μ` — **per-run or
 per-task** — is **configurable and must be declared explicitly**; there is no
 universally correct choice, and the two answer different questions.
 
-Proposed (not yet implemented) module: `multiresolution.py` (no third-party
-dependency).
+Module: `multiresolution.py` (no third-party dependency).
 
 ### 3.2 The diagnostic tower
 
-Features must be **outcome-independent** (§4). The tower must satisfy the
-refinement law and is validated with `QuotientTower.validate`
-(`TowerViolation` on any violation), exactly as the descriptive tower is.
+Features must be **outcome-independent** (§4). Nesting is enforced at construction
+(`multiresolution.PartitionTower`, raising `RefinementViolation`).
+
+**Not implemented by A.** `multiresolution.py` consumes partitions **supplied by
+the caller**; it does not build features and does not check that they exclude the
+success label or the evaluator result. Feature provenance (§4) is a **separate
+warrant**, not discharged by the O4a fixtures.
 
 ### 3.3 Acceptance fixtures (A)
 
@@ -163,14 +166,18 @@ that is labelled, and the `unknown` fraction) is reported as a separate number.
 
 O4 is discharged in two independent stages, and they are recorded separately:
 
-- **O4a — synthetic correctness.** The finite accounting identity (9.1), the
-  pruning price (9.3), the aggregation law (9.5), the permutation-null baseline
-  (9.2) and the XOR interaction fixture all hold; the detail-energy machinery is
-  correct and sensitive to planted structure. **Dischargeable now**, with no real
-  data.
-- **O4b — real-data usefulness.** The diagnoses reduce cost at preserved task
-  quality. Requires an **independently evaluated, matched-task corpus**.
-  **Not inferable from O4a.**
+- **O4a — synthetic correctness: DISCHARGED (v0.29.0)** by
+  `test_multiresolution.py`. The finite accounting identity (9.1), the pruning
+  price (9.3), the aggregation law (9.5), the permutation-null baseline (9.2) and
+  the XOR interaction fixture all hold; the machinery is correct and sensitive to
+  planted structure. **Warrant scope:** this discharges the **algebra** — valid
+  nested projections and exact identities — **not feature provenance.** The module
+  consumes caller-supplied partitions; it does not build the diagnostic features
+  and cannot establish that they exclude the evaluator outcome (§4). That is a
+  separate warrant.
+- **O4b — real-data usefulness: OPEN.** The diagnoses reduce cost at preserved
+  task quality. Requires an **independently evaluated, matched-task corpus**.
+  **Not inferable from O4a**, and nothing in this note demonstrates it.
 
 For O4b, **matched tasks are specifically required for agent comparisons**: agents
 that ran different work are not comparable. The protocol freezes features, tower
@@ -208,12 +215,11 @@ is an **experiment to run**, not a causal finding.
 
 ## 8. Consistency coverage
 
-This note is deliberately **outside** the `DOCS` set of `test_repo_consistency.py`:
-it names modules that are *proposed*, not implemented, and the checker currently
-requires every `.py` it sees in a checked document to exist on disk. When A ships
-and `multiresolution.py` is present, add `O4_SCOPE.md` to `DOCS`. Longer term the
-checker should distinguish **planned** modules from **implemented** ones, so a
-scope note can enter coverage before its code exists.
+As of v0.29.0 `multiresolution.py` exists and `O4_SCOPE.md` is in the `DOCS` set of
+`test_repo_consistency.py`, so the `.py` paths named here are checked against
+disk. The longer-term improvement is unchanged: the checker should distinguish
+**planned** modules from **implemented** ones, so a scope note can enter coverage
+*before* its code exists, not only after.
 
 ## 9. Wavelet extension — adaptive compression with an error budget
 
@@ -231,9 +237,10 @@ $$\operatorname{Var}_\mu(p) = \sum_{j=0}^{J-1}\|D_j p\|_\mu^2 + \|p - P_J p\|_\m
 
 Variation resolved at each refinement, plus unresolved variation. Exact at finite
 resolution. The root condition is load-bearing: the telescoping of `P_0 … P_J`
-starts at `‖p − P_0 p‖²`, which equals `Var_μ(p)` **only** when `P_0 p = p̄`; a
-non-trivial root (or a measure that changes between levels) gives a different
-quantity.
+starts at `‖p − P_0 p‖² ≤ Var_μ(p)`, with equality **iff** `P_0 p = p̄` — i.e. iff
+every root block has the same `μ`-mean. A trivial root always qualifies; a
+non-trivial root can also qualify (balanced blocks), and otherwise the identity is
+a statement about `‖p − P_0 p‖²`, not `Var_μ(p)`.
 
 **9.2 Total energy is a bad objective.** If the finest partition is discrete then
 `P_J p = p` and `Σ_j E_j = p̄(1−p̄)` — identical for every such tower at a fixed

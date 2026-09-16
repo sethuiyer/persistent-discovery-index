@@ -1057,10 +1057,11 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - **Core monodromy — closed, negative** (`core_monodromy.py`): `γ ↦ T_γ|_R` is a
   monoid homomorphism but not a group representation — the core is
   loop-dependent (O1) and the inverse axiom fails (§18).
-- **Twenty-four self-checking suites**, including closed-form toy validation, the
+- **Twenty-five self-checking suites**, including closed-form toy validation, the
   refinement law verified over a full real corpus, edge-preservation checks on
-  every ingest format, and the dense-mesh / sparse-witness contract of §2.3–§2.5
-  (`cofinal_mesh.py`, `test_cofinal_mesh.py`, `test_ingest_integrity.py`).
+  every ingest format, the dense-mesh / sparse-witness contract of §2.3–§2.5
+  (`cofinal_mesh.py`, `test_cofinal_mesh.py`, `test_ingest_integrity.py`), and the
+  weighted detail operator of O4 (`multiresolution.py`, `test_multiresolution.py`).
 
 ## Roadmap
 
