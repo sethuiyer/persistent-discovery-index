@@ -5,21 +5,24 @@ o4b_cost.py — the outcome-independent COST-VARIATION statistic (pilot 2, §3).
 Localises where observed **cost variation** is resolved by behavioural refinement.
 It is NOT a waste, saving, or causal measure: high cost may be necessary work.
 
-Contract (O4B_PREDECLARATION_PILOT2.md §3, all of it load-bearing):
+Contract (O4B_PREDECLARATION_PILOT2.md §3 + O4B_PILOT2_TOWER.md):
 
   * equal weight per task, divided equally among that task's eligible runs;
-  * cost centred WITHIN task using the same weights;
+  * cost centred WITHIN task using the same weights — this measures RUN-TO-RUN cost
+    variation, so a behaviour that is consistently expensive on every repetition of
+    every task can vanish from this signal (stated limitation, not a bug);
   * detail energies E_j = ||D_j c||^2 on a caller-supplied nested partition tower;
   * residual ||c - P_J c||^2 carried in the total;
   * unit-free shares s_j = E_j / (sum_j E_j + residual);
   * zero denominator -> share UNDEFINED -> the selector ABSTAINS (never 0);
-  * a level whose mean class size is below a threshold is INADMISSIBLE -- a
-    singleton refinement resolves every observed difference without generalising;
-  * a task with fewer than r_min eligible runs is excluded (with one run,
-    within-task centring removes all variation).
+  * a level is INADMISSIBLE unless it has >= min_blocks blocks AND its **support**
+    passes: support = fraction of eligible runs sitting in blocks that contain runs
+    from >= k_tasks DISTINCT TASKS. Several runs from one task do not establish
+    generalisation, so a level that merely separates tasks is inadmissible;
+  * a task with fewer than r_min priced runs is excluded.
 
-No feature is read from the observable: the caller supplies partitions over
-BEHAVIOURAL features, and `cost` is passed separately.
+The observable is passed separately: partitions must be over BEHAVIOURAL features
+and must never include cost, tokens, or any deterministic encoding of them.
 
 Stdlib only.
 """
@@ -28,23 +31,26 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Optional, Sequence
 
-from multiresolution import (PartitionTower, detail, residual, weighted_norm2)
+from multiresolution import PartitionTower, detail, residual, weighted_norm2
 
 R_MIN_DEFAULT = 2
-MIN_MEAN_CLASS_SIZE_DEFAULT = 2.0
+K_TASKS_DEFAULT = 2
+SUPPORT_FRAC_DEFAULT = 0.5
+MIN_BLOCKS_DEFAULT = 2
 
 
 def variance_shares(costs: Sequence[Optional[float]],
                     tasks: Sequence,
                     levels: Sequence[Sequence],
                     r_min: int = R_MIN_DEFAULT,
-                    min_mean_class_size: float = MIN_MEAN_CLASS_SIZE_DEFAULT) -> dict:
+                    k_tasks: int = K_TASKS_DEFAULT,
+                    support_frac: float = SUPPORT_FRAC_DEFAULT,
+                    min_blocks: int = MIN_BLOCKS_DEFAULT) -> dict:
     """Cost-variation shares over a nested partition tower.
 
-    `costs[i]`        per-run cost (None = run not priced)
-    `tasks[i]`        task/cluster id of run i
-    `levels[j][i]`    class id of run i at level j (levels[0] must be trivial,
-                      and each level must refine the previous)
+    `costs[i]`     per-run cost (None = run not priced)
+    `tasks[i]`     task/cluster id of run i
+    `levels[j][i]` class id of run i at level j (levels[0] trivial; each refines prev)
     """
     n = len(costs)
     if len(tasks) != n or not levels or any(len(L) != n for L in levels):
@@ -62,7 +68,8 @@ def variance_shares(costs: Sequence[Optional[float]],
         return {"abstain": True, "reason": "no task has >= r_min priced runs",
                 "shares": None, "E": None, "residual": None, "total": None,
                 "tasks_eligible": 0, "runs_eligible": 0, "tasks_excluded": excluded,
-                "level_admissible": None, "mean_class_size": None}
+                "level_admissible": None, "support": None, "n_blocks": None,
+                "mean_class_size": None}
 
     n_tasks = len(eligible)
     sample = next(c for c in costs if c is not None)
@@ -79,6 +86,7 @@ def variance_shares(costs: Sequence[Optional[float]],
             c[i] = costs[i] - mean_t
 
     sub_levels = [[levels[j][i] for i in idx] for j in range(len(levels))]
+    sub_tasks = [tasks[i] for i in idx]
     tower = PartitionTower(sub_levels)                      # validates nesting + trivial root
     sub_mu = [mu[i] for i in idx]
     sub_c = [c[i] for i in idx]
@@ -88,17 +96,26 @@ def variance_shares(costs: Sequence[Optional[float]],
     res = residual(sub_c, tower, sub_mu)
     total = sum(E) + res
 
-    mean_size, admissible = [], []
+    support, n_blocks, mean_size, admissible = [], [], [], []
+    m = len(idx)
     for j in range(len(sub_levels)):
-        classes = len(set(sub_levels[j]))
-        size = (len(idx) / classes) if classes else 0.0
-        mean_size.append(size)
-        admissible.append(size >= min_mean_class_size)
+        blocks: dict = defaultdict(set)
+        for pos, cls in enumerate(sub_levels[j]):
+            blocks[cls].add(sub_tasks[pos])
+        nb = len(blocks)
+        supported_runs = 0
+        for cls, ts in blocks.items():
+            if len(ts) >= k_tasks:
+                supported_runs += sum(1 for x in sub_levels[j] if x == cls)
+        n_blocks.append(nb)
+        support.append(supported_runs / m)
+        mean_size.append(m / nb if nb else 0.0)
+        admissible.append(nb >= min_blocks and support[-1] >= support_frac)
 
     base = {"E": E, "residual": res, "total": total,
-            "tasks_eligible": n_tasks, "runs_eligible": len(idx),
-            "tasks_excluded": excluded, "mean_class_size": mean_size,
-            "level_admissible": admissible}
+            "tasks_eligible": n_tasks, "runs_eligible": m,
+            "tasks_excluded": excluded, "support": support, "n_blocks": n_blocks,
+            "mean_class_size": mean_size, "level_admissible": admissible}
     if total <= 0:
         base.update(abstain=True, reason="zero observed within-task variance", shares=None)
         return base
@@ -110,8 +127,8 @@ def best_level(result: dict, s_min: float) -> Optional[int]:
     """The admissible refinement with the largest share, or None (-> abstain / C).
 
     `shares[j]` is the variance resolved by adding level `j+1`, so ADMISSIBILITY is
-    read from level `j+1`: a discrete refinement is never selected. Ties break to
-    the coarser refinement.
+    read from level `j+1`: a discrete or task-separating refinement is never
+    selected. Ties break to the coarser refinement.
     """
     if not result or result.get("abstain") or not result.get("shares"):
         return None

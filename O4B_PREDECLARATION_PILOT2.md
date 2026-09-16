@@ -96,10 +96,16 @@ and the finest level could **memorise singletons**. So:
 - **Inadmissible as features:** **cost, tokens, and any deterministic encoding of
   them**; the terminal outcome; the verified outcome and its encodings. The tower
   must not be able to read the quantity it is explaining.
-- **Singleton rule:** a level whose partition is (near-)discrete is inadmissible
-  for selection — a singleton partition can resolve every observed cost difference
-  without generalising. **`[FIX BEFORE RUN]`** the admissibility bound (e.g.
-  minimum mean class size, or maximum class count).
+- **Support rule (distinct tasks):** a level is admissible only if it has
+  `>= min_blocks` blocks **and** its **support** — the fraction of eligible runs in
+  blocks containing runs from **`>= k_tasks` distinct tasks** — is `>= support_frac`.
+  Several runs from one task do **not** establish generalisation. A discrete level,
+  and a level that merely separates the tasks, both have support `0` and are
+  inadmissible. **`[FIX BEFORE RUN]`** `k_tasks`, `support_frac`, `min_blocks`.
+- **The proposed levels** (search mode / read scope / recovery), their mechanical
+  extraction rules, missing-data handling, and the
+  feature → extraction → intervention-candidate table are in
+  [`O4B_PILOT2_TOWER.md`](O4B_PILOT2_TOWER.md).
 
 ### 3.2 The observable and the weights
 
@@ -135,10 +141,17 @@ stated rather than hidden.
 > work, a harder task, or an inefficient policy. `s_j` localises where observed
 > cost variance is *resolved by behavioural refinement*.
 
+**Stated limitation.** Within-task centring measures **run-to-run** cost variation:
+a behaviour that is **consistently expensive on every repetition of every task**
+vanishes from this signal. A supported share is evidence about *variation*, never a
+complete account of cost.
+
 **Implemented and audited.** The statistic is `o4b_cost.py`; its synthetic audit is
 `test_o4b_cost.py` (zero variance → abstain; currency scaling; equal-task weighting
-with a 1-run task excluded; unresolved residual; singleton refinement
-inadmissible; within-task centring invariance; nesting enforced).
+with a 1-run task excluded; unresolved residual; discrete **and** task-separating
+refinements inadmissible by distinct-task support; within-task centring
+invariance; nesting enforced). The audit establishes **algebraic correctness, not
+useful localisation**.
 
 ## 4. RESOLVED (draft) — mathematical guardrail (cost is not a binary label)
 
@@ -161,7 +174,7 @@ did. Fixtures, at minimum:
 | currency rescaling (`c → k·c`) | shares **unchanged**; raw `E_j` scales by `k²` |
 | unequal repetitions per task | task weighting dominates run count; a 1-run task is excluded |
 | unresolved residual (`P_J c ≠ c`) | residual carried in `total`; share ≤ 1 |
-| singleton refinement | resolved as inadmissible → cannot be selected |
+| singleton / task-separating refinement | distinct-task support `0` → inadmissible |
 
 ## 5. RESOLVED (draft) — selectors P and H
 
@@ -231,8 +244,8 @@ The **P-vs-H contrast is reported** in every outcome, including B and D.
 | # | item | mark |
 |---|---|---|
 | 1 | module → side assignment and multi-task modules (only ~21 modules) | `[CHOICE]` |
-| 2 | diagnostic tower level list | `[FIX BEFORE RUN]` |
-| 3 | singleton/admissibility bound | `[FIX BEFORE RUN]` |
+| 2 | diagnostic tower levels + extraction rules (proposed in `O4B_PILOT2_TOWER.md`) | `[CHOICE]` |
+| 3 | support bounds: `k_tasks`, `support_frac`, `min_blocks` | `[FIX BEFORE RUN]` |
 | 4 | `R_min` (minimum eligible repetitions) | `[FIX BEFORE RUN]` |
 | 5 | H: overlapping-cost handling | `[FIX BEFORE RUN]` |
 | 6 | H abstention threshold; P `s_min` and `K` | `[FIX BEFORE RUN]` |

@@ -106,13 +106,33 @@ def test_singleton_refinement_inadmissible() -> None:
     discrete = [[0, 0, 0, 0], [0, 1, 2, 3]]        # L1 is discrete
     r = variance_shares(COSTS4, TASKS4, discrete)
     check("discrete level marked inadmissible", r["level_admissible"][1] is False)
-    check("mean class size of the discrete level is 1", r["mean_class_size"][1] == 1.0)
+    check("its distinct-task support is 0 (every block is one run)", r["support"][1] == 0.0,
+          str(r["support"][1]))
     check("best_level will not select it even at s_min = 0",
           best_level(r, 0.0) is None, str(best_level(r, 0.0)))
-    # and the 4-run fixture's non-discrete L2 IS selectable if it carries the share
+    # and the 4-run fixture's supported, non-discrete L1 IS selectable
     ok = variance_shares(COSTS4, TASKS4, LEVELS4)
-    check("a non-discrete level remains selectable under s_min",
+    check("a supported level remains selectable under s_min",
           best_level(ok, F(1, 2)) == 0, str(best_level(ok, F(1, 2))))
+
+
+def test_support_counts_distinct_tasks() -> None:
+    print("support counts DISTINCT TASKS per block, not runs")
+    # a level that simply separates the two tasks: every block holds one task only
+    by_task = [[0, 0, 0, 0], [0, 0, 1, 1]]
+    r = variance_shares(COSTS4, TASKS4, by_task)
+    check("task-separating level has zero cross-task support", r["support"][1] == 0.0,
+          str(r["support"][1]))
+    check("and is therefore inadmissible", r["level_admissible"][1] is False)
+    check("best_level abstains (no admissible refinement)",
+          best_level(r, 0.0) is None, str(best_level(r, 0.0)))
+    # several runs of ONE task in a block still do not establish support
+    tasks = ["t1"] * 4 + ["t2", "t2"]
+    costs = [F(1), F(3), F(5), F(7), F(0), F(0)]
+    lv = [[0] * 6, [0, 0, 0, 0, 1, 1]]      # block0 = four t1 runs, block1 = two t2 runs
+    r2 = variance_shares(costs, tasks, lv)
+    check("four runs of one task do not create a supported block",
+          r2["support"][1] == 0.0, str(r2["support"][1]))
 
 
 def test_within_task_centring_invariance() -> None:
@@ -146,6 +166,7 @@ if __name__ == "__main__":
     test_unequal_repetitions()
     test_unresolved_residual()
     test_singleton_refinement_inadmissible()
+    test_support_counts_distinct_tasks()
     test_within_task_centring_invariance()
     test_nesting_is_enforced()
     print("=" * 70)
