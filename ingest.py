@@ -50,13 +50,17 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import sqlite3
 from typing import Any, Iterable, Iterator, Optional
 
 from adapters import Evaluator, Step, Turn as Run, load_pi_session
 
 CANONICAL, PI, OPENAI, LANGSMITH = "canonical", "pi", "openai", "langsmith"
 OTEL, AUTOGEN, CREWAI = "otel", "autogen", "crewai"
-FORMATS = (CANONICAL, PI, OPENAI, LANGSMITH, OTEL, AUTOGEN, CREWAI)
+CLAUDE, CODEX, OPENCODE, ANTIGRAVITY = "claude", "codex", "opencode", "antigravity"
+FORMATS = (CANONICAL, PI, OPENAI, LANGSMITH, OTEL, AUTOGEN, CREWAI,
+           CLAUDE, CODEX, OPENCODE, ANTIGRAVITY)
 
 
 # --------------------------------------------------------------------------
@@ -574,10 +578,352 @@ def load_crewai(path: str) -> list[Run]:
 
 
 # --------------------------------------------------------------------------
+# CLI agent formats: Claude Code, Codex, OpenCode, Antigravity
+#
+# Confidence, stated honestly (the repo's convention):
+#   claude      -- written to a LIVE CAPTURE (the author's on-disk sessions)
+#   codex       -- LIVE CAPTURE; `custom_tool_call.input` wraps JSON in a
+#                  snippet, so the object is extracted by brace matching
+#   opencode    -- LIVE CAPTURE; SQLite `part.data` is documented JSON
+#   antigravity -- INFERRED, lowest confidence: SQLite with protobuf blobs and
+#                  no public schema. Tool calls are recovered by scanning
+#                  length-delimited fields (call_id, tool, JSON args). Run
+#                  boundaries are NOT recoverable, so a conversation is one run.
+# --------------------------------------------------------------------------
+CLAUDE_TOOL_ALIASES = {
+    "Bash": "bash", "Read": "read", "Edit": "edit", "MultiEdit": "edit",
+    "Write": "write", "NotebookEdit": "edit", "Glob": "glob", "Grep": "grep",
+    "Task": "task", "TodoWrite": "todo", "WebFetch": "webfetch",
+    "WebSearch": "websearch", "BashOutput": "bash",
+}
+
+
+def _text_of(content) -> str:
+    """Flatten a message content field (str, or a list of blocks) to text."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for b in content:
+            if isinstance(b, dict):
+                if isinstance(b.get("text"), str):
+                    parts.append(b["text"])
+        return "\n".join(parts)
+    return ""
+
+
+def _clean_prompt(s: str, cap: int = 500) -> str:
+    return " ".join((s or "").split())[:cap]
+
+
+def _claude_is_meta(text: str) -> bool:
+    """Claude Code injects bookkeeping as `user` records (slash-command names and
+    output, the local-command caveat). They are not user turns."""
+    t = (text or "").lstrip()
+    return (t.startswith("<command-name>") or t.startswith("<local-command-stdout>")
+            or t.startswith("<local-command-caveat>")
+            or t.startswith("Caveat: The messages below were generated"))
+
+
+def load_claude(path: str) -> list[Run]:
+    """Claude Code transcript JSONL (`~/.claude/projects/*/*.jsonl`).
+
+    A run is one real user prompt: a `user` record that is NOT a pure carrier of
+    `tool_result` blocks. Subagent sidechains (`isSidechain`) are skipped.
+    """
+    out: list[Run] = []
+    steps: list[Step] = []
+    by_id: dict = {}
+    prompt = ""
+    session = os.path.basename(path).replace(".jsonl", "")
+    project = ""
+    started = False
+    last_text = False
+
+    def flush(outcome: str) -> None:
+        nonlocal steps, by_id, prompt, started, last_text
+        if started:
+            out.append(Run(steps=steps, outcome=outcome, model="claude",
+                           project=project or "claude", session=session, prompt=prompt))
+        steps, by_id, prompt, started, last_text = [], {}, "", False, False
+
+    for o in _iter_objects(path):
+        if o.get("isSidechain"):
+            continue
+        session = o.get("sessionId") or session
+        project = o.get("cwd") or project
+        t = o.get("type")
+        msg = o.get("message")
+        if t == "assistant" and isinstance(msg, dict):
+            blocks = msg.get("content") if isinstance(msg.get("content"), list) else []
+            for b in blocks:
+                if not isinstance(b, dict):
+                    continue
+                if b.get("type") == "tool_use":
+                    args = b.get("input") if isinstance(b.get("input"), dict) else {"raw": b.get("input")}
+                    tool = CLAUDE_TOOL_ALIASES.get(b.get("name"), str(b.get("name") or "?").lower())
+                    s = Step(tool=tool, args=args)
+                    steps.append(s)
+                    started = True
+                    last_text = False
+                    if b.get("id"):
+                        by_id[b.get("id")] = s
+                elif b.get("type") == "text":
+                    started = True
+                    last_text = True
+        elif t == "user" and isinstance(msg, dict):
+            blocks = msg.get("content")
+            is_tool_result = (isinstance(blocks, list) and blocks and
+                              all(isinstance(b, dict) and b.get("type") == "tool_result"
+                                  for b in blocks))
+            if is_tool_result:
+                for b in blocks:
+                    s = by_id.get(b.get("tool_use_id"))
+                    if s is not None and b.get("is_error"):
+                        s.error = _text_of(b.get("content"))[:200] or "error"
+            else:
+                text = _text_of(blocks)
+                if _claude_is_meta(text):
+                    continue
+                if started:
+                    flush("stop" if last_text else "toolUse")
+                if text.strip():
+                    prompt = _clean_prompt(text)
+                started = True
+    if started:
+        flush("stop" if last_text else "toolUse")
+    return out
+
+
+def _codex_args(pl: dict) -> dict:
+    raw = pl.get("arguments") if pl.get("arguments") is not None else pl.get("input")
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, str):
+        try:
+            return json.loads(raw)
+        except Exception:
+            pass
+        i = raw.find("{")            # custom_tool_call wraps JSON in a snippet
+        if i >= 0:
+            depth = 0
+            for j in range(i, len(raw)):
+                if raw[j] == "{":
+                    depth += 1
+                elif raw[j] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        try:
+                            return json.loads(raw[i:j + 1])
+                        except Exception:
+                            break
+        return {"raw": raw}
+    return {}
+
+
+def load_codex(path: str) -> list[Run]:
+    """Codex rollout JSONL (`~/.codex/sessions/*/*/*/rollout-*.jsonl`)."""
+    out: list[Run] = []
+    steps: list[Step] = []
+    by_id: dict = {}
+    prompt = ""
+    session = os.path.basename(path)
+    project = ""
+    started = False
+
+    def flush() -> None:
+        nonlocal steps, by_id, prompt, started
+        if started:
+            out.append(Run(steps=steps, outcome="stop", model="codex",
+                           project=project or "codex", session=session, prompt=prompt))
+        steps, by_id, prompt, started = [], {}, "", False
+
+    for o in _iter_objects(path):
+        t = o.get("type")
+        pl = o.get("payload") if isinstance(o.get("payload"), dict) else {}
+        if t == "session_meta":
+            session = pl.get("id") or pl.get("session_id") or session
+            project = pl.get("cwd") or project
+        elif t == "response_item":
+            pt = pl.get("type")
+            if pt == "message":
+                role = pl.get("role")
+                if role == "user":
+                    if started:
+                        flush()
+                    prompt = _clean_prompt(_text_of(pl.get("content")))
+                    started = True
+                elif role == "assistant":
+                    started = True
+            elif pt in ("custom_tool_call", "function_call", "local_shell_call"):
+                s = Step(tool=str(pl.get("name") or pt), args=_codex_args(pl))
+                steps.append(s)
+                started = True
+                if pl.get("call_id"):
+                    by_id[pl["call_id"]] = s
+            elif pt in ("custom_tool_call_output", "function_call_output"):
+                s = by_id.get(pl.get("call_id"))
+                txt = _text_of(pl.get("output")) or str(pl.get("output") or "")
+                if (s is not None and "completed" not in txt.lower()
+                        and re.search(r"\b(error|failed|exception)\b", txt, re.I)):
+                    s.error = txt[:200]
+    if started:
+        flush()
+    return out
+
+
+def load_opencode(path: str) -> list[Run]:
+    """OpenCode SQLite store (`~/.local/share/opencode/opencode.db`).
+
+    `part.data` is JSON; a `tool` part carries {tool, state:{input,output,status}}.
+    """
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        roles: dict = {}
+        for mid, data in con.execute("select id, data from message"):
+            try:
+                roles[mid] = json.loads(data).get("role")
+            except Exception:
+                roles[mid] = None
+        out: list[Run] = []
+        for sid, model in con.execute("select id, model from session"):
+            steps: list[Step] = []
+            prompt = ""
+            started = False
+            for mid, data in con.execute(
+                    "select message_id, data from part where session_id=? order by time_created, id",
+                    (sid,)):
+                try:
+                    d = json.loads(data)
+                except Exception:
+                    continue
+                ptype = d.get("type")
+                if ptype == "tool":
+                    st = d.get("state") if isinstance(d.get("state"), dict) else {}
+                    err = str(st.get("output") or "error")[:200] if st.get("status") == "error" else None
+                    steps.append(Step(tool=str(d.get("tool") or "?"),
+                                      args=st.get("input") if isinstance(st.get("input"), dict) else {},
+                                      error=err))
+                    started = True
+                elif ptype == "text" and roles.get(mid) == "user":
+                    if started:
+                        out.append(Run(steps=steps, outcome="stop", model=str(model or "opencode"),
+                                       project="opencode", session=str(sid), prompt=prompt))
+                        steps, prompt = [], ""
+                    prompt = _clean_prompt(d.get("text") or "")
+                    started = True
+            if started:
+                out.append(Run(steps=steps, outcome="stop", model=str(model or "opencode"),
+                               project="opencode", session=str(sid), prompt=prompt))
+        return out
+    finally:
+        con.close()
+
+
+def _pb_varint(b: bytes, i: int):
+    shift = val = 0
+    while i < len(b):
+        x = b[i]; i += 1
+        val |= (x & 0x7F) << shift
+        if not (x & 0x80):
+            break
+        shift += 7
+    return val, i
+
+
+def _pb_fields(b: bytes):
+    i = 0
+    while i < len(b):
+        tag, i = _pb_varint(b, i)
+        if tag == 0:
+            break
+        fn, wt = tag >> 3, tag & 7
+        if wt == 0:
+            _, i = _pb_varint(b, i)
+            yield fn, wt, None
+        elif wt == 2:
+            ln, i = _pb_varint(b, i)
+            yield fn, wt, b[i:i + ln]; i += ln
+        elif wt == 5:
+            yield fn, wt, b[i:i + 4]; i += 4
+        elif wt == 1:
+            yield fn, wt, b[i:i + 8]; i += 8
+        else:
+            break
+
+
+def _pb_texts(b: bytes, out: list, depth: int = 0) -> None:
+    for _fn, wt, val in _pb_fields(b):
+        if wt == 2 and val:
+            if len(val) > 1 and all(32 <= c < 127 for c in val):
+                out.append(val.decode("ascii"))
+            elif depth < 6:
+                _pb_texts(val, out, depth + 1)
+
+
+def _antigravity_steps(payload: bytes) -> list[Step]:
+    texts: list[str] = []
+    _pb_texts(payload, texts)
+    steps: list[Step] = []
+    for i in range(len(texts) - 2):
+        if texts[i].startswith("call_"):
+            tool, args = texts[i + 1], texts[i + 2]
+            if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tool) and args.startswith("{"):
+                try:
+                    a = json.loads(args)
+                except Exception:
+                    a = {"raw": args}
+                steps.append(Step(tool=tool, args=a if isinstance(a, dict) else {"raw": args}))
+    return steps
+
+
+def load_antigravity(path: str) -> list[Run]:
+    """Antigravity SQLite store (INFERRED; see the banner above).
+
+    Tool calls are recovered from protobuf blobs heuristically; run boundaries
+    are not recoverable, so one conversation yields one run with no prompt.
+    """
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        steps: list[Step] = []
+        for _idx, payload in con.execute("select idx, step_payload from steps order by idx"):
+            if isinstance(payload, (bytes, bytearray)):
+                steps.extend(_antigravity_steps(bytes(payload)))
+        if not steps:
+            return []
+        return [Run(steps=steps, outcome="stop", model="antigravity", project="antigravity",
+                    session=os.path.basename(path).replace(".db", ""), prompt="")]
+    finally:
+        con.close()
+
+
+# --------------------------------------------------------------------------
 # detection and dispatch
 # --------------------------------------------------------------------------
+def _sqlite_kind(path: str):
+    """Classify a SQLite file by its tables (OpenCode vs Antigravity)."""
+    try:
+        con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        tabs = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
+        con.close()
+    except Exception:
+        return None
+    if {"part", "session"} <= tabs:
+        return OPENCODE
+    if "steps" in tabs:
+        return ANTIGRAVITY
+    return None
+
+
 def detect_format(path: str) -> str:
-    """Sniff the first JSON object. Falls back to counting structural markers."""
+    """Sniff the file. SQLite by magic bytes; JSON by structural markers."""
+    try:
+        with open(path, "rb") as _f:
+            magic = _f.read(16)
+    except OSError:
+        magic = b""
+    if magic.startswith(b"SQLite format 3"):
+        return _sqlite_kind(path) or CANONICAL
     scores = {f: 0 for f in FORMATS}
     seen = 0
     for o in _iter_objects(path):
@@ -606,8 +952,15 @@ def detect_format(path: str) -> str:
         # AutoGen v0.2/0.3 uses function_call; OpenAI uses tool_call_id
         if "tool_call_id" in keys:
             scores[OPENAI] += 3
-        if {"type", "message"} <= keys or o.get("type") in ("session", "message", "model_change"):
+        if ({"type", "message"} <= keys or o.get("type") in ("session", "message", "model_change")) \
+                and "parentUuid" not in keys:
             scores[PI] += 3
+        # Claude Code transcript records carry uuid / parentUuid / sessionId
+        if "parentUuid" in keys or "isSidechain" in keys:
+            scores[CLAUDE] += 5
+        # Codex rollout records
+        if o.get("type") in ("session_meta", "response_item", "event_msg", "turn_context"):
+            scores[CODEX] += 5
         if "run_type" in keys or "trace_id" in keys:
             scores[LANGSMITH] += 3
         if "messages" in keys or (o.get("role") in ("user", "assistant", "tool")):
@@ -623,7 +976,9 @@ def detect_format(path: str) -> str:
 
 LOADERS = {CANONICAL: load_canonical, PI: load_pi_session,
            OPENAI: load_openai, LANGSMITH: load_langsmith,
-           OTEL: load_otel_genai, AUTOGEN: load_autogen, CREWAI: load_crewai}
+           OTEL: load_otel_genai, AUTOGEN: load_autogen, CREWAI: load_crewai,
+           CLAUDE: load_claude, CODEX: load_codex,
+           OPENCODE: load_opencode, ANTIGRAVITY: load_antigravity}
 
 
 def load_any(path: str, fmt: Optional[str] = None) -> list[Run]:
@@ -638,7 +993,7 @@ def load_paths(paths: Iterable[str], fmt: Optional[str] = None) -> list[Run]:
         if os.path.isdir(p):
             for root, _, files in os.walk(p):
                 for f in sorted(files):
-                    if f.endswith((".jsonl", ".json")):
+                    if f.endswith((".jsonl", ".json", ".db")):
                         try:
                             out.extend(load_any(os.path.join(root, f), fmt))
                         except Exception:

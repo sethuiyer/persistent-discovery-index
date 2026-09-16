@@ -68,6 +68,18 @@ is decoration.
 | `langsmith` | LangSmith / LangGraph run exports | `run_type` / `trace_id` |
 | `canonical` | anything you write | `steps` array |
 
+Plus the CLI agent stores, each with its confidence stated (see the `ingest.py` banner):
+
+| format | source | confidence |
+|---|---|---|
+| `claude` | Claude Code transcripts (`~/.claude/projects/*/*.jsonl`) | **live capture** |
+| `codex` | Codex rollouts (`~/.codex/sessions/*/*/*/rollout-*.jsonl`) | **live capture**; args brace-extracted from `custom_tool_call.input` |
+| `opencode` | OpenCode SQLite (`~/.local/share/opencode/opencode.db`) | **live capture**; `part.data` JSON |
+| `antigravity` | Antigravity SQLite (`~/.gemini/antigravity-cli/conversations/*.db`) | **inferred**; protobuf scan, no run boundaries |
+
+`detect_format()` also classifies SQLite by magic bytes and table names. Eleven
+loaders in total (`otel`, `autogen`, `crewai` are covered below).
+
 `ingest.detect_format()` sniffs the file; `load_any()` dispatches. Add a framework
 by writing one loader that returns `list[Run]`.
 
@@ -1045,8 +1057,9 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - Separate `n_j` / `L_j` ledgers, maintained independently at every level.
 - **Behavioural resolution towers** (`quotient_tower.py`) with the refinement law
   enforced by `validate()` / `validate_pairs()`.
-- **Multi-framework ingest** (`ingest.py`): canonical, pi, OpenAI, LangSmith, plus
-  OpenTelemetry GenAI spans, AutoGen, and CrewAI — seven loaders with
+- **Multi-framework ingest** (`ingest.py`): canonical, pi, OpenAI, LangSmith,
+  OpenTelemetry GenAI spans, AutoGen, CrewAI, and the CLI agent stores
+  (`claude`, `codex`, `opencode`, `antigravity`) — eleven loaders with
   autodetection, directory walking, and canonical round-trip export.
 - **One-command profiler** (`pdi_profile.py`) for anyone's traces.
 - `LIVE` / `TRANSIENT` / `UNKNOWN` node state with coaccessibility propagation;
@@ -1061,12 +1074,13 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - **Core monodromy — closed, negative** (`core_monodromy.py`): `γ ↦ T_γ|_R` is a
   monoid homomorphism but not a group representation — the core is
   loop-dependent (O1) and the inverse axiom fails (§18).
-- **Twenty-six self-checking suites**, including closed-form toy validation, the
+- **Twenty-seven self-checking suites**, including closed-form toy validation, the
   refinement law verified over a full real corpus, edge-preservation checks on
   every ingest format, the dense-mesh / sparse-witness contract of §2.3–§2.5
   (`cofinal_mesh.py`, `test_cofinal_mesh.py`, `test_ingest_integrity.py`), the
   weighted detail operator of O4 (`multiresolution.py`, `test_multiresolution.py`),
-  and the O4b protocol harness (`o4b.py`, `test_o4b.py`).
+  the O4b protocol harness (`o4b.py`, `test_o4b.py`), and the CLI agent stores
+  (`test_ingest_cli.py`).
 
 ## Roadmap
 
