@@ -1,0 +1,196 @@
+# O4 — Construct and validate an outcome-independent diagnostic tower
+
+**Status: open.** Two discharge conditions, stated separately in §5. This is a
+**scope note, not a result**: it specifies what can be discharged before
+independently evaluated data exists, and what cannot.
+
+Related: [`SPINE.md`](SPINE.md) §9 (O4), §2.3–§2.5; [`INTRODUCTION.md`](INTRODUCTION.md) §9.
+
+---
+
+## 1. Why this is needed
+
+The shipped descriptive tower puts the terminal outcome at its coarsest level:
+
+```python
+Q1 = lambda h: h.outcome                      # adapters.tool_tower
+Turn.succeeded  :=  (self.outcome == "stop")  # adapters.Turn
+```
+
+So the success label `p` is measurable at `Π₁`. Because `Π_j` refines `Π₁`,
+`P_j p = p` for every `j ≥ 1`, hence every success-detail operator
+`D_j = P_{j+1} − P_j` annihilates `p`:
+
+$$E_j = \lVert D_j p \rVert^2 = 0 \quad (j \ge 1), \qquad
+\text{all signal lives in } E_0 = \operatorname{Var}_\mu(p).$$
+
+The proposed multiresolution success signal is therefore not *wrong* on this
+tower — it is **vacuous**. Fixing that requires a separate tower that does not
+contain the label, and an outcome that is not the agent's own termination status.
+
+**Q1–Q6 are not modified by O4.** They remain the label-bearing descriptive
+tower, so historical counts stay comparable. The diagnostic tower is additional.
+
+### Dependence on the success criterion
+
+The label `p` is not intrinsic to a trace: it is supplied by an **evaluator**.
+Changing the evaluator changes `p`, and therefore `L_j`, `D` and `Δ`, **even when
+the corpus, the tower and the scales are held fixed**. This is a distinct axis
+from tower *presentation* dependence (§2.3–§2.4): one is a choice of *what counts
+as behaviour*, the other a choice of *what counts as success*. Comparisons must
+freeze the evaluator's **identity, version and configuration**, exactly as they
+freeze the tower version — otherwise a difference in `Δ` can be an artefact of the
+label rather than of the agent.
+
+---
+
+## 2. The A / B split
+
+| | Work | Depends on |
+|---|---|---|
+| **A — machinery** | label-free diagnostic tower + detail-energy computation | nothing; buildable and testable now |
+| **B — signal** | independent verified outcome; matched-task validation | independently evaluated, matched-task corpus |
+
+A can be discharged before B. **Discharging A is not evidence for B.**
+
+---
+
+## 3. A — machinery (buildable now)
+
+### 3.1 The operator
+
+Fix positive weights `μ`, a labelled cohort `C` (see §4), and `p` = verified
+success on `C`. For the diagnostic partition `Π_j`, with `V_j` its block-constant
+functions:
+
+$$P_j f = \mathbb E_\mu[f \mid \Pi_j], \qquad D_j = P_{j+1} - P_j, \qquad
+\dim W_j = n_{j+1} - n_j.$$
+
+Retain, per parent `C`, its mass, child masses, success sums and cost sums. For a
+child `B ⊂ C`, with `p̄` the `μ`-weighted mean:
+
+$$E_{j,C} = \sum_{B \subset C} \mu(B)\,(\bar p_B - \bar p_C)^2, \qquad
+E_j = \sum_C E_{j,C} = \lVert D_j p \rVert^2.$$
+
+Nested conditional expectations are orthogonal projections, so the ranges of the
+`D_j` are mutually orthogonal and
+
+$$\lVert p - P_j p \rVert^2 - \lVert p - P_{j+1} p \rVert^2 = E_j \ \ge 0,$$
+
+$$\sum_j E_j \le \operatorname{Var}_\mu(p) \le \tfrac14 \ \text{(binary } p\text{)},$$
+
+with the residual `‖p − P_J p‖²` reported when the finest partition does not
+determine `p`. Weights are **normalised once and applied identically at every
+level**; no renormalisation per level. The choice of `μ` — **per-run or
+per-task** — is **configurable and must be declared explicitly**; there is no
+universally correct choice, and the two answer different questions.
+
+Proposed (not yet implemented) module: `multiresolution.py` (no third-party
+dependency).
+
+### 3.2 The diagnostic tower
+
+Features must be **outcome-independent** (§4). The tower must satisfy the
+refinement law and is validated with `QuotientTower.validate`
+(`TowerViolation` on any violation), exactly as the descriptive tower is.
+
+### 3.3 Acceptance fixtures (A)
+
+1. **constant-label** — `p ≡ c`. Every `E_j = 0` and the residual is 0; the
+   instrument reports zero rather than manufacturing structure.
+2. **unequal-weight** — non-uniform `μ`. Energies agree with a direct weighted
+   least-squares computation to tolerance.
+3. **planted-level** — a signal planted at a declared level `j*`; `E_{j*} > 0`
+   and `E_j ≈ 0` for `j ≠ j*`.
+4. **unresolved-residual** — the finest partition does not determine `p`;
+   `‖p − P_J p‖² > 0` is reported, not silently dropped.
+
+These establish **correctness** and **sensitivity to planted structure**. They do
+not establish usefulness on real workloads (§5).
+
+---
+
+## 4. Features, labels, and the leakage rule
+
+**Excluded from the diagnostic tower:** the success label, and any **deterministic
+encoding of the evaluator result** (e.g. a field that is a function of
+`verified_outcome`). Otherwise the `E_j` collapse as in §1.
+
+**A tool error is not automatically leakage.** A tool error is an *intermediate
+event*: a successful run can recover from errors. Only terminal-status fields
+that the evaluator reads are excluded. Every feature records its **provenance**
+(source field, whether it is terminal-status or intermediate), so admissibility is
+auditable rather than asserted.
+
+| class | example | admissible? |
+|---|---|---|
+| intermediate event | tool error, retry, tool family/order, arg classes | yes — must carry provenance |
+| terminal status of the agent | `outcome`, `stopReason` | no — encodes the label |
+| evaluator result / encodings | `verified_outcome`, derived pass/fail flags | no |
+
+**Schema (buildable now; population validation later).** The canonical record
+gains, alongside the existing terminal `outcome`:
+
+| field | meaning |
+|---|---|
+| `terminal_outcome` | what the agent did (the existing `outcome`, kept) |
+| `verified_outcome` | `success` \| `failure` \| `unknown` |
+| `evaluator` | id, version, method (provenance of the label) |
+
+### Unknown is not failure
+
+`unknown` is a third value, not a synonym for `failure`. Supervised energies are
+computed **only on an explicitly declared labelled cohort** (`success` /
+`failure`), never folding `unknown` in. **Label coverage** (share of the corpus
+that is labelled, and the `unknown` fraction) is reported as a separate number.
+
+---
+
+## 5. Discharge conditions
+
+O4 is discharged in two independent stages, and they are recorded separately:
+
+- **O4a — synthetic correctness.** The detail-energy machinery is correct, the
+  identity holds, and it is sensitive to planted structure. **Dischargeable now**,
+  by the fixtures in §3.3, with no real data.
+- **O4b — real-data usefulness.** The diagnoses reduce cost at preserved task
+  quality. Requires an **independently evaluated, matched-task corpus**.
+  **Not inferable from O4a.**
+
+For O4b, **matched tasks are specifically required for agent comparisons**: agents
+that ran different work are not comparable. The protocol freezes features, tower
+version, **evaluator identity/version/configuration** and weights before
+evaluation, assesses on held-out tasks, and reports sampling stability by
+**task-cluster resampling**. Rare singleton classes can produce perfect in-sample
+separation with no generalisable information; a negative cost–success covariance
+is an **experiment to run**, not a causal finding.
+
+---
+
+## 6. Non-goals
+
+- No change to `Q1`–`Q6` or to any historical descriptive count.
+- No injectivity claim for comparison keys (see `test_ingest_integrity.py`).
+- No population claim from synthetic labels; no causal claim from observational
+  association.
+- No claim that a negative `cost`–`success` covariance means deleting a branch
+  improves anything.
+
+## 7. Open questions
+
+- Label source and evaluator identity for a real corpus — noting that the
+  evaluator is itself a **presentation** the exponents are sensitive to (§1,
+  dependence on the success criterion).
+- Handling `unknown` beyond exclusion (masking and probabilistic weights are both
+  unattractive; exclusion is the conservative default).
+- Choice of `μ` (**per-run vs per-task**): configurable and explicit, with no
+  universally correct default; its effect on `E_j` comparability must be stated.
+
+## 8. Consistency coverage
+
+This note is deliberately **outside** the `DOCS` set of `test_repo_consistency.py`:
+it names modules that are *proposed*, not implemented, and the checker currently
+requires every `.py` it sees in a checked document to exist on disk. When A ships
+and `multiresolution.py` is present, add `O4_SCOPE.md` to `DOCS`. Longer term the
+checker should distinguish **planned** modules from **implemented** ones, so a
+scope note can enter coverage before its code exists.

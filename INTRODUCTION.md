@@ -53,6 +53,7 @@ Concretely, when you write or change anything:
 | Who is this for / how is it sold? | `PRODUCT_README.md` (strategy, not warrant) |
 | How do I pitch it to non-tech / sales? | `PRODUCT_BREAKDOWN.md` (battlecard, ROI, non-tech) |
 | Is there a video / blog walkthrough of the math? | Video: [The Hidden Cost of AI Discovery](https://www.youtube.com/watch?v=tkPmvU6x_bc) · Blog: [The Persistent Discovery Index](https://gist.github.com/shunyabarlabs/ec39c0ad4ee105d283a914b7b0a99aed) |
+| What is O4 / why is the success signal vacuous? | `O4_SCOPE.md` |
 | The mathematics in one narrative (long form) | `MATH.md` |
 | How do I use it? | `README.md` |
 | What does a real trace look like? | `fixtures/` |
@@ -201,6 +202,7 @@ visible. That is the house style, not an accident.
 |---|---|
 | **O1 — canonical fibre.** Is the stable quotient presentation-independent? | **open**, known to vary; this *is* the Lindenbaum–Tarski gap |
 | **O3 — sufficient augmentation.** Does any finite augmentation give a reversible lift? | **open**; §18 says it must separate states *at the attractor* |
+| **O4 — outcome-independent diagnostic tower.** Exclude the success label and its encodings; validate detail energies | **open** — O4a (synthetic correctness) dischargeable now; O4b (real-data usefulness) needs matched-task evaluated data; see `O4_SCOPE.md` |
 | **§10 conjecture.** A functor from tower live/transient to transport recurrent/transient | **conjecture** |
 | **Controlled corpus.** Repeated tasks per agent | the blocker for every empirical claim |
 | **Twisted zeta.** Does `∏(1−χ(P)u^{ℓ(P)})^{-1}` separate what bare zeta cannot? | **closed, negative** — needs a non-length-determined `χ`, i.e. a non-trivial `π₁→U(1)`; PDI's transport has none (§19.6) |

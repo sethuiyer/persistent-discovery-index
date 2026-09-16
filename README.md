@@ -1066,6 +1066,11 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 
 - **A controlled task corpus** — repeated tasks per agent. The blocker for real
   conclusions, not the software.
+- **O4 — an outcome-independent diagnostic tower** ([`O4_SCOPE.md`](O4_SCOPE.md)).
+  Today `Q1` is the terminal outcome and success is `outcome == "stop"`, so the
+  label is measurable at the coarsest level and every finer success-detail energy
+  is zero. Synthetic correctness (O4a) is dischargeable now; real-data usefulness
+  (O4b) needs an independently evaluated, matched-task corpus.
 - ~~**More ingest adapters** — CrewAI, AutoGen, OpenTelemetry GenAI spans.~~ Done in
   v0.15.0. The remaining gap is not code: none of the three has been run against a
   **live capture**, only against fixtures built to the published schemas.

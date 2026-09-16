@@ -357,6 +357,22 @@ collapse is forced at the **global optima**, so any augmentation that works must
 separate states the landscape pulls together *at the attractor*. Augmenting by
 history alone does not, because the history is itself pushed to the attractor.
 
+**O4. Outcome-independent diagnostic tower.** The descriptive tower places the
+terminal outcome at `Q1`, and success is `outcome == "stop"`, so the label is
+measurable at the coarsest level and every finer success-detail energy is
+identically zero. O4 is to construct a diagnostic tower whose features exclude
+the success label and every deterministic encoding of the evaluator result, and
+to validate it. It is discharged in two independent stages:
+
+- **O4a — synthetic correctness.** The detail-energy machinery is correct and
+  sensitive to planted structure. **Dischargeable now**, with no real data.
+- **O4b — real-data usefulness.** The diagnoses reduce cost at preserved task
+  quality. Requires an independently evaluated, **matched-task** corpus; **not**
+  inferable from O4a.
+
+Scope, schema, feature-provenance rule and acceptance fixtures: `O4_SCOPE.md`.
+The descriptive tower `Q1`–`Q6` is unchanged.
+
 ---
 
 ## 10. The recurring pattern (conjecture)
@@ -366,7 +382,7 @@ persistent part is exactly where canonical structure lives:
 
 | | persistent part | structure it carries | transient part |
 |---|---|---|---|
-| Tower (§2) | `L_j` — live classes | `D` is cofinal-invariant | `n_j − L_j`; `Δ` presentation-dependent |
+| Tower (§2) | `L_j` — live classes | `D` is dense-mesh invariant | `n_j − L_j`; `Δ` sparse-mesh dependent |
 | Transport (§6) | recurrent core `R` | `T\|_R` is invertible | `F \ R`; `T` many-to-one |
 
 **Conjecture.** These are two instances of one phenomenon: *survival* — to a
