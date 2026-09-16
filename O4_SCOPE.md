@@ -204,6 +204,12 @@ evaluator ([`evaluators.py`](evaluators.py)), cost/tokens carried through from t
 store. So the gate refuses every native store and admits a canonical trace that
 actually carries the fields; presence is then reported as coverage.
 
+**The experiment itself is predeclared.** Endpoint, selection rule and the
+accepted endings A–D are frozen before any baseline run in
+[`O4B_PREDECLARATION.md`](O4B_PREDECLARATION.md). The *intervention* is not
+predeclared — the selection *rule* is, because the claim is that PDI says where to
+intervene.
+
 ---
 
 ## 6. Non-goals
