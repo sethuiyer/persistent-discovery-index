@@ -20,7 +20,7 @@ import sys
 import tempfile
 
 from ingest import (ANTIGRAVITY, CAP_RANK, CAPABILITIES, CLAUDE, CODEX, FORMATS,
-                    INFERRED, OPENCODE, SEMANTICS, SUPPORTED, UNAVAILABLE, UNKNOWN,
+                    INFERRED, OPENCODE, PI, SEMANTICS, SUPPORTED, UNAVAILABLE, UNKNOWN,
                     CapabilityError, capability_table, capabilities_of,
                     load_antigravity, load_codex, reconcile_capabilities,
                     require_capabilities)
@@ -64,8 +64,10 @@ def test_values_are_what_we_built() -> None:
     print("values match what each loader actually populates")
     oc = capabilities_of(OPENCODE)
     check("opencode carries cost + tokens", oc["cost"] == SUPPORTED and oc["tokens"] == SUPPORTED)
-    check("only opencode and canonical claim cost",
-          {f for f in FORMATS if capabilities_of(f)["cost"] == SUPPORTED} == {OPENCODE, "canonical"})
+    check("only pi, opencode and canonical claim cost",
+          {f for f in FORMATS if capabilities_of(f)["cost"] == SUPPORTED} == {PI, OPENCODE, "canonical"})
+    check("pi carries real usage cost + tokens",
+          capabilities_of(PI)["cost"] == SUPPORTED and capabilities_of(PI)["tokens"] == SUPPORTED)
     check("canonical carries cost/tokens as a passthrough",
           capabilities_of("canonical")["cost"] == SUPPORTED
           and capabilities_of("canonical")["tokens"] == SUPPORTED)

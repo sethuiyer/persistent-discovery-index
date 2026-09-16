@@ -27,7 +27,7 @@ import os
 import sys
 import tempfile
 
-from adapters import Step, Turn as Run, tool_tower
+from adapters import Step, Turn as Run, load_pi_session, tool_tower
 from ingest import load_canonical, to_canonical
 
 FAILS: list[str] = []
@@ -108,6 +108,28 @@ def test_empty_vs_populated() -> None:
     check("empty step sequence is its own class", Q6(a) != Q6(b))
 
 
+def test_pi_zero_tool_and_usage() -> None:
+    print("pi: zero-tool turns are kept, and usage becomes cost/tokens")
+    fd, path = tempfile.mkstemp(suffix=".jsonl")
+    with os.fdopen(fd, "w") as f:
+        f.write(json.dumps({"type": "session", "cwd": "/repo"}) + "\n")
+        f.write(json.dumps({"type": "message", "message": {
+            "role": "user", "content": [{"type": "text", "text": "hi"}]}}) + "\n")
+        f.write(json.dumps({"type": "message", "message": {
+            "role": "assistant", "stopReason": "stop",
+            "content": [{"type": "text", "text": "hello"}],
+            "usage": {"input": 10, "output": 5, "cost": 0.02}}}) + "\n")
+    runs = load_pi_session(path)
+    check("a zero-tool turn is a run, not dropped", len(runs) == 1, f"got {len(runs)}")
+    if runs:
+        r = runs[0]
+        check("zero-tool turn keeps its prompt and outcome",
+              r.steps == [] and r.outcome == "stop" and r.prompt == "hi")
+        check("usage became cost/tokens",
+              (r.cost, r.tokens_input, r.tokens_output) == (0.02, 10, 5),
+              str((r.cost, r.tokens_input, r.tokens_output)))
+
+
 def test_round_trip_preserves_payload() -> None:
     print("canonical round-trip keeps ranges and bodies")
     r = Run([Step("read", {"path": "a.py", "offset": 5, "limit": 7}),
@@ -134,6 +156,7 @@ if __name__ == "__main__":
     test_long_prefix_not_truncated()
     test_whitespace_equivalence_is_intended()
     test_empty_vs_populated()
+    test_pi_zero_tool_and_usage()
     test_round_trip_preserves_payload()
     print("=" * 70)
     if FAILS:

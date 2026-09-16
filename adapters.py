@@ -230,15 +230,24 @@ def load_pi_session(path: str) -> list[Turn]:
     cur_prompt = ""
     turns: list[Turn] = []
     started = False
+    cost_total, tin, tout = 0.0, 0, 0
+    have_cost = have_tok = False
 
     def flush():
-        nonlocal steps, best_outcome
-        if started and steps:
+        nonlocal steps, best_outcome, cost_total, tin, tout, have_cost, have_tok
+        # A zero-tool turn is a real run: the agent answered without calling a
+        # tool. v0.27.0 dropped it for canonical; pi had the same gap.
+        if started:
             turns.append(Turn(steps=steps, outcome=best_outcome or "noToolUse",
                               model=model, cwd=cwd,
                               project=os.path.basename(cwd.rstrip("/")) or cwd,
-                              session=session_id, prompt=cur_prompt))
+                              session=session_id, prompt=cur_prompt,
+                              cost=(cost_total if have_cost else None),
+                              tokens_input=(tin if have_tok else None),
+                              tokens_output=(tout if have_tok else None)))
         steps, best_outcome = [], ""
+        cost_total, tin, tout = 0.0, 0, 0
+        have_cost = have_tok = False
 
     for line in open(path, errors="ignore"):
         line = line.strip()
@@ -266,6 +275,19 @@ def load_pi_session(path: str) -> list[Turn]:
                 # only the terminal stopReason of the turn matters
                 if m.get("stopReason"):
                     best_outcome = m["stopReason"]
+                # pi records real usage per assistant message; the cost endpoint
+                # cannot be computed without surfacing it.
+                u = m.get("usage")
+                if isinstance(u, dict):
+                    if isinstance(u.get("cost"), (int, float)):
+                        cost_total += float(u["cost"])
+                        have_cost = True
+                    if isinstance(u.get("input"), int):
+                        tin += u["input"]
+                        have_tok = True
+                    if isinstance(u.get("output"), int):
+                        tout += u["output"]
+                        have_tok = True
                 for c in (m.get("content") or []):
                     if isinstance(c, dict) and c.get("type") == "toolCall":
                         st = Step(tool=c.get("name", "?"), args=c.get("arguments") or {})
@@ -289,7 +311,7 @@ def load_pi_runs(
     projects: Optional[Iterable[str]] = None,
     models: Optional[Iterable[str]] = None,
 ) -> list[Turn]:
-    """Load every (non-empty) turn under the pi sessions root, optionally
+    """Load every turn under the pi sessions root, optionally
     filtered by project basename and/or model id."""
     projects = set(projects) if projects else None
     models = set(models) if models else None
