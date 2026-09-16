@@ -104,6 +104,11 @@ distance `≥ 2·2^{−j}`, so no set of diameter `≤ 2^{−j}` meets two of th
 `N(∂T, 2^{−j}) = L_j` exactly, and `N` is constant on each dyadic band. The box
 dimension is therefore the dyadic covering growth of `L_j`. ∎
 
+**Scope.** This is the **dyadic** case `ε_j = 2^{−j}`, where the level index *is*
+the physical scale. For a general scale sequence `ε_j`, level-`j` cylinders still
+cover the boundary and are separated at that scale, so `N(∂T, ε_j) = L_j`; what
+§2.3 adds is the hypothesis under which a *subsample* inherits the same `limsup`.
+
 The mechanism matters: `L_j` is a **covering count**, a function of physical scale.
 `n_j` is not — dead ends cover nothing — so `n_j` has no intrinsic scale-function
 interpretation and only exists as a shell-indexed sequence.
@@ -128,6 +133,10 @@ $$s_{j_{m+1}} \;/\; s_{j_m} \;\to\; 1. \tag{2.3b}$$
 **Proposition (dense-mesh sandwich).** If (2.3b) holds and the counts are
 non-decreasing, then the `limsup` over the subsample equals the `limsup` over all
 levels — for `L_j` and `n_j` alike, hence for `D`, `S` and `Δ`.
+
+*Hypothesis.* Counts are required to be **positive** (`c_j ≥ 1`) for the logarithms
+below. An empty ledger (`L_j ≡ 0`) is handled by the convention of §2.5 — it
+contributes nothing, so `D = 0` — not by this sandwich.
 
 *Proof.* For `j_m ≤ j ≤ j_{m+1}`, monotonicity of the counts and of `s` gives
 
@@ -663,8 +672,8 @@ B:\; D=1.0,\; S=1.720628,\; \Delta=0.720628$$
 
 `Δ` is therefore not a function of the survival predicate. It is `S − D`: a
 survival-free growth rate minus a survival growth rate. This is also why `D` is
-cofinal-invariant (2.3) while `Δ` is not (2.4) — the survival side is intrinsic,
-the cost side is not.
+**dense-mesh** invariant (2.3) while `Δ` is not under **sparse** sampling (2.4) — the
+survival side is intrinsic, the cost side is not.
 
 ### 14.5 The sharpened thesis
 
@@ -793,7 +802,7 @@ rule in Coq/Lean/Idris, and "make illegal states unrepresentable."
 The tower is an **input** (`pdi.py`: `tower: Optional[Any] = None`), not derived
 from a provability relation. So the Lindenbaum–Tarski *guarantee* — that the
 quotient is determined by the behaviour — is not available. Row 2.3 proves only
-**cofinal** invariance; row 9.1 leaves canonicity **open** and records it as
+**dense-mesh** invariance; row 9.1 leaves canonicity **open** and records it as
 **known to vary**.
 
 Same traces, same success marks, resolution index shifted by one prepended symbol.
@@ -816,8 +825,8 @@ A — so B's bound is *correct* and A's estimate is *correct*.
 
 **This is row 3.1 firing on a presentation shift.** The finite-window sup is not
 the limsup; the asymptotic layer with its convergence status is the repo's
-response to that. The cofinal-invariant object survives; the finite-scale number
-does not, and is labelled.
+response to that. The **dense-mesh-invariant** object survives; the finite-scale
+number does not, and is labelled.
 
 > PDI does not **eliminate** presentation-dependence. It **quarantines** it. The
 > principle instantiated here is not *"the quantity is invariant."* It is

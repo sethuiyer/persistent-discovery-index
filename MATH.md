@@ -127,7 +127,7 @@ you go. The window statistic is not a noisy estimate of S; it is a different sta
 agree when growth is geometric.
 
 The response is structural, not cosmetic. The instrument reports two layers. The finite-scale layer is
-exact on the observed corpus: yield Lⱼ/nⱼ, class counts, and the onset $j^\*$, the first level at which
+exact on the observed corpus: yield Lⱼ/nⱼ, class counts, and the onset j*, the first level at which
 yield falls below a threshold. None of that involves asymptotics. The asymptotic layer reports the
 moving tail Mₘ = sup[j≥m] sⱼ together with a convergence status: STABLE, TRENDING_UP, TRENDING_DOWN,
 UNRESOLVED, or NONE.
@@ -267,8 +267,8 @@ Here the construction turns on itself. Two tries built from four traces each:
 
 $$A = \texttt{((()())(()())),} \qquad B = \texttt{((()()())(()))}. \tag{12}$$
 
-These are different rooted trees — a has two children of degree two on the left, three and one on the
-right. But nⱼ = (2,4) and Lⱼ = (2,4) for both. Every scalar PDI reports is a level-size profile, and a
+These are different rooted trees — `A`'s root splits the four leaves two-and-two, `B`'s splits them
+three-and-one. But nⱼ = (2,4) and Lⱼ = (2,4) for both. Every scalar PDI reports is a level-size profile, and a
 level-size profile is a projection. This one is not injective. The information lives in the edges.
 
 This is a good place to be honest about what a "summary" is. It is tempting to read a two-ledger result
@@ -349,11 +349,14 @@ presentation say so. This is not modesty. It is a theorem about finite observati
 determines a limsup — applied to the software's own output.
 
 The open problems are few and sharp. O1 asks whether a presentation-independent fibre exists; everything
-about phases and monodromy is blocked behind it. O3 asks whether any finite augmentation makes the
-dynamics invertible, and the collision theorem says any such augmentation must separate states at the
-attractor. And a pattern — that survival, to a horizon or under iteration, is the condition under which
-canonical structure exists — is recorded as a conjecture, because the two decompositions are of
-different objects and no common construction has been exhibited.
+about phases and monodromy is blocked behind it. O2 — is any schedule injective? — is **reopened**: the
+single step is proved non-injective, but the composition to legs is not (the first step writes the tabu
+list), so what remains at schedule level is empirical. O3 asks whether any finite augmentation makes the
+dynamics invertible, and the single-step collision theorem says any such augmentation must separate
+states at the attractor. O4 asks for an outcome-independent diagnostic tower: its synthetic half is
+discharged, its real-data usefulness is open. And a pattern — that survival, to a horizon or under
+iteration, is the condition under which canonical structure exists — is recorded as a conjecture,
+because the two decompositions are of different objects and no common construction has been exhibited.
 
 The instrument compresses a search into a curve of waste, locates where the waste begins, and is
 explicit about which of its numbers are allowed to say what. That last property is not decoration on top
