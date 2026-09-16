@@ -45,12 +45,19 @@ def variance_shares(costs: Sequence[Optional[float]],
                     r_min: int = R_MIN_DEFAULT,
                     k_tasks: int = K_TASKS_DEFAULT,
                     support_frac: float = SUPPORT_FRAC_DEFAULT,
-                    min_blocks: int = MIN_BLOCKS_DEFAULT) -> dict:
+                    min_blocks: int = MIN_BLOCKS_DEFAULT,
+                    unknown_label: str = "unknown",
+                    u_max: float = 0.5) -> dict:
     """Cost-variation shares over a nested partition tower.
 
     `costs[i]`     per-run cost (None = run not priced)
     `tasks[i]`     task/cluster id of run i
     `levels[j][i]` class id of run i at level j (levels[0] trivial; each refines prev)
+    Any class equal to `unknown_label` marks that run's level as UNDETERMINED. A
+    refinement whose contrast touches an unknown class is excluded from SELECTION:
+    shares are computed from the KNOWN energy only, while the unknown-dependent mass
+    is reported separately and a refinement with unknown mass > `u_max` is
+    inadmissible. A parser failure can therefore never become behavioural signal.
     """
     n = len(costs)
     if len(tasks) != n or not levels or any(len(L) != n for L in levels):
@@ -91,13 +98,22 @@ def variance_shares(costs: Sequence[Optional[float]],
     sub_mu = [mu[i] for i in idx]
     sub_c = [c[i] for i in idx]
 
-    E = [weighted_norm2(detail(sub_c, tower, j, sub_mu), sub_mu)
-         for j in range(tower.depth() - 1)]
+    depth = len(sub_levels)
+    m = len(idx)
+    E, E_known, E_unknown = [], [], []
+    for j in range(depth - 1):
+        D = detail(sub_c, tower, j, sub_mu)
+        e = weighted_norm2(D, sub_mu)
+        known = [sub_levels[j][pos] != unknown_label
+                 and sub_levels[j + 1][pos] != unknown_label for pos in range(m)]
+        ek = sum(sub_mu[pos] * D[pos] * D[pos] for pos in range(m) if known[pos])
+        E.append(e)
+        E_known.append(ek)
+        E_unknown.append(e - ek)          # contrast touches an unknown class
     res = residual(sub_c, tower, sub_mu)
     total = sum(E) + res
 
     support, n_blocks, mean_size, admissible = [], [], [], []
-    m = len(idx)
     total_mass = sum(sub_mu)                 # == 1 by construction
     for j in range(len(sub_levels)):
         mass: dict = {}
@@ -114,14 +130,22 @@ def variance_shares(costs: Sequence[Optional[float]],
         mean_size.append(m / nb if nb else 0.0)
         admissible.append(nb >= min_blocks and support[-1] >= support_frac)
 
-    base = {"E": E, "residual": res, "total": total,
-            "tasks_eligible": n_tasks, "runs_eligible": m,
+    base = {"E": E, "E_known": E_known, "E_unknown": E_unknown, "residual": res,
+            "total": total, "tasks_eligible": n_tasks, "runs_eligible": m,
             "tasks_excluded": excluded, "support": support, "n_blocks": n_blocks,
             "mean_class_size": mean_size, "level_admissible": admissible}
     if total <= 0:
-        base.update(abstain=True, reason="zero observed within-task variance", shares=None)
+        base.update(abstain=True, reason="zero observed within-task variance",
+                    shares=None, unknown_mass=None, total_unknown_mass=None)
         return base
-    base.update(abstain=False, reason="", shares=[e / total for e in E])
+    # SELECTION uses the known share only; unknown-dependent mass is reported, not used.
+    base["shares"] = [ek / total for ek in E_known]
+    base["unknown_mass"] = [eu / total for eu in E_unknown]
+    base["total_unknown_mass"] = sum(E_unknown) / total
+    base["level_admissible"] = [
+        admissible[L] if L == 0 else (admissible[L] and base["unknown_mass"][L - 1] <= u_max)
+        for L in range(depth)]
+    base.update(abstain=False, reason="")
     return base
 
 

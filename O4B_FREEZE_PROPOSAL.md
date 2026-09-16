@@ -42,13 +42,25 @@ invertibility, sudoku, agent_profiler, zeta_separation`.
   edges for band C).
 - Targets are **4 per band per side (24 total)**.
 
-### 2.2 Quota shortfall (declared)
+### 2.2 Quota shortfall and the inference it forces (declared)
 
 Targets are targets, not entitlements. After exhausting a side's modules under the
 rules, an unmet cell is **recorded as a shortfall**; that cell's count is reduced.
 **Never** relax a construction rule, move a module across sides, or reuse a
-function. If constructible **held-out < 6**, the pilot is reported as **D** without
-held-out execution.
+function.
+
+### 2.3 Correlation, and the eligibility gate
+
+- Multiple tasks may share a module. **The task bootstrap treats tasks as
+  independent, and module-disjoint splitting does NOT resolve that assumption.**
+  Tasks from one module (or from one construction operator) may be correlated, so
+  the effective number of independent units is closer to the number of **distinct
+  modules** than to the number of tasks. This is stated, not adjusted away.
+- The `n_both < 6 → D` gate counts **anticipated jointly eligible** held-out tasks —
+  tasks expected to have a determinate verifier **and** priced runs in both arms —
+  **not constructed identities** (a constructed task whose verifier or cost does
+  not materialise is not eligible). Additionally require **≥ 6 distinct held-out
+  modules** among them; otherwise **D, without held-out execution**.
 
 ## 3. Diagnostic tower — parsing uncertainty is `unknown`
 
@@ -75,8 +87,24 @@ parser failures become apparent signal. `changed-action` asserts a *changed acti
 
 Equal weight **per task**, split across its eligible priced runs (measure `μ`);
 cost **centred within task** with the same `μ`; `E_j = ‖D_j c‖²`; residual
-`‖c − P_J c‖²`; shares `s_j = E_j / (Σ E_j + residual)`; **zero denominator →
-abstain** (never 0); a task with `< R_min` priced runs is excluded and counted.
+`‖c − P_J c‖²`; **zero denominator → abstain** (never 0); a task with `< R_min`
+priced runs is excluded and counted.
+
+**Unknown can still become signal — so it is excluded from selection.** Any class
+labelled `unknown` is undetermined, and a refinement whose contrast touches an
+unknown class is split exactly (the run partition is disjoint, so the weighted
+norms add):
+
+```
+E_j        = Σ_i μ_i (D_j c)_i²
+E_j^known  = Σ_{i : neither endpoint unknown} μ_i (D_j c)_i²
+E_j^unknown= E_j − E_j^known
+```
+
+**Selection uses the known share only:** `s_j = E_j^known / total`. The
+unknown-dependent mass `u_j = E_j^unknown / total` is **reported separately** (with
+`total_unknown_mass`), and a refinement with `u_j > u_max` is **inadmissible**. A
+parser failure can never be selected, and never silently inflates a share.
 
 **Support uses `μ`** (not raw runs): a block is *supported* iff it holds runs from
 `≥ k_tasks` distinct tasks; a level's support is the **μ-mass** of its supported
@@ -92,8 +120,22 @@ Candidate refinements are the three tower levels; refinement `j` maps to the
 feature at level `j+1` and to its template.
 
 **P (PDI).** On discovery only: select the admissible refinement maximising the
-median `s_j` across discovery tasks, subject to `s_{L*} ≥ s_min` and presence in
-`≥ K` tasks. Abstains → **C**.
+median **known** share `s_j` across discovery tasks, subject to `s_{L*} ≥ s_min` and
+presence in `≥ K` tasks. Abstains → **C**.
+
+**`K = 3`, defined precisely:** a refinement is *present* in a discovery task iff its
+**known** share `s_j(t) > 0` for that task (computed after unknown exclusion). `K`
+counts **tasks (clusters), not runs**.
+
+**Deterministic tie-breaking (frozen):** equal median known share → the **coarser**
+refinement (lower level index) wins.
+
+**Abstention (frozen):** P abstains if the total is zero, or no admissible
+refinement reaches `s_min`, or none is present in `≥ K` tasks. **P abstention → C**
+regardless of H. If **P selects and H abstains**, the H arm records "no candidate"
+and the contrast is reported as *P selected where H could not* — weaker than P
+beating H. **H abstains** when its top refinement does not exceed the runner-up by
+the declared margin.
 
 **H (ordinary guidance).** Rank the **same three refinements** by the **mean
 allocated cost of the events that refinement targets** — refinement 1 → search
@@ -139,6 +181,7 @@ reruns**; every scheduled run recorded including crashes and timeouts.
 | # | parameter | proposed |
 |---|---|---|
 | 1 | `k_tasks` / `support_frac` / `min_blocks` | 2 / 0.5 / 2 |
+| 1b | `u_max` (max unknown-dependent mass) | 0.5 |
 | 2 | `R_min` | 2 |
 | 3 | `s_min` | 0.10 |
 | 4 | `K` (discovery tasks a level must appear in) | 3 |
@@ -153,6 +196,8 @@ reruns**; every scheduled run recorded including crashes and timeouts.
 | 13 | module allocation | §2.1 (seeded 12 / 9) |
 | 14 | tool sets | §3 |
 | 15 | band targets | 4 per band per side; §2.2 on shortfall |
+
+**These are PILOT choices, retained without data. None is claimed to be optimal.**
 
 ## 9. Non-negotiables
 

@@ -116,6 +116,29 @@ def test_singleton_refinement_inadmissible() -> None:
           best_level(ok, F(1, 2)) == 0, str(best_level(ok, F(1, 2))))
 
 
+def test_unknown_is_not_signal() -> None:
+    print("unknown-dependent contrasts are excluded from selection and reported")
+    tasks = ["t1", "t1", "t2", "t2"]
+    costs = [F(1), F(1), F(5), F(1)]
+    levels = [[0, 0, 0, 0], [0, 0, "unknown", 1]]
+    r = variance_shares(costs, tasks, levels)
+    print(f"    E={r['E']} E_known={r['E_known']} E_unknown={r['E_unknown']} "
+          f"shares={r['shares']} unknown_mass={r['unknown_mass']}")
+    check("total energy is 2", r["total"] == F(2), str(r["total"]))
+    check("known energy is 1", r["E_known"][0] == F(1), str(r["E_known"][0]))
+    check("unknown energy is 1", r["E_unknown"][0] == F(1), str(r["E_unknown"][0]))
+    check("selection share uses KNOWN energy only (1/2, not the full 1)",
+          r["shares"][0] == F(1, 2), str(r["shares"][0]))
+    check("unknown mass is reported separately", r["unknown_mass"][0] == F(1, 2),
+          str(r["unknown_mass"][0]))
+    check("total unknown mass reported", r["total_unknown_mass"] == F(1, 2))
+    # a refinement dominated by unknown-dependent energy is inadmissible
+    strict = variance_shares(costs, tasks, levels, u_max=0.4)
+    check("unknown mass above u_max makes the refinement inadmissible",
+          strict["level_admissible"][1] is False)
+    check("best_level abstains under the strict bound", best_level(strict, 0.0) is None)
+
+
 def test_support_counts_distinct_tasks() -> None:
     print("support counts DISTINCT TASKS per block, not runs")
     # a level that simply separates the two tasks: every block holds one task only
@@ -173,6 +196,7 @@ if __name__ == "__main__":
     print("=" * 70)
     test_fixture_algebra()
     test_zero_variance_abstains()
+    test_unknown_is_not_signal()
     test_currency_scaling()
     test_unequal_repetitions()
     test_unresolved_residual()
