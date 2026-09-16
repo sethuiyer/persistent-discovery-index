@@ -1,171 +1,211 @@
 # O4B_PREDECLARATION.md
 
 **Status: FROZEN BEFORE BASELINE RESULTS.**
+**Stage 2 (corpus, verifier, statistic, parameters): FROZEN.**
+**Study class: PILOT.** No result here is a commercial headline; that would require
+a design and power analysis this document does not assume.
 
-**Study class: PILOT.** This is a diagnostic pilot. No result from it is a
-commercial headline. Turning it into one requires a design and a power analysis
-that this document does not assume.
+This file fixes the experiment **before** any baseline PDI number is inspected. The
+*intervention* is not predeclared — the claim is that PDI says *where* to intervene.
+What is predeclared is the **rule that selects it**, and the constraints on what
+selecting it entitles us to change.
 
-This file fixes the *structure* of the O4b experiment — question, endpoint,
-selection rule, accepted outcomes — **before** any baseline PDI number is
-inspected. The intervention itself is **not** predeclared, because the claim is
-that PDI says *where* to intervene. What is predeclared is the **rule that
-selects** it.
-
-Nothing here is a result. O4b remains **OPEN**.
+O4b remains **OPEN**. Nothing here is a result.
 
 ---
 
 ## 1. Freeze stages and immutability
 
-| stage | what is fixed | when |
+| stage | what | status |
 |---|---|---|
-| **Stage 1 (this commit)** | question, unit, endpoints, selection rule, accepted outcomes, coverage rules | now, before any run |
-| **Stage 2** | corpus, verifier, task list, `δ`, `τ_min`, `K`, seed, CI method (every `[FIX BEFORE RUN]` field) | by a commit **before the first baseline run** |
-| **Stage 3** | the selected intervention (from the discovery split only) | by a commit **before any held-out execution** |
+| **Stage 1** | question, unit, endpoints, selection rule, accepted outcomes, coverage rules | **frozen (v0.33.1)** |
+| **Stage 2** | corpus, verifier, `M`, `R`, statistic, `δ`, `τ_min`, `K`, seed, splits, knob manifest | **frozen (this commit)** |
+| **Stage 3** | the selected intervention | frozen before any held-out execution |
 
-**Amendment protocol.** After any baseline PDI profile has been inspected, this
-file may not be changed in any way that affects endpoints, the selection rule, the
-margins, or the splits. A change before that point must be a separate commit
-stating the reason. The **fingerprint** of the freeze is the git commit that made
-the change; every run log must cite it.
-
----
+After **any** baseline PDI profile has been inspected, this file may not change in
+any way that affects endpoints, the selection rule, margins, or splits. The freeze
+fingerprint is the git commit; run logs must cite it.
 
 ## 2. Question
 
 > Can a **PDI-localized intervention** reduce **measured agent cost** while
 > preserving **independently verified task success**?
 
-Both halves are required. A cost reduction with degraded verified success is not a
-positive result (see outcome **B**).
+Both halves are required.
 
----
+## 3. Corpus — FROZEN
 
-## 3. Corpus
+- **Workspace: this repository** (`persistent-discovery-index`): deterministic
+  suites, natural clusters (one per module), cheap resets, a verifier independent
+  of the agent's trajectory. Self-hosting is accepted; **overclaiming from
+  self-hosting is prohibited (§13)**.
+- **M = 20** tasks from the seeded defect injector (§3a).
+- **Agent: `pi` headless** (`pi -p --session-dir …`), **one fixed configuration:
+  model `deepseek-flash`**, identical in both conditions.
+- **R = 2** runs per task per condition. Maximum planned: `20 × 2 × 2 = 80` runs,
+  spent in stages (§11), never all up front.
+- **Cost/tokens** from pi's per-message `usage` (surfaced by `load_pi_session`).
+- The agent's terminal state is **never** used as verified success.
 
-`[FIX BEFORE RUN]` — not yet selected. Requirements, fixed now:
+### 3a. Task eligibility — checked before any PDI number is inspected
 
-- **M deterministic tasks** in one workspace, each with an external verification
-  that does not consult the agent's trajectory. `M = [FIX BEFORE RUN]`.
-- **One fixed agent + one fixed configuration.** A **single** agent/configuration
-  is sufficient for the first experiment. Multiple agents are
-  replication/generalisation and are **out of scope** here.
-- **Real cost or tokens captured per run.** If neither is available for a task,
-  the task is excluded *and counted* (§8).
-- The agent's own terminal state is **never** used as verified success.
+Each candidate task must demonstrate:
 
-## 4. Verifier
+```text
+clean frozen repo      -> verifier PASS
+seeded mutation        -> verifier FAIL
+(agent works the task)
+independent verifier   -> PASS / FAIL / UNKNOWN
+```
 
-`[FIX BEFORE RUN]` — the exact command / method.
+A task is **eligible only if the mutation deterministically flips PASS→FAIL** on
+the clean tree. Ineligible tasks are excluded **and counted**. A task's cluster is
+the module the mutation touches.
 
-- Returns **PASS / FAIL / UNKNOWN**.
-- Implemented through [`evaluators.py`](evaluators.py); **no verifier reads
-  `turn.outcome`** or any other field produced by the agent.
-- `UNKNOWN` is preserved as `unknown`, never coerced to `failure` or `success`.
+**No leakage**: the agent sees only the task specification it would naturally
+receive. Nothing may disclose the mutated location, the failing assertion, or the
+solution. The injector, the split, and the mutation seed are fixed by commit before
+the baseline runs.
+
+## 4. Verifier — FROZEN
+
+- `python3 <the mutated module's test suite>` → exit 0 PASS, nonzero FAIL, cannot
+  run UNKNOWN. Cross-cutting mutations use `python3 test_repo_consistency.py`.
+- Implemented as `evaluators.command_exit`; it reads **no field the agent produced**.
+- `UNKNOWN` is preserved, never coerced to FAIL or PASS.
 
 ## 5. Experimental unit
 
-**Task × run.** Each task is run multiple times if cost is stochastic; the
-resampling unit for all inference is the **task (task cluster)**, fixed before
-analysis (§7).
+**Task × run.** Inference resamples **tasks** (§7), never runs.
 
-## 6. Splits
+## 6. Splits — FROZEN
 
-- A **discovery split** and a **held-out split** over tasks, defined and frozen at
-  Stage 2.
-- **No held-out PDI profile and no held-out verified outcome may be inspected
-  while selecting the intervention.** The selection rule (§9) operates on the
-  discovery split only.
-- A task appears on exactly one side.
+- **12 discovery / 8 held-out**, assigned by **task cluster (module)**, seed
+  **`20260916`**.
+- Held-out task identities are generated deterministically and then **SEALED**: no
+  held-out PDI profile, no held-out verified outcome, and no held-out failure may
+  be inspected while selecting the intervention or tuning the injector.
+- A held-out task found invalid for a preregistered eligibility reason (§3a) is
+  reported as an **exclusion (coverage)**, not silently replaced.
 
-## 7. Primary endpoint
+## 7. Primary endpoint and the non-inferiority statistic — FROZEN
 
-**Δ cost per task** (intervention − baseline) on the **held-out** tasks, claimed
-**only if** verified success is non-inferior.
+Held-out tasks `H` (target `|H| = 8`), clustered by module. For task `t` and
+condition `c ∈ {B, I}` there are `R = 2` runs, each labelled by the verifier
+`success` / `failure` / `unknown`.
 
-**Non-inferiority margin `δ`: `[FIX BEFORE RUN]`.** Success is non-inferior if the
-task-clustered confidence interval for (intervention − baseline) verified-success
-rate lies entirely above `−δ`. The CI method is fixed before the run.
+**Success score.** `s_{t,c} = (#success) / (#success + #failure)` over that task's
+runs. A task is **success-eligible** only if **both** conditions have ≥ 1
+non-`UNKNOWN` run.
 
-Secondary endpoints (reported, not primary): tokens, tool calls, PDI discovery
-overhead, `j*`, and wall-clock time **only if** trustworthy. If wall-clock is
-confounded by machine load, it is reported as unusable rather than adjusted.
+**Success estimand.** `d_t = s_{t,I} − s_{t,B}` (paired, by task), `D = mean_t d_t`
+over success-eligible tasks.
+
+**Non-inferiority.** Bootstrap **tasks with replacement, 10,000 resamples, seed
+`20260916`**, percentile method. Let `D*₅` be the 5th percentile of the bootstrap
+distribution of `D`. Then
+
+> **Non-inferiority holds iff `D*₅ ≥ −δ`, with `δ = 0.10`.**
+
+**Cost.** `C̄_{t,c}` = **mean** of run costs for that task/condition; a task is
+**cost-eligible** only if **every** run in **both** conditions has non-null cost.
+`Δ_t = C̄_{t,I} − C̄_{t,B}`, `Δ = mean_t Δ_t` over cost-eligible tasks; `Δ*₉₅` is
+the 95th bootstrap percentile.
+
+> **Cost reduction is established iff `Δ*₉₅ < 0`.**
+
+Both bootstraps resample the **paired task-level quantities** — never individual
+runs, and never baseline and intervention independently. `d_t` and `Δ_t` are
+computed per task first; the bootstrap vectors are the lists of those per-task
+values.
+
+The primary claim uses tasks eligible for **both**; if the eligible sets differ,
+both are reported. `n_both = |eligible for both|`.
+
+**Secondary (reported, not primary):** tokens, tool calls, PDI discovery overhead,
+`j*`, per-task direction consistency, wall-clock **only if** trustworthy (else
+reported unusable).
+
+**Small-`n` caveat.** `n = 8` is a pilot. The interval is fragile, and no
+commercial claim may be built on it.
 
 ## 8. Coverage (reported, never silently dropped)
 
-- missing cost / missing tokens;
-- missing verified labels, and `UNKNOWN` outcomes;
-- tasks excluded, with the reason;
-- any verifier or execution failure.
-
-A primary claim is **not** made if coverage prevents it (outcome **D**).
+missing cost / tokens; missing verified labels; `UNKNOWN` outcomes; tasks excluded
+and why; verifier or execution failure. A primary claim is not made if coverage
+prevents it (**D**).
 
 ## 9. Localization selection rule — FROZEN
 
 Applies to the **discovery split only**.
 
-1. For each discovery task `t`, run PDI on its baseline traces, with live status
-   supplied by the **independent** verifier.
-2. For each behavioural resolution `j`, compute the transient share
-   `τ_j(t) = (n_j − L_j) / n_j` (skip levels with `n_j = 0`).
-3. **Actionable levels** are declared in the corpus manifest at Stage 2: a level
-   `j` is actionable only if the manifest maps it to an editable knob (e.g.
-   tool-family policy, tool-ordering instruction, argument-targeting
-   instruction). The mapping is fixed before any run.
-4. Aggregate `τ_j` = **median** over discovery tasks whose baseline has at least
-   one non-`UNKNOWN` label.
+1. Run PDI on each discovery task's baseline traces, with live status from the
+   **independent** verifier.
+2. Per level `j`: transient share `τ_j(t) = (n_j − L_j) / n_j` (skip `n_j = 0`).
+3. **Actionable levels** are those in the knob manifest (§9a). Q1 and Q6 are not
+   actionable.
+4. Aggregate `τ_j` = **median** over discovery tasks with ≥ 1 non-`UNKNOWN` label.
 5. Select the actionable level `L*` maximising `τ_j`, subject to
-   `τ_{L*} ≥ τ_min` and `τ_j(t) > 0` in at least `K` discovery tasks, with
-   `τ_min` and `K` fixed before the run.
-6. Tie-break: lowest level index (coarser first), then lexicographic level name.
-7. **If no level satisfies (5): outcome C.** Stop.
+   **`τ_{L*} ≥ τ_min = 0.20`** and `τ_j(t) > 0` in **≥ K = 5** discovery tasks.
+6. Tie-break: lowest level index (coarser first), then lexicographic name.
+7. **If no level satisfies (5): outcome C. Stop.** No descending to Q6.
 
-The intervention is then the minimal change to the knob mapped to `L*`, as given
-by the manifest's mapping template. It is written and committed (§1, Stage 3)
-**before** any held-out execution.
+### 9a. Knob manifest — what selecting a level entitles you to change
+
+| level | allowed intervention class | forbidden |
+|---|---|---|
+| **Q2** tool multiset | tool-policy instruction | adding tools/MCP, changing model |
+| **Q3** tool sequence | ordering instruction (read → edit → verify) | task-specific step lists |
+| **Q4** error classes | recovery-policy instruction | task-specific retry scripts |
+| **Q5** argument classes | search/read **scoping** guidance | disclosing the failing test or solution locations |
+| **Q1 / Q6** | not actionable | — |
+
+The intervention must change **agent policy**, never add **task information**.
 
 ## 10. Held-out test
 
-Baseline and intervention are run under **matched conditions** on the held-out
-tasks. The independent verifier supplies `verified_outcome` for every run. The
-agent's terminal state is recorded but **never** used as verified success.
+Baseline and intervention run under **matched conditions** on the held-out tasks.
+The verifier supplies every `verified_outcome`. Terminal state is recorded, never
+used as success.
 
-## 11. Resampling unit
+## 11. Spending order — FROZEN
 
-**Task / task cluster**, fixed before analysis. Runs within a task are not
-independent samples. Bootstrap or permutation over **tasks**, not runs.
+1. generate corpus, validate §3a eligibility (no agent runs against held-out);
+2. freeze the 12/8 split and fingerprint;
+3. **discovery baseline only** (`12 × 1 × 2 = 24` runs);
+4. apply §9 — level `L*` or **C**;
+5. commit exactly one manifest-permitted intervention (Stage 3) **before** any
+   held-out execution;
+6. **only then** open held-out (`8 × 2 × 2 = 32` runs).
 
-## 12. Accepted outcomes
+## 12. Accepted outcomes — no post-hoc reclassification
 
-Every ending below is a **valid completion**. There is **no post-hoc
-reclassification** of B, C or D as success, and no language that implies one.
-
-| | outcome | meaning |
+| | outcome | condition |
 |---|---|---|
-| **A** | **REMOVABLE WASTE** | intervention reduces cost while satisfying the predeclared non-inferiority criterion |
-| **B** | **NECESSARY BEHAVIOUR** | targeted behaviour decreases, but verified performance violates non-inferiority |
-| **C** | **NO STABLE ACTIONABLE SIGNAL** | PDI produces no localization satisfying the selection rule (§9.5) |
-| **D** | **INCONCLUSIVE** | coverage, sample size, verifier failure, execution failure or variance prevents the primary claim |
+| **A** | **REMOVABLE WASTE** | `D*₅ ≥ −δ` **and** `Δ*₉₅ < 0` |
+| **B** | **NECESSARY BEHAVIOUR** | `D*₅ < −δ` (verified success degraded), regardless of cost |
+| **C** | **NO STABLE ACTIONABLE SIGNAL** | no level satisfies §9.5 — decided before held-out |
+| **D** | **INCONCLUSIVE** | `n_both < 6`, or coverage/label failure, or non-inferior but cost reduction not established |
+
+B, C and D are **valid completions** and may not be narrated as success.
 
 ## 13. Prohibited inferences
 
-- No claim of causality beyond the predeclared intervention and matched held-out
-  comparison.
-- No generalisation from one agent/configuration to other agents.
+- No causality beyond the predeclared intervention and matched held-out comparison.
+- No generalisation from one agent/configuration (`deepseek-flash`) to others.
 - No commercial savings figure from this pilot, in any document.
-- `UNKNOWN` is never folded into `failure` or `success`.
-- Terminal state is never reported as task success.
+- No "self-hosted so it must generalise" claim.
+- `UNKNOWN` never folded into `failure` or `success`.
+- Terminal state never reported as task success.
 
-## 14. Frozen now vs to-be-fixed
+## 14. Frozen vs to-be-fixed
 
-| frozen in this document (Stage 1) | `[FIX BEFORE RUN]` (Stage 2) |
+| frozen (Stage 2, this commit) | remaining |
 |---|---|
-| the question and its two halves | corpus / workspace |
-| the experimental unit (Task × run) | task list and `M` |
-| the endpoint structure and CI requirement | verifier command |
-| the selection rule (§9, steps 1–7) | `δ`, `τ_min`, `K` |
-| the split discipline and no-peeking rule | seed and CI method |
-| the actionable-level requirement | the level→knob mapping |
-| accepted outcomes A/B/C/D | — |
-| coverage and prohibited-inference rules | — |
+| battlefield = this repository | generated task identities (committed at §11.2) |
+| `M=20`, `R=2`, model `deepseek-flash` | the 12/8 concrete assignment (committed at §11.2) |
+| verifier command and method | — |
+| `δ=0.10` **with** the §7 statistic | — |
+| seed `20260916`, `τ_min=0.20`, `K=5` | — |
+| selection rule §9 and knob manifest §9a | — |
+| spending order §11 and outcomes §12 | — |
