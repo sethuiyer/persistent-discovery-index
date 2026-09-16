@@ -1,0 +1,2164 @@
+{
+  "fingerprint": "517cbedaba60263d542c922c710c0d158357b3fe50f1063d2d37d638ceb32bfd",
+  "core": {
+    "operator_version": "op/v1",
+    "seed": 20260916,
+    "M": 20,
+    "source_commit": "1c71d51202fe0ad54952e012e64e81310d8b721f",
+    "verifier_env": {
+      "python": "3.12.3",
+      "platform": "Linux-7.1.5-76070105-generic-x86_64-with-glibc2.39"
+    },
+    "n_eligible": 20,
+    "n_discovery": 12,
+    "n_heldout": 8,
+    "tasks": [
+      {
+        "task_id": "t00_pdi",
+        "module_cluster": "pdi.py",
+        "operator": "cmp_invert",
+        "candidate_location": "116:11",
+        "clean_hash": "7d1be0eddcc8f44b8bbf35b22c1b6615f30782430a044c62fb4a023c6da7d7cf",
+        "mutated_hash": "1c4a8f35bf2a92c805e6307c9ddb7c89009035740d4f5dde50eeb9a350c3dd43",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t01_quotient_tower",
+        "module_cluster": "quotient_tower.py",
+        "operator": "cmp_invert",
+        "candidate_location": "85:19",
+        "clean_hash": "031ce04fb2b9f28396faeb085241e719b883d52532fd3b4a03e8eb7bea260269",
+        "mutated_hash": "22d1e676bc012bf9bea1c6a2ed9728a02fd68b50068f63d05773f5f12b88966c",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t02_adapters",
+        "module_cluster": "adapters.py",
+        "operator": "cmp_invert",
+        "candidate_location": "274:17",
+        "clean_hash": "56b41eebe61077b526896ccf5b63ea6bdfc2562272cb4a9fb7bf8369e9564fdf",
+        "mutated_hash": "bb4280fd8065de3e155e39f569f5c4107e2f440df31d6766c5b8b9b17e0a61f8",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t03_ingest",
+        "module_cluster": "ingest.py",
+        "operator": "cmp_invert",
+        "candidate_location": "343:11",
+        "clean_hash": "7709dfdca7a3327d659ce491370b0c0a13cd3455cf27ace2a0245208d5cb77d4",
+        "mutated_hash": "f7c2071d3123b03843a992660a42ce5b6363aab00abcf5aaef19b2fa866424d2",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t04_multiresolution",
+        "module_cluster": "multiresolution.py",
+        "operator": "return_sentinel",
+        "candidate_location": "103:4",
+        "clean_hash": "5eae6061251dd7c91f3d5bdba2c5780c6fb0cc12812b6c965ce778cf82ed1a22",
+        "mutated_hash": "e988cddbcfbde9d266efd950115bb46ba28b3a668ce9ac619010ddb9205d88ff",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t05_cofinal_mesh",
+        "module_cluster": "cofinal_mesh.py",
+        "operator": "cmp_invert",
+        "candidate_location": "57:30",
+        "clean_hash": "6753d8f1d62d23024dd00e1ebe0961b874329f9871614ef40e04f5a404c8edd9",
+        "mutated_hash": "2fed3e11626e7919f1f7fb59a52ea956ff080a2b617c194ffce345464e968a88",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t06_transport",
+        "module_cluster": "transport.py",
+        "operator": "return_sentinel",
+        "candidate_location": "151:8",
+        "clean_hash": "4ed23e42a4ac153fd0a3ffaa0587e05352a178e0161487076b4dfe179cfde480",
+        "mutated_hash": "95ea847195e3c9cfa026e4ec1d707fa17b2bc2a79df2c3e3f92ac89535c32572",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t07_stable_quotient",
+        "module_cluster": "stable_quotient.py",
+        "operator": "arith_literal",
+        "candidate_location": "96:25",
+        "clean_hash": "df84afd878a0e86bb398baef02e68b758b19f140f3617e1a8b51a1503a041a63",
+        "mutated_hash": "8edae11a32ccbf713070f94fc8bd6f11a5cd1470d122312a327f4280c9f3734f",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t08_collision_mechanism",
+        "module_cluster": "collision_mechanism.py",
+        "operator": "cmp_invert",
+        "candidate_location": "59:23",
+        "clean_hash": "897b8a0b8542351317efe86027f996c3ea5c73bbbe13b5b7d12978eb5a46f1e6",
+        "mutated_hash": "a9716bea6758941c107e2241ad2cc6b9afa4a3f4e8ed83dd003a307231624c19",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t09_both_structures",
+        "module_cluster": "both_structures.py",
+        "operator": "arith_literal",
+        "candidate_location": "51:15",
+        "clean_hash": "7645e0ea23124dff04f9c2aafad18c9c8b86e8ee26dffee6f521a1fab127c237",
+        "mutated_hash": "aafa1509cabcd5dd26ce4be36bb0a8a3e5721576fdf8703bbaa0bdc9ae0e99aa",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t10_one_question",
+        "module_cluster": "one_question.py",
+        "operator": "return_sentinel",
+        "candidate_location": "47:4",
+        "clean_hash": "76f10e2ed637589e6a07ac1678cc1fab0e5c06b02f7610d8d3b5f50240519675",
+        "mutated_hash": "b547a7530e56d3f0884c92e5757959bfa0ad9ba0c6ea1c267ae0ef5f4d84ed40",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t11_invariance_first",
+        "module_cluster": "invariance_first.py",
+        "operator": "return_sentinel",
+        "candidate_location": "100:4",
+        "clean_hash": "34628d6ddc666131692b118bdda70687e8505e3cd1a4773a6be6691be77a6007",
+        "mutated_hash": "5e4e06a110bf132d052cc8894f0a9a545f4c0db05ca5e682cd1655ea2d2f7c03",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t12_proof_awareness",
+        "module_cluster": "proof_awareness.py",
+        "operator": "return_sentinel",
+        "candidate_location": "40:4",
+        "clean_hash": "4a0fa9eebfdbae6196e92b6ffd26086e7da2f0d3cbe321040d308166b80214f0",
+        "mutated_hash": "e97bcbaebebb2b2f05e35cf85bf41c14c6b12906baa6e8b487a7776682411e62",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t13_prime_holonomy",
+        "module_cluster": "prime_holonomy.py",
+        "operator": "return_sentinel",
+        "candidate_location": "95:12",
+        "clean_hash": "ca092baf7d05735ec58e565b02ec94b93b598b045a6117e2530aa5cf9d5915ac",
+        "mutated_hash": "e9827d8da0a1fdf82400b35a6cc3603b1aa5abd4a9a98d71014fbecff6112841",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t14_survival_commutation",
+        "module_cluster": "survival_commutation.py",
+        "operator": "return_sentinel",
+        "candidate_location": "262:12",
+        "clean_hash": "a3e27b9fc960820aebef13ec389ca247fdf0ca931566a3daf41d3aa740845d65",
+        "mutated_hash": "c1bba45b326a03a7a74ade6cda7936cd9a2a4fc2be703550a9d2866146c706d5",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t15_core_monodromy",
+        "module_cluster": "core_monodromy.py",
+        "operator": "arith_literal",
+        "candidate_location": "67:5",
+        "clean_hash": "99661c7496a2ba58ffd1d1b69b626860b6553577fe4aae4100c0f5de7823fddc",
+        "mutated_hash": "2e2f736a782db407cdb02cf0de315e18a82d1e0f623e1e75eb5306825c355971",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t16_o2_theorem",
+        "module_cluster": "o2_theorem.py",
+        "operator": "return_sentinel",
+        "candidate_location": "64:4",
+        "clean_hash": "302b36f9f5247467bf082036a3bd13b846e8a1563ad17eec2f032e674a10a654",
+        "mutated_hash": "55992679561749d840f4266d1edb1479b3fbde6dd913b458f271634604abd001",
+        "eligibility": "yes",
+        "split": "discovery"
+      },
+      {
+        "task_id": "t17_sudoku",
+        "module_cluster": "sudoku.py",
+        "operator": "arith_literal",
+        "candidate_location": "246:8",
+        "clean_hash": "b8452176b8bf4a25fbe5bc971a069ac7a2162ea337e61d58025a15d084b7bb18",
+        "mutated_hash": "2dd03d36da079132aa33ec273f053bd33dc112ae4a0ffbd641e2200ab7bb22f9",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t18_agent_profiler",
+        "module_cluster": "agent_profiler.py",
+        "operator": "branch_swap",
+        "candidate_location": "52:8",
+        "clean_hash": "14b2336804879f96f01371f79cb81f398df26c46d267315d30467c0e94b689a6",
+        "mutated_hash": "56621f507afc02a93abaaf5c03abc3f0bd8034d8043bf87edd6d9a60c101c315",
+        "eligibility": "yes",
+        "split": "heldout"
+      },
+      {
+        "task_id": "t19_zeta_separation",
+        "module_cluster": "zeta_separation.py",
+        "operator": "arith_literal",
+        "candidate_location": "299:34",
+        "clean_hash": "8c2b7f6f0e4f03c0cdd148886f2d59cd549dd8cbede499aff4ee6864287a8a3e",
+        "mutated_hash": "f04bd3adc9a5072ce8c332675a4790a98b58ff417215c83b4feb02fac4412c93",
+        "eligibility": "yes",
+        "split": "discovery"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "task_id": "t00_pdi",
+      "module_cluster": "pdi.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_pdi.py",
+      "clean_result": "PASS (exit 0) 0.1s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 8,
+          "location": "109:33",
+          "candidates": 50,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 9,
+          "location": "109:53",
+          "candidates": 50,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 10,
+          "location": "109:66",
+          "candidates": 50,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 11,
+          "location": "116:16",
+          "candidates": 50,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 12,
+          "location": "145:45",
+          "candidates": 50,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 8,
+          "location": "317:15",
+          "candidates": 9,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "116:11",
+          "candidates": 9,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.06,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_pdi.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "cmp_invert",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "116:11",
+      "clean_hash": "7d1be0eddcc8f44b8bbf35b22c1b6615f30782430a044c62fb4a023c6da7d7cf",
+      "mutated_hash": "1c4a8f35bf2a92c805e6307c9ddb7c89009035740d4f5dde50eeb9a350c3dd43",
+      "patch_hash": "08de95c1f25c05c64cfd1d0cc083bec06afec1b4eb6b251a62d5a1f84d60d5a4",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t01_quotient_tower",
+      "module_cluster": "quotient_tower.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_tower.py",
+      "clean_result": "PASS (exit 0) 0.7s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 0,
+          "location": "56:61",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.72,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 1,
+          "location": "79:12",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.7,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 2,
+          "location": "82:27",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.73,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 3,
+          "location": "87:37",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.72,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 4,
+          "location": "90:17",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.73,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "101:23",
+          "candidates": 3,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.73,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 2,
+          "location": "101:52",
+          "candidates": 3,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.71,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "85:19",
+          "candidates": 3,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.58,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_tower.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "cmp_invert",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "85:19",
+      "clean_hash": "031ce04fb2b9f28396faeb085241e719b883d52532fd3b4a03e8eb7bea260269",
+      "mutated_hash": "22d1e676bc012bf9bea1c6a2ed9728a02fd68b50068f63d05773f5f12b88966c",
+      "patch_hash": "9eccd9e8921592eafd6a468d88ed20b22de30df23d960eea9086ff2c282af975",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t02_adapters",
+      "module_cluster": "adapters.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_adapter.py",
+      "clean_result": "PASS (exit 0) 1.3s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 10,
+          "location": "249:32",
+          "candidates": 15,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.33,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 11,
+          "location": "249:37",
+          "candidates": 15,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.31,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 12,
+          "location": "249:40",
+          "candidates": 15,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.34,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 13,
+          "location": "272:54",
+          "candidates": 15,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.34,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 14,
+          "location": "304:58",
+          "candidates": 15,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.32,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 8,
+          "location": "274:17",
+          "candidates": 11,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.12,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_adapter.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "cmp_invert",
+      "operator_version": "op/v1",
+      "candidate_index": 8,
+      "candidate_location": "274:17",
+      "clean_hash": "56b41eebe61077b526896ccf5b63ea6bdfc2562272cb4a9fb7bf8369e9564fdf",
+      "mutated_hash": "bb4280fd8065de3e155e39f569f5c4107e2f440df31d6766c5b8b9b17e0a61f8",
+      "patch_hash": "85b8c8029c17e99cfbee7981057753a4852b3b881467195737065189a726123d",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t03_ingest",
+      "module_cluster": "ingest.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_ingest.py",
+      "clean_result": "PASS (exit 0) 0.1s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 64,
+          "location": "1087:28",
+          "candidates": 81,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 65,
+          "location": "1090:31",
+          "candidates": 81,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 66,
+          "location": "1095:31",
+          "candidates": 81,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 67,
+          "location": "1096:23",
+          "candidates": 81,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 68,
+          "location": "1101:35",
+          "candidates": 81,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 43,
+          "location": "1163:3",
+          "candidates": 45,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 44,
+          "location": "1165:7",
+          "candidates": 45,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "168:11",
+          "candidates": 45,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "343:11",
+          "candidates": 45,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.11,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_ingest.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "cmp_invert",
+      "operator_version": "op/v1",
+      "candidate_index": 1,
+      "candidate_location": "343:11",
+      "clean_hash": "7709dfdca7a3327d659ce491370b0c0a13cd3455cf27ace2a0245208d5cb77d4",
+      "mutated_hash": "f7c2071d3123b03843a992660a42ce5b6363aab00abcf5aaef19b2fa866424d2",
+      "patch_hash": "745ed94d0960176714647ddfabb6868a7e841a7d116b4ec74c7768e65240effd",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t04_multiresolution",
+      "module_cluster": "multiresolution.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_multiresolution.py",
+      "clean_result": "PASS (exit 0) 0.0s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 38,
+          "location": "270:35",
+          "candidates": 55,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 39,
+          "location": "270:38",
+          "candidates": 55,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 40,
+          "location": "270:41",
+          "candidates": 55,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 41,
+          "location": "270:44",
+          "candidates": 55,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 42,
+          "location": "270:47",
+          "candidates": 55,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 6,
+          "location": "281:3",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "57:15",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "59:36",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 2,
+          "location": "72:19",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 3,
+          "location": "101:7",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "reason": "no_candidates"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 5,
+          "location": "103:4",
+          "candidates": 26,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.1,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_multiresolution.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 5,
+      "candidate_location": "103:4",
+      "clean_hash": "5eae6061251dd7c91f3d5bdba2c5780c6fb0cc12812b6c965ce778cf82ed1a22",
+      "mutated_hash": "e988cddbcfbde9d266efd950115bb46ba28b3a668ce9ac619010ddb9205d88ff",
+      "patch_hash": "7b9978e280f5bfda2a3ecc7d5575f19cc8f03dd7bb1589ebefa1a18fd1236587",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t05_cofinal_mesh",
+      "module_cluster": "cofinal_mesh.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_cofinal_mesh.py",
+      "clean_result": "PASS (exit 0) 0.1s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 38,
+          "location": "149:17",
+          "candidates": 58,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.09,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 39,
+          "location": "149:27",
+          "candidates": 58,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.09,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 40,
+          "location": "149:55",
+          "candidates": 58,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.08,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 41,
+          "location": "156:48",
+          "candidates": 58,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.08,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 42,
+          "location": "158:15",
+          "candidates": 58,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.09,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 6,
+          "location": "185:3",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.08,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "57:10",
+          "candidates": 7,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.09,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "57:30",
+          "candidates": 7,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.08,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_cofinal_mesh.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "cmp_invert",
+      "operator_version": "op/v1",
+      "candidate_index": 1,
+      "candidate_location": "57:30",
+      "clean_hash": "6753d8f1d62d23024dd00e1ebe0961b874329f9871614ef40e04f5a404c8edd9",
+      "mutated_hash": "2fed3e11626e7919f1f7fb59a52ea956ff080a2b617c194ffce345464e968a88",
+      "patch_hash": "af3e82ecb3c9388a8251feb02cc57df72bd7c24283661cbad7aba0311313eadb",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t06_transport",
+      "module_cluster": "transport.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_transport.py",
+      "clean_result": "PASS (exit 0) 0.5s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 57,
+          "location": "315:45",
+          "candidates": 88,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.55,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 58,
+          "location": "317:16",
+          "candidates": 88,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.53,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 59,
+          "location": "319:16",
+          "candidates": 88,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.54,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 60,
+          "location": "321:42",
+          "candidates": 88,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.54,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 61,
+          "location": "323:32",
+          "candidates": 88,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.53,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 21,
+          "location": "344:18",
+          "candidates": 26,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.54,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 22,
+          "location": "345:20",
+          "candidates": 26,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.53,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 23,
+          "location": "346:25",
+          "candidates": 26,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.52,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 24,
+          "location": "347:23",
+          "candidates": 26,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.52,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 25,
+          "location": "351:22",
+          "candidates": 26,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.53,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "index": 0,
+          "location": "352:12",
+          "candidates": 1,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.54,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 6,
+          "location": "151:8",
+          "candidates": 20,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.17,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_transport.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 6,
+      "candidate_location": "151:8",
+      "clean_hash": "4ed23e42a4ac153fd0a3ffaa0587e05352a178e0161487076b4dfe179cfde480",
+      "mutated_hash": "95ea847195e3c9cfa026e4ec1d707fa17b2bc2a79df2c3e3f92ac89535c32572",
+      "patch_hash": "d7402310df1422c87c1757dd11d5e237794b10c65004da05f2694d84d576ea5a",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t07_stable_quotient",
+      "module_cluster": "stable_quotient.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_stable_quotient.py",
+      "clean_result": "PASS (exit 0) 1.8s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 6,
+          "location": "78:11",
+          "candidates": 29,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.71,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 7,
+          "location": "89:40",
+          "candidates": 29,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 1.74,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 8,
+          "location": "96:25",
+          "candidates": 29,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.6,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_stable_quotient.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "arith_literal",
+      "operator_version": "op/v1",
+      "candidate_index": 8,
+      "candidate_location": "96:25",
+      "clean_hash": "df84afd878a0e86bb398baef02e68b758b19f140f3617e1a8b51a1503a041a63",
+      "mutated_hash": "8edae11a32ccbf713070f94fc8bd6f11a5cd1470d122312a327f4280c9f3734f",
+      "patch_hash": "556473a10530054bb0771a5eff7cb8c4632cb1912be547288e9de16fceba501a",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t08_collision_mechanism",
+      "module_cluster": "collision_mechanism.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_collision_mechanism.py",
+      "clean_result": "PASS (exit 0) 42.4s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 28,
+          "location": "95:62",
+          "candidates": 111,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 42.64,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "59:23",
+          "candidates": 21,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 42.27,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_collision_mechanism.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "cmp_invert",
+      "operator_version": "op/v1",
+      "candidate_index": 1,
+      "candidate_location": "59:23",
+      "clean_hash": "897b8a0b8542351317efe86027f996c3ea5c73bbbe13b5b7d12978eb5a46f1e6",
+      "mutated_hash": "a9716bea6758941c107e2241ad2cc6b9afa4a3f4e8ed83dd003a307231624c19",
+      "patch_hash": "36e878091996c7e2ca1493fcd8b09bbd300d853e20177db81e92bff4b96504b3",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t09_both_structures",
+      "module_cluster": "both_structures.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_both_structures.py",
+      "clean_result": "PASS (exit 0) 0.0s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 0,
+          "location": "51:15",
+          "candidates": 54,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.04,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_both_structures.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "arith_literal",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "51:15",
+      "clean_hash": "7645e0ea23124dff04f9c2aafad18c9c8b86e8ee26dffee6f521a1fab127c237",
+      "mutated_hash": "aafa1509cabcd5dd26ce4be36bb0a8a3e5721576fdf8703bbaa0bdc9ae0e99aa",
+      "patch_hash": "ef2ee756c0cd68c458fb3044730828df91d4b407decb3e865da4fce3daa5df12",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t10_one_question",
+      "module_cluster": "one_question.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_one_question.py",
+      "clean_result": "PASS (exit 0) 0.1s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 52,
+          "location": "155:57",
+          "candidates": 61,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.07,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 53,
+          "location": "157:65",
+          "candidates": 61,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 54,
+          "location": "186:16",
+          "candidates": 61,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 55,
+          "location": "188:16",
+          "candidates": 61,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 56,
+          "location": "192:16",
+          "candidates": 61,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 7,
+          "location": "145:17",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 8,
+          "location": "155:30",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 9,
+          "location": "157:30",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.06,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 10,
+          "location": "241:3",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.09,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "82:21",
+          "candidates": 11,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.09,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "reason": "no_candidates"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 0,
+          "location": "47:4",
+          "candidates": 7,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.13,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_one_question.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "47:4",
+      "clean_hash": "76f10e2ed637589e6a07ac1678cc1fab0e5c06b02f7610d8d3b5f50240519675",
+      "mutated_hash": "b547a7530e56d3f0884c92e5757959bfa0ad9ba0c6ea1c267ae0ef5f4d84ed40",
+      "patch_hash": "5d123dc0dfe47cbd01ded276840af6cc6e38f36d00cf39b83942adb7babe9705",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t11_invariance_first",
+      "module_cluster": "invariance_first.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_invariance_first.py",
+      "clean_result": "PASS (exit 0) 0.0s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 30,
+          "location": "120:57",
+          "candidates": 43,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 31,
+          "location": "121:57",
+          "candidates": 43,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 32,
+          "location": "127:39",
+          "candidates": 43,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 33,
+          "location": "135:31",
+          "candidates": 43,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 34,
+          "location": "135:38",
+          "candidates": 43,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "108:13",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "127:14",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 2,
+          "location": "135:44",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 3,
+          "location": "234:3",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "reason": "no_candidates"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 2,
+          "location": "134:8",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 3,
+          "location": "157:4",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 0,
+          "location": "87:4",
+          "candidates": 4,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.05,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 1,
+          "location": "100:4",
+          "candidates": 4,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.11,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_invariance_first.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 1,
+      "candidate_location": "100:4",
+      "clean_hash": "34628d6ddc666131692b118bdda70687e8505e3cd1a4773a6be6691be77a6007",
+      "mutated_hash": "5e4e06a110bf132d052cc8894f0a9a545f4c0db05ca5e682cd1655ea2d2f7c03",
+      "patch_hash": "c3b7f84c08a32ed4efa7f017ce39143c5ece71142302f858805f80bd65816755",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t12_proof_awareness",
+      "module_cluster": "proof_awareness.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_proof_awareness.py",
+      "clean_result": "PASS (exit 0) 0.0s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 3,
+          "location": "54:16",
+          "candidates": 31,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 4,
+          "location": "78:16",
+          "candidates": 31,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 5,
+          "location": "80:16",
+          "candidates": 31,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 6,
+          "location": "84:10",
+          "candidates": 31,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.03,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 7,
+          "location": "84:16",
+          "candidates": 31,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "97:19",
+          "candidates": 2,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 1,
+          "location": "147:3",
+          "candidates": 2,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "reason": "no_candidates"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 2,
+          "location": "112:4",
+          "candidates": 3,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 0,
+          "location": "40:4",
+          "candidates": 3,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.1,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_proof_awareness.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "40:4",
+      "clean_hash": "4a0fa9eebfdbae6196e92b6ffd26086e7da2f0d3cbe321040d308166b80214f0",
+      "mutated_hash": "e97bcbaebebb2b2f05e35cf85bf41c14c6b12906baa6e8b487a7776682411e62",
+      "patch_hash": "9f017911e57897b293baf7ad233b552f82ccb0c33142d89346a20cb5cb912bf0",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t13_prime_holonomy",
+      "module_cluster": "prime_holonomy.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_prime_holonomy.py",
+      "clean_result": "PASS (exit 0) 0.8s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 56,
+          "location": "167:44",
+          "candidates": 65,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.8,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 57,
+          "location": "167:49",
+          "candidates": 65,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.79,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 58,
+          "location": "167:52",
+          "candidates": 65,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.81,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 59,
+          "location": "168:30",
+          "candidates": 65,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.8,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 60,
+          "location": "168:36",
+          "candidates": 65,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.8,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 8,
+          "location": "134:21",
+          "candidates": 12,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.79,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 9,
+          "location": "134:31",
+          "candidates": 12,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.78,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 10,
+          "location": "141:3",
+          "candidates": 12,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 5.74,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 11,
+          "location": "155:11",
+          "candidates": 12,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.83,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "60:10",
+          "candidates": 12,
+          "result": "TIMEOUT",
+          "detail": "exceeded 90s",
+          "elapsed": 90.09,
+          "reason": "timeout"
+        },
+        {
+          "operator": "branch_swap",
+          "reason": "no_candidates"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 3,
+          "location": "95:12",
+          "candidates": 7,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.1,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_prime_holonomy.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 3,
+      "candidate_location": "95:12",
+      "clean_hash": "ca092baf7d05735ec58e565b02ec94b93b598b045a6117e2530aa5cf9d5915ac",
+      "mutated_hash": "e9827d8da0a1fdf82400b35a6cc3603b1aa5abd4a9a98d71014fbecff6112841",
+      "patch_hash": "317ff8087d32d2714fb84fabeb065096976aada608fa8a47784c9a67fb63c375",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t14_survival_commutation",
+      "module_cluster": "survival_commutation.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_survival_commutation.py",
+      "clean_result": "PASS (exit 0) 0.0s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 31,
+          "location": "275:55",
+          "candidates": 48,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 32,
+          "location": "276:19",
+          "candidates": 48,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 33,
+          "location": "276:29",
+          "candidates": 48,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 34,
+          "location": "280:27",
+          "candidates": 48,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.03,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 35,
+          "location": "281:53",
+          "candidates": 48,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.03,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 11,
+          "location": "282:28",
+          "candidates": 16,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 12,
+          "location": "285:25",
+          "candidates": 16,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 13,
+          "location": "287:19",
+          "candidates": 16,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 14,
+          "location": "304:11",
+          "candidates": 16,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.03,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 15,
+          "location": "308:3",
+          "candidates": 16,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.03,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "index": 1,
+          "location": "178:16",
+          "candidates": 2,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.03,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "index": 0,
+          "location": "176:16",
+          "candidates": 2,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.04,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 12,
+          "location": "262:12",
+          "candidates": 15,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.04,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_survival_commutation.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 12,
+      "candidate_location": "262:12",
+      "clean_hash": "a3e27b9fc960820aebef13ec389ca247fdf0ca931566a3daf41d3aa740845d65",
+      "mutated_hash": "c1bba45b326a03a7a74ade6cda7936cd9a2a4fc2be703550a9d2866146c706d5",
+      "patch_hash": "dcb4baff5dc41b216410eac43c26ad4668469125396d5303fb37f6f02d358895",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t15_core_monodromy",
+      "module_cluster": "core_monodromy.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_core_monodromy.py",
+      "clean_result": "PASS (exit 0) 4.1s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 33,
+          "location": "245:24",
+          "candidates": 34,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 4.19,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 0,
+          "location": "67:5",
+          "candidates": 34,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 4.15,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_core_monodromy.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "arith_literal",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "67:5",
+      "clean_hash": "99661c7496a2ba58ffd1d1b69b626860b6553577fe4aae4100c0f5de7823fddc",
+      "mutated_hash": "2e2f736a782db407cdb02cf0de315e18a82d1e0f623e1e75eb5306825c355971",
+      "patch_hash": "3a0831752f455c068fc85685daec72c4ed0f06230656abac3d7ec37292db68c8",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t16_o2_theorem",
+      "module_cluster": "o2_theorem.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_o2_theorem.py",
+      "clean_result": "PASS (exit 0) 0.4s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 73,
+          "location": "200:12",
+          "candidates": 85,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.37,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 74,
+          "location": "203:25",
+          "candidates": 85,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.36,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 75,
+          "location": "203:30",
+          "candidates": 85,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.37,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 76,
+          "location": "205:25",
+          "candidates": 85,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.36,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 77,
+          "location": "205:33",
+          "candidates": 85,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.36,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 6,
+          "location": "115:23",
+          "candidates": 22,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.36,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 7,
+          "location": "119:23",
+          "candidates": 22,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.36,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 8,
+          "location": "123:11",
+          "candidates": 22,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.37,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 9,
+          "location": "137:19",
+          "candidates": 22,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.37,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 10,
+          "location": "139:36",
+          "candidates": 22,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.36,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "reason": "no_candidates"
+        },
+        {
+          "operator": "return_sentinel",
+          "index": 2,
+          "location": "64:4",
+          "candidates": 10,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.18,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_o2_theorem.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "return_sentinel",
+      "operator_version": "op/v1",
+      "candidate_index": 2,
+      "candidate_location": "64:4",
+      "clean_hash": "302b36f9f5247467bf082036a3bd13b846e8a1563ad17eec2f032e674a10a654",
+      "mutated_hash": "55992679561749d840f4266d1edb1479b3fbde6dd913b458f271634604abd001",
+      "patch_hash": "73f1624c9ef05c1ab7a5eef841944a69a179adb568bf154bcb4844662b953c28",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    },
+    {
+      "task_id": "t17_sudoku",
+      "module_cluster": "sudoku.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_sudoku.py",
+      "clean_result": "PASS (exit 0) 3.5s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 53,
+          "location": "246:8",
+          "candidates": 54,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 3.57,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_sudoku.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "arith_literal",
+      "operator_version": "op/v1",
+      "candidate_index": 53,
+      "candidate_location": "246:8",
+      "clean_hash": "b8452176b8bf4a25fbe5bc971a069ac7a2162ea337e61d58025a15d084b7bb18",
+      "mutated_hash": "2dd03d36da079132aa33ec273f053bd33dc112ae4a0ffbd641e2200ab7bb22f9",
+      "patch_hash": "af136d2b87975c6c571cab1ef8c4217c502d6805a59abf5695edf5ed33fbc67a",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t18_agent_profiler",
+      "module_cluster": "agent_profiler.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_profiler.py",
+      "clean_result": "PASS (exit 0) 0.2s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 50,
+          "location": "300:33",
+          "candidates": 62,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.22,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 51,
+          "location": "302:45",
+          "candidates": 62,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 52,
+          "location": "305:45",
+          "candidates": 62,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 53,
+          "location": "311:22",
+          "candidates": 62,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.2,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "arith_literal",
+          "index": 54,
+          "location": "315:65",
+          "candidates": 62,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 10,
+          "location": "272:19",
+          "candidates": 14,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 11,
+          "location": "282:11",
+          "candidates": 14,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 12,
+          "location": "284:27",
+          "candidates": 14,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 13,
+          "location": "333:7",
+          "candidates": 14,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "cmp_invert",
+          "index": 0,
+          "location": "83:15",
+          "candidates": 14,
+          "result": "PASS",
+          "detail": "exit 0",
+          "elapsed": 0.21,
+          "reason": "did_not_flip"
+        },
+        {
+          "operator": "branch_swap",
+          "index": 0,
+          "location": "52:8",
+          "candidates": 2,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.1,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_profiler.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "branch_swap",
+      "operator_version": "op/v1",
+      "candidate_index": 0,
+      "candidate_location": "52:8",
+      "clean_hash": "14b2336804879f96f01371f79cb81f398df26c46d267315d30467c0e94b689a6",
+      "mutated_hash": "56621f507afc02a93abaaf5c03abc3f0bd8034d8043bf87edd6d9a60c101c315",
+      "patch_hash": "2bf2b6af74eeca5b1677a35b9a76806778d4dfc8f3e804a08447298bef280b93",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "heldout"
+    },
+    {
+      "task_id": "t19_zeta_separation",
+      "module_cluster": "zeta_separation.py",
+      "seed": 20260916,
+      "verifier_command": "python3 test_ihara_separation.py",
+      "clean_result": "PASS (exit 0) 0.1s",
+      "attempts": [
+        {
+          "operator": "arith_literal",
+          "index": 77,
+          "location": "299:34",
+          "candidates": 238,
+          "result": "FAIL",
+          "detail": "exit 1",
+          "elapsed": 0.12,
+          "reason": ""
+        }
+      ],
+      "task_text": "The repository's test suite `python3 test_ihara_separation.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
+      "operator": "arith_literal",
+      "operator_version": "op/v1",
+      "candidate_index": 77,
+      "candidate_location": "299:34",
+      "clean_hash": "8c2b7f6f0e4f03c0cdd148886f2d59cd549dd8cbede499aff4ee6864287a8a3e",
+      "mutated_hash": "f04bd3adc9a5072ce8c332675a4790a98b58ff417215c83b4feb02fac4412c93",
+      "patch_hash": "1258622638fb069e452957c712f2e3791aed01502b1c4cb4836cfba0390f1d23",
+      "mutated_result": "FAIL (exit 1)",
+      "eligibility": "yes",
+      "exclusion_reason": "",
+      "split": "discovery"
+    }
+  ]
+}

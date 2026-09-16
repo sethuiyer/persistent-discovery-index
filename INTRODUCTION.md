@@ -81,6 +81,7 @@ MIDDLE
   ingest.py             <-- adapters       11 trace-format loaders
   o4b.py                <-- adapters, ingest  O4b protocol harness (preconditions only)
   o4b_stat.py           (none)            the frozen decision statistic
+  o4b_inject.py         (none)            seeded defect injector + sealed corpus
   evaluators.py         <-- adapters       independent outcome evaluation (never reads
                                            the trajectory)
   stable_quotient.py    <-- transport      partition refinement to T-stability
