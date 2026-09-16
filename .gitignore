@@ -10,3 +10,10 @@ report.html
 # real agent databases can contain prompts, paths and credentials in captured content
 *.db
 *.sqlite
+
+# Rust / Node build artifacts (engine port)
+engine/target/
+target/
+ui/node_modules/
+ui/dist/
+node_modules/
