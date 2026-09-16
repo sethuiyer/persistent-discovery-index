@@ -104,6 +104,19 @@ refinement law and is validated with `QuotientTower.validate`
    and `E_j ≈ 0` for `j ≠ j*`.
 4. **unresolved-residual** — the finest partition does not determine `p`;
    `‖p − P_J p‖² > 0` is reported, not silently dropped.
+5. **permutation-null** — the **exact test target** (9.2): on `N > 1` equally
+   weighted histories with the observed labels uniformly permuted (count
+   preserved, any success fraction), the empirical mean of `E_j` equals
+   `p̄(1−p̄)/(N−1)·d_j`. This is a test of the formula; the *displayed* baseline on
+   real data is a reference level, not a significance test.
+6. **xor-interaction** — `p = A ⊕ B` on independent fair bits: the first-revealed
+   feature carries zero energy and the second carries all of it, in either order
+   (9.5). Pins that attribution depends on feature order.
+7. **refinement-trap** — a *non-nested* partition (blocks straddling coarser
+   blocks) must be **rejected at construction** by `QuotientTower.validate`, not
+   merely produce a failing identity. For non-nested projections the null carries
+   `tr[(P_{j+1} − P_j)²]`; substituting `n_{j+1} − n_j` is what nesting buys, so
+   the guard protects the very hypothesis (9.2) needs.
 
 These establish **correctness** and **sensitivity to planted structure**. They do
 not establish usefulness on real workloads (§5).
@@ -150,9 +163,11 @@ that is labelled, and the `unknown` fraction) is reported as a separate number.
 
 O4 is discharged in two independent stages, and they are recorded separately:
 
-- **O4a — synthetic correctness.** The detail-energy machinery is correct, the
-  identity holds, and it is sensitive to planted structure. **Dischargeable now**,
-  by the fixtures in §3.3, with no real data.
+- **O4a — synthetic correctness.** The finite accounting identity (9.1), the
+  pruning price (9.3), the aggregation law (9.5), the permutation-null baseline
+  (9.2) and the XOR interaction fixture all hold; the detail-energy machinery is
+  correct and sensitive to planted structure. **Dischargeable now**, with no real
+  data.
 - **O4b — real-data usefulness.** The diagnoses reduce cost at preserved task
   quality. Requires an **independently evaluated, matched-task corpus**.
   **Not inferable from O4a.**
@@ -175,6 +190,11 @@ is an **experiment to run**, not a causal finding.
   association.
 - No claim that a negative `cost`–`success` covariance means deleting a branch
   improves anything.
+- Compressing the **diagnostic representation** (§9.4) is not a licence to remove
+  agent actions: the pruning price (9.3) is predictive, not causal.
+- Energy at a level is not causation (§9.5); the null **reference level** is not a
+  significance test (§9.3) — though the formula it is computed from is an exact
+  synthetic test target.
 
 ## 7. Open questions
 
@@ -194,3 +214,84 @@ requires every `.py` it sees in a checked document to exist on disk. When A ship
 and `multiresolution.py` is present, add `O4_SCOPE.md` to `DOCS`. Longer term the
 checker should distinguish **planned** modules from **implemented** ones, so a
 scope note can enter coverage before its code exists.
+
+## 9. Wavelet extension — adaptive compression with an error budget
+
+Trees admit a Haar-style construction and conditional expectation is orthogonal
+projection; PDI already supplies the partitions and observables. The connection
+is finite and testable — no infinite corpus, scaling exponent or convergence
+assumption is needed, which suits the finite traces PDI actually receives. See the
+tree-wavelet construction and the conditional-expectation foundations.\[1,2\]
+
+**9.1 Exact accounting.** With a trivial root `P_0` — so that `P_0 p = p̄`, the
+global `μ`-mean — one fixed, normalized `μ` used at *every* level, and nested
+`P_0 … P_J`,
+
+$$\operatorname{Var}_\mu(p) = \sum_{j=0}^{J-1}\|D_j p\|_\mu^2 + \|p - P_J p\|_\mu^2. \tag{9.1}$$
+
+Variation resolved at each refinement, plus unresolved variation. Exact at finite
+resolution. The root condition is load-bearing: the telescoping of `P_0 … P_J`
+starts at `‖p − P_0 p‖²`, which equals `Var_μ(p)` **only** when `P_0 p = p̄`; a
+non-trivial root (or a measure that changes between levels) gives a different
+quantity.
+
+**9.2 Total energy is a bad objective.** If the finest partition is discrete then
+`P_J p = p` and `Σ_j E_j = p̄(1−p̄)` — identical for every such tower at a fixed
+success rate, *including a tower built from meaningless episode identifiers*. So
+the useful question is **how compactly, and how reproducibly on unseen tasks,
+behavioural distinctions explain outcomes.** Zero energy also does not mean no
+useful work: a partition containing only successful runs has zero success energy.
+
+**9.3 Null baseline — report it.** Fix a tower independently of the labels. For
+`N > 1` equally weighted histories and a **uniform permutation of the observed
+labels that preserves their count** — any success fraction, not necessarily ½ —
+the refinement adds `d_j = n_{j+1} − n_j` dimensions and
+
+$$\mathbb E_{\mathrm{perm}}[E_j] = \frac{p̄(1-p̄)}{N-1}\, d_j. \tag{9.2}$$
+
+The detail projection has rank `d_j`, annihilates constants, and the permutation
+covariance is isotropic on the mean-zero subspace. **(9.2) assumes nesting.** For
+arbitrary partition projections the null carries
+`tr[(P_{j+1} − P_j)²]`, and replacing that by `n_{j+1} − n_j` is valid only when
+the projections are nested — equivalently when `rank D_j = trace D_j = d_j`. An
+implementation must **reject non-nested partitions**, not merely report a
+failing identity.
+
+Verified by exact enumeration over the `C(6,3) = 20` count-preserving labelings of
+an `N = 6` tower. More detail dimensions produce more empirical energy **with no
+behavioural signal**. Two readings, kept sharp:
+
+- the **formula (9.2) is an exact synthetic test target** — fixture 5 checks it;
+- the **reference level displayed on real data is not a significance test** — it
+  is a mean under the null to report alongside raw energy.
+
+Unequal weights and task-dependent structure need their own null model.
+
+**9.4 Pruning with an error budget.** For a selected set `A` of detail levels,
+`p̂_A = P_0 p + Σ_{j∈A} D_j p`, and orthogonality gives
+
+$$\|p - \hat p_A\|_\mu^2 = \|p - P_J p\|_\mu^2 + \sum_{j \notin A} E_j. \tag{9.3}$$
+
+Discarding distinctions has an exact predictive price, so a smaller description
+can be chosen against an **error budget**: pick the pruning on training data and
+measure the predictive loss on **held-out** tasks. This compresses the
+**diagnostic representation**; it does not establish that the corresponding agent
+actions can safely be removed.
+
+**9.5 Aggregation, and attribution depends on order.** Merging adjacent stages is
+additive, `‖(P_b − P_a)p‖² = Σ_{j=a}^{b-1} E_j`, so inserting intermediate levels
+redistributes energy while preserving the total between fixed endpoints. But
+attribution depends on feature order: for `p = A ⊕ B` on independent fair bits,
+the first-revealed feature carries **zero** energy and the second carries all of
+it (verified exactly, both orders). So *"energy appeared at the retry level"*
+means **retries add predictive information conditional on the earlier features**
+— it does not mean retries caused the outcome.
+
+**Product reading.** A compact, held-out-validated behavioural explanation of
+success *and* measured cost — chosen against an explicit error budget — is the
+testable benefit, not a smaller raw energy.
+
+*References.* \[1\] Gavish, Nadler, Coifman, *Multiscale wavelets on trees*
+(<https://www.math.ucdavis.edu/~saito/data/acha.read.s11/gavish-nadler-coifman-wavelets_trees.pdf>).
+\[2\] Conditional-expectation projections
+(<https://www.stat.cmu.edu/~arinaldo/Teaching/36710-36752/Lecture_Notes/lec_notes_9.pdf>).
