@@ -1,0 +1,8 @@
+  t01_quotient_tower         run 1  ok         agent=settled      verified=success cost=None
+  t01_quotient_tower         run 2  ok         agent=settled      verified=success cost=None
+  t02_adapters               run 1  ok         agent=settled      verified=success cost=None
+  t02_adapters               run 2  ok         agent=settled      verified=success cost=None
+  t03_ingest                 run 1  ok         agent=settled      verified=success cost=None
+  t03_ingest                 run 2  ok         agent=settled      verified=success cost=None
+  t07_stable_quotient        run 1  ok         agent=settled      verified=success cost=None
+  t07_stable_quotient        run 2  ok         agent=settled      verified=success cost=None

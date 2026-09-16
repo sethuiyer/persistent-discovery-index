@@ -279,9 +279,22 @@ def load_pi_session(path: str) -> list[Turn]:
                 # cannot be computed without surfacing it.
                 u = m.get("usage")
                 if isinstance(u, dict):
-                    if isinstance(u.get("cost"), (int, float)):
-                        cost_total += float(u["cost"])
+                    # pi records cost as an OBJECT {input, output, cacheRead, cacheWrite,
+                    # total}; older/streamed shapes use a scalar. Handle both.
+                    cost = u.get("cost")
+                    if isinstance(cost, (int, float)):
+                        cost_total += float(cost)
                         have_cost = True
+                    elif isinstance(cost, dict):
+                        total = cost.get("total")
+                        if isinstance(total, (int, float)):
+                            cost_total += float(total)
+                            have_cost = True
+                        else:
+                            parts = [v for v in cost.values() if isinstance(v, (int, float))]
+                            if parts:
+                                cost_total += float(sum(parts))
+                                have_cost = True
                     if isinstance(u.get("input"), int):
                         tin += u["input"]
                         have_tok = True

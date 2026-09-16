@@ -118,7 +118,8 @@ def test_pi_zero_tool_and_usage() -> None:
         f.write(json.dumps({"type": "message", "message": {
             "role": "assistant", "stopReason": "stop",
             "content": [{"type": "text", "text": "hello"}],
-            "usage": {"input": 10, "output": 5, "cost": 0.02}}}) + "\n")
+            "usage": {"input": 10, "output": 5,
+                      "cost": {"input": 0.01, "output": 0.01, "total": 0.02}}}}) + "\n")
     runs = load_pi_session(path)
     check("a zero-tool turn is a run, not dropped", len(runs) == 1, f"got {len(runs)}")
     if runs:

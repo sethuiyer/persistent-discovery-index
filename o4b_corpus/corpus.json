@@ -1,10 +1,10 @@
 {
-  "fingerprint": "517cbedaba60263d542c922c710c0d158357b3fe50f1063d2d37d638ceb32bfd",
+  "fingerprint": "586e1bee0cc12c5073183f0405608018493f7bf2218cf5d383cd354db0c22dea",
   "core": {
     "operator_version": "op/v1",
     "seed": 20260916,
     "M": 20,
-    "source_commit": "1c71d51202fe0ad54952e012e64e81310d8b721f",
+    "source_commit": "f0c3b3f9bda8a58846c90e53f40f7a34f1d38228",
     "verifier_env": {
       "python": "3.12.3",
       "platform": "Linux-7.1.5-76070105-generic-x86_64-with-glibc2.39"
@@ -26,10 +26,10 @@
       {
         "task_id": "t01_quotient_tower",
         "module_cluster": "quotient_tower.py",
-        "operator": "cmp_invert",
-        "candidate_location": "85:19",
+        "operator": "arith_literal",
+        "candidate_location": "82:27",
         "clean_hash": "031ce04fb2b9f28396faeb085241e719b883d52532fd3b4a03e8eb7bea260269",
-        "mutated_hash": "22d1e676bc012bf9bea1c6a2ed9728a02fd68b50068f63d05773f5f12b88966c",
+        "mutated_hash": "53278999b4fd3467ae74925f376fa39a31d2781ff344639edee04434329dbaf3",
         "eligibility": "yes",
         "split": "discovery"
       },
@@ -38,8 +38,8 @@
         "module_cluster": "adapters.py",
         "operator": "cmp_invert",
         "candidate_location": "274:17",
-        "clean_hash": "56b41eebe61077b526896ccf5b63ea6bdfc2562272cb4a9fb7bf8369e9564fdf",
-        "mutated_hash": "bb4280fd8065de3e155e39f569f5c4107e2f440df31d6766c5b8b9b17e0a61f8",
+        "clean_hash": "4e9699e1c9a7f0637147fa5f623cae39ee745a0b0b37b1d5919cfc262e181451",
+        "mutated_hash": "e49263c69c3e9626aae8b157253274e50467f35fa7f76cf553ab6ff169178a88",
         "eligibility": "yes",
         "split": "discovery"
       },
@@ -196,10 +196,10 @@
       {
         "task_id": "t18_agent_profiler",
         "module_cluster": "agent_profiler.py",
-        "operator": "branch_swap",
-        "candidate_location": "52:8",
+        "operator": "cmp_invert",
+        "candidate_location": "83:15",
         "clean_hash": "14b2336804879f96f01371f79cb81f398df26c46d267315d30467c0e94b689a6",
-        "mutated_hash": "56621f507afc02a93abaaf5c03abc3f0bd8034d8043bf87edd6d9a60c101c315",
+        "mutated_hash": "6132928f80ebe60b4bcd3bf5f4e36274ceb86437c64c93666eea8ddd802bb966",
         "eligibility": "yes",
         "split": "heldout"
       },
@@ -260,7 +260,7 @@
           "candidates": 50,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": "did_not_flip"
         },
         {
@@ -270,7 +270,7 @@
           "candidates": 50,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": "did_not_flip"
         },
         {
@@ -280,7 +280,7 @@
           "candidates": 9,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": "did_not_flip"
         },
         {
@@ -290,7 +290,7 @@
           "candidates": 9,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": ""
         }
       ],
@@ -312,7 +312,7 @@
       "module_cluster": "quotient_tower.py",
       "seed": 20260916,
       "verifier_command": "python3 test_tower.py",
-      "clean_result": "PASS (exit 0) 0.7s",
+      "clean_result": "PASS (exit 0) 0.8s",
       "attempts": [
         {
           "operator": "arith_literal",
@@ -331,7 +331,7 @@
           "candidates": 11,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.7,
+          "elapsed": 0.74,
           "reason": "did_not_flip"
         },
         {
@@ -339,70 +339,20 @@
           "index": 2,
           "location": "82:27",
           "candidates": 11,
-          "result": "PASS",
-          "detail": "exit 0",
-          "elapsed": 0.73,
-          "reason": "did_not_flip"
-        },
-        {
-          "operator": "arith_literal",
-          "index": 3,
-          "location": "87:37",
-          "candidates": 11,
-          "result": "PASS",
-          "detail": "exit 0",
-          "elapsed": 0.72,
-          "reason": "did_not_flip"
-        },
-        {
-          "operator": "arith_literal",
-          "index": 4,
-          "location": "90:17",
-          "candidates": 11,
-          "result": "PASS",
-          "detail": "exit 0",
-          "elapsed": 0.73,
-          "reason": "did_not_flip"
-        },
-        {
-          "operator": "cmp_invert",
-          "index": 1,
-          "location": "101:23",
-          "candidates": 3,
-          "result": "PASS",
-          "detail": "exit 0",
-          "elapsed": 0.73,
-          "reason": "did_not_flip"
-        },
-        {
-          "operator": "cmp_invert",
-          "index": 2,
-          "location": "101:52",
-          "candidates": 3,
-          "result": "PASS",
-          "detail": "exit 0",
-          "elapsed": 0.71,
-          "reason": "did_not_flip"
-        },
-        {
-          "operator": "cmp_invert",
-          "index": 0,
-          "location": "85:19",
-          "candidates": 3,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.58,
+          "elapsed": 0.73,
           "reason": ""
         }
       ],
       "task_text": "The repository's test suite `python3 test_tower.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
-      "operator": "cmp_invert",
+      "operator": "arith_literal",
       "operator_version": "op/v1",
-      "candidate_index": 0,
-      "candidate_location": "85:19",
+      "candidate_index": 2,
+      "candidate_location": "82:27",
       "clean_hash": "031ce04fb2b9f28396faeb085241e719b883d52532fd3b4a03e8eb7bea260269",
-      "mutated_hash": "22d1e676bc012bf9bea1c6a2ed9728a02fd68b50068f63d05773f5f12b88966c",
-      "patch_hash": "9eccd9e8921592eafd6a468d88ed20b22de30df23d960eea9086ff2c282af975",
+      "mutated_hash": "53278999b4fd3467ae74925f376fa39a31d2781ff344639edee04434329dbaf3",
+      "patch_hash": "f69dada879076cd4079f08781822f199a6a47ed750eea52ac6762a837ab0a2ca",
       "mutated_result": "FAIL (exit 1)",
       "eligibility": "yes",
       "exclusion_reason": "",
@@ -413,7 +363,7 @@
       "module_cluster": "adapters.py",
       "seed": 20260916,
       "verifier_command": "python3 test_adapter.py",
-      "clean_result": "PASS (exit 0) 1.3s",
+      "clean_result": "PASS (exit 0) 1.4s",
       "attempts": [
         {
           "operator": "arith_literal",
@@ -422,7 +372,7 @@
           "candidates": 15,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 1.33,
+          "elapsed": 1.37,
           "reason": "did_not_flip"
         },
         {
@@ -432,7 +382,7 @@
           "candidates": 15,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 1.31,
+          "elapsed": 1.42,
           "reason": "did_not_flip"
         },
         {
@@ -442,7 +392,7 @@
           "candidates": 15,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 1.34,
+          "elapsed": 1.39,
           "reason": "did_not_flip"
         },
         {
@@ -452,17 +402,17 @@
           "candidates": 15,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 1.34,
+          "elapsed": 1.46,
           "reason": "did_not_flip"
         },
         {
           "operator": "arith_literal",
           "index": 14,
-          "location": "304:58",
+          "location": "317:58",
           "candidates": 15,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 1.32,
+          "elapsed": 1.42,
           "reason": "did_not_flip"
         },
         {
@@ -472,7 +422,7 @@
           "candidates": 11,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.12,
+          "elapsed": 0.11,
           "reason": ""
         }
       ],
@@ -481,9 +431,9 @@
       "operator_version": "op/v1",
       "candidate_index": 8,
       "candidate_location": "274:17",
-      "clean_hash": "56b41eebe61077b526896ccf5b63ea6bdfc2562272cb4a9fb7bf8369e9564fdf",
-      "mutated_hash": "bb4280fd8065de3e155e39f569f5c4107e2f440df31d6766c5b8b9b17e0a61f8",
-      "patch_hash": "85b8c8029c17e99cfbee7981057753a4852b3b881467195737065189a726123d",
+      "clean_hash": "4e9699e1c9a7f0637147fa5f623cae39ee745a0b0b37b1d5919cfc262e181451",
+      "mutated_hash": "e49263c69c3e9626aae8b157253274e50467f35fa7f76cf553ab6ff169178a88",
+      "patch_hash": "3ed6412262d8aa31b32cfdd47cc95ca98d07128e50538fb2a649c0cd0c72c6d2",
       "mutated_result": "FAIL (exit 1)",
       "eligibility": "yes",
       "exclusion_reason": "",
@@ -533,7 +483,7 @@
           "candidates": 81,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -543,7 +493,7 @@
           "candidates": 81,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -583,7 +533,7 @@
           "candidates": 45,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.11,
+          "elapsed": 0.12,
           "reason": ""
         }
       ],
@@ -718,7 +668,7 @@
           "candidates": 26,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.1,
+          "elapsed": 0.11,
           "reason": ""
         }
       ],
@@ -759,7 +709,7 @@
           "candidates": 58,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.09,
+          "elapsed": 0.08,
           "reason": "did_not_flip"
         },
         {
@@ -769,7 +719,7 @@
           "candidates": 58,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.08,
+          "elapsed": 0.09,
           "reason": "did_not_flip"
         },
         {
@@ -779,7 +729,7 @@
           "candidates": 58,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.08,
+          "elapsed": 0.09,
           "reason": "did_not_flip"
         },
         {
@@ -789,7 +739,7 @@
           "candidates": 58,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.09,
+          "elapsed": 0.08,
           "reason": "did_not_flip"
         },
         {
@@ -799,7 +749,7 @@
           "candidates": 7,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.08,
+          "elapsed": 0.09,
           "reason": "did_not_flip"
         },
         {
@@ -819,7 +769,7 @@
           "candidates": 7,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.08,
+          "elapsed": 0.09,
           "reason": ""
         }
       ],
@@ -841,7 +791,7 @@
       "module_cluster": "transport.py",
       "seed": 20260916,
       "verifier_command": "python3 test_transport.py",
-      "clean_result": "PASS (exit 0) 0.5s",
+      "clean_result": "PASS (exit 0) 0.6s",
       "attempts": [
         {
           "operator": "arith_literal",
@@ -850,7 +800,7 @@
           "candidates": 88,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.55,
+          "elapsed": 0.57,
           "reason": "did_not_flip"
         },
         {
@@ -860,7 +810,7 @@
           "candidates": 88,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.53,
+          "elapsed": 0.55,
           "reason": "did_not_flip"
         },
         {
@@ -870,7 +820,7 @@
           "candidates": 88,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.54,
+          "elapsed": 0.55,
           "reason": "did_not_flip"
         },
         {
@@ -880,7 +830,7 @@
           "candidates": 88,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.54,
+          "elapsed": 0.55,
           "reason": "did_not_flip"
         },
         {
@@ -890,7 +840,7 @@
           "candidates": 88,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.53,
+          "elapsed": 0.55,
           "reason": "did_not_flip"
         },
         {
@@ -920,7 +870,7 @@
           "candidates": 26,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.52,
+          "elapsed": 0.53,
           "reason": "did_not_flip"
         },
         {
@@ -930,7 +880,7 @@
           "candidates": 26,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.52,
+          "elapsed": 0.53,
           "reason": "did_not_flip"
         },
         {
@@ -940,7 +890,7 @@
           "candidates": 26,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.53,
+          "elapsed": 0.54,
           "reason": "did_not_flip"
         },
         {
@@ -960,7 +910,7 @@
           "candidates": 20,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.17,
+          "elapsed": 0.18,
           "reason": ""
         }
       ],
@@ -991,7 +941,7 @@
           "candidates": 29,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 1.71,
+          "elapsed": 1.73,
           "reason": "did_not_flip"
         },
         {
@@ -1011,7 +961,7 @@
           "candidates": 29,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.6,
+          "elapsed": 0.61,
           "reason": ""
         }
       ],
@@ -1033,7 +983,7 @@
       "module_cluster": "collision_mechanism.py",
       "seed": 20260916,
       "verifier_command": "python3 test_collision_mechanism.py",
-      "clean_result": "PASS (exit 0) 42.4s",
+      "clean_result": "PASS (exit 0) 43.3s",
       "attempts": [
         {
           "operator": "arith_literal",
@@ -1042,7 +992,7 @@
           "candidates": 111,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 42.64,
+          "elapsed": 43.77,
           "reason": "did_not_flip"
         },
         {
@@ -1052,7 +1002,7 @@
           "candidates": 21,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 42.27,
+          "elapsed": 44.61,
           "reason": ""
         }
       ],
@@ -1124,7 +1074,7 @@
           "candidates": 61,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": "did_not_flip"
         },
         {
@@ -1164,7 +1114,7 @@
           "candidates": 11,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": "did_not_flip"
         },
         {
@@ -1174,7 +1124,7 @@
           "candidates": 11,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.06,
+          "elapsed": 0.07,
           "reason": "did_not_flip"
         },
         {
@@ -1194,7 +1144,7 @@
           "candidates": 11,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.09,
+          "elapsed": 0.1,
           "reason": "did_not_flip"
         },
         {
@@ -1218,7 +1168,7 @@
           "candidates": 7,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.13,
+          "elapsed": 0.14,
           "reason": ""
         }
       ],
@@ -1269,7 +1219,7 @@
           "candidates": 43,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1279,7 +1229,7 @@
           "candidates": 43,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.05,
+          "elapsed": 0.04,
           "reason": "did_not_flip"
         },
         {
@@ -1289,7 +1239,7 @@
           "candidates": 43,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1299,7 +1249,7 @@
           "candidates": 4,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1309,7 +1259,7 @@
           "candidates": 4,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1319,7 +1269,7 @@
           "candidates": 4,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1353,7 +1303,7 @@
           "candidates": 4,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1434,7 +1384,7 @@
           "candidates": 31,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.03,
+          "elapsed": 0.04,
           "reason": "did_not_flip"
         },
         {
@@ -1519,7 +1469,7 @@
           "candidates": 65,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.8,
+          "elapsed": 0.83,
           "reason": "did_not_flip"
         },
         {
@@ -1529,7 +1479,7 @@
           "candidates": 65,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.79,
+          "elapsed": 0.83,
           "reason": "did_not_flip"
         },
         {
@@ -1539,7 +1489,7 @@
           "candidates": 65,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.81,
+          "elapsed": 0.84,
           "reason": "did_not_flip"
         },
         {
@@ -1549,7 +1499,7 @@
           "candidates": 65,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.8,
+          "elapsed": 0.81,
           "reason": "did_not_flip"
         },
         {
@@ -1559,7 +1509,7 @@
           "candidates": 65,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.8,
+          "elapsed": 0.84,
           "reason": "did_not_flip"
         },
         {
@@ -1569,7 +1519,7 @@
           "candidates": 12,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.79,
+          "elapsed": 0.85,
           "reason": "did_not_flip"
         },
         {
@@ -1579,7 +1529,7 @@
           "candidates": 12,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.78,
+          "elapsed": 0.85,
           "reason": "did_not_flip"
         },
         {
@@ -1589,7 +1539,7 @@
           "candidates": 12,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 5.74,
+          "elapsed": 6.11,
           "reason": "did_not_flip"
         },
         {
@@ -1599,7 +1549,7 @@
           "candidates": 12,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.83,
+          "elapsed": 0.86,
           "reason": "did_not_flip"
         },
         {
@@ -1609,7 +1559,7 @@
           "candidates": 12,
           "result": "TIMEOUT",
           "detail": "exceeded 90s",
-          "elapsed": 90.09,
+          "elapsed": 90.1,
           "reason": "timeout"
         },
         {
@@ -1623,7 +1573,7 @@
           "candidates": 7,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.1,
+          "elapsed": 0.11,
           "reason": ""
         }
       ],
@@ -1684,7 +1634,7 @@
           "candidates": 48,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.03,
+          "elapsed": 0.04,
           "reason": "did_not_flip"
         },
         {
@@ -1694,7 +1644,7 @@
           "candidates": 48,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.03,
+          "elapsed": 0.04,
           "reason": "did_not_flip"
         },
         {
@@ -1734,7 +1684,7 @@
           "candidates": 16,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.03,
+          "elapsed": 0.04,
           "reason": "did_not_flip"
         },
         {
@@ -1744,7 +1694,7 @@
           "candidates": 16,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.03,
+          "elapsed": 0.06,
           "reason": "did_not_flip"
         },
         {
@@ -1754,7 +1704,7 @@
           "candidates": 2,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.03,
+          "elapsed": 0.04,
           "reason": "did_not_flip"
         },
         {
@@ -1764,7 +1714,7 @@
           "candidates": 2,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.04,
+          "elapsed": 0.05,
           "reason": "did_not_flip"
         },
         {
@@ -1796,7 +1746,7 @@
       "module_cluster": "core_monodromy.py",
       "seed": 20260916,
       "verifier_command": "python3 test_core_monodromy.py",
-      "clean_result": "PASS (exit 0) 4.1s",
+      "clean_result": "PASS (exit 0) 4.4s",
       "attempts": [
         {
           "operator": "arith_literal",
@@ -1805,7 +1755,7 @@
           "candidates": 34,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 4.19,
+          "elapsed": 4.43,
           "reason": "did_not_flip"
         },
         {
@@ -1815,7 +1765,7 @@
           "candidates": 34,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 4.15,
+          "elapsed": 4.36,
           "reason": ""
         }
       ],
@@ -1856,7 +1806,7 @@
           "candidates": 85,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.36,
+          "elapsed": 0.37,
           "reason": "did_not_flip"
         },
         {
@@ -1866,7 +1816,7 @@
           "candidates": 85,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.37,
+          "elapsed": 0.38,
           "reason": "did_not_flip"
         },
         {
@@ -1876,7 +1826,7 @@
           "candidates": 85,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.36,
+          "elapsed": 0.37,
           "reason": "did_not_flip"
         },
         {
@@ -1886,7 +1836,7 @@
           "candidates": 85,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.36,
+          "elapsed": 0.38,
           "reason": "did_not_flip"
         },
         {
@@ -1896,7 +1846,7 @@
           "candidates": 22,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.36,
+          "elapsed": 0.38,
           "reason": "did_not_flip"
         },
         {
@@ -1906,7 +1856,7 @@
           "candidates": 22,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.36,
+          "elapsed": 0.38,
           "reason": "did_not_flip"
         },
         {
@@ -1916,7 +1866,7 @@
           "candidates": 22,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.37,
+          "elapsed": 0.39,
           "reason": "did_not_flip"
         },
         {
@@ -1926,7 +1876,7 @@
           "candidates": 22,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.37,
+          "elapsed": 0.4,
           "reason": "did_not_flip"
         },
         {
@@ -1936,7 +1886,7 @@
           "candidates": 22,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.36,
+          "elapsed": 0.39,
           "reason": "did_not_flip"
         },
         {
@@ -1950,7 +1900,7 @@
           "candidates": 10,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.18,
+          "elapsed": 0.19,
           "reason": ""
         }
       ],
@@ -1972,7 +1922,7 @@
       "module_cluster": "sudoku.py",
       "seed": 20260916,
       "verifier_command": "python3 test_sudoku.py",
-      "clean_result": "PASS (exit 0) 3.5s",
+      "clean_result": "PASS (exit 0) 3.7s",
       "attempts": [
         {
           "operator": "arith_literal",
@@ -1981,7 +1931,7 @@
           "candidates": 54,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 3.57,
+          "elapsed": 3.82,
           "reason": ""
         }
       ],
@@ -2012,7 +1962,7 @@
           "candidates": 62,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.22,
+          "elapsed": 0.23,
           "reason": "did_not_flip"
         },
         {
@@ -2022,7 +1972,7 @@
           "candidates": 62,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.24,
           "reason": "did_not_flip"
         },
         {
@@ -2032,7 +1982,7 @@
           "candidates": 62,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.23,
           "reason": "did_not_flip"
         },
         {
@@ -2042,7 +1992,7 @@
           "candidates": 62,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.2,
+          "elapsed": 0.24,
           "reason": "did_not_flip"
         },
         {
@@ -2052,7 +2002,7 @@
           "candidates": 62,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.23,
           "reason": "did_not_flip"
         },
         {
@@ -2062,7 +2012,7 @@
           "candidates": 14,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.24,
           "reason": "did_not_flip"
         },
         {
@@ -2072,7 +2022,7 @@
           "candidates": 14,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.25,
           "reason": "did_not_flip"
         },
         {
@@ -2082,7 +2032,7 @@
           "candidates": 14,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.24,
           "reason": "did_not_flip"
         },
         {
@@ -2092,7 +2042,7 @@
           "candidates": 14,
           "result": "PASS",
           "detail": "exit 0",
-          "elapsed": 0.21,
+          "elapsed": 0.24,
           "reason": "did_not_flip"
         },
         {
@@ -2100,30 +2050,20 @@
           "index": 0,
           "location": "83:15",
           "candidates": 14,
-          "result": "PASS",
-          "detail": "exit 0",
-          "elapsed": 0.21,
-          "reason": "did_not_flip"
-        },
-        {
-          "operator": "branch_swap",
-          "index": 0,
-          "location": "52:8",
-          "candidates": 2,
           "result": "FAIL",
           "detail": "exit 1",
-          "elapsed": 0.1,
+          "elapsed": 0.23,
           "reason": ""
         }
       ],
       "task_text": "The repository's test suite `python3 test_profiler.py` is failing. A regression was introduced into the production code. Find and fix the defect. Do not modify the tests.",
-      "operator": "branch_swap",
+      "operator": "cmp_invert",
       "operator_version": "op/v1",
       "candidate_index": 0,
-      "candidate_location": "52:8",
+      "candidate_location": "83:15",
       "clean_hash": "14b2336804879f96f01371f79cb81f398df26c46d267315d30467c0e94b689a6",
-      "mutated_hash": "56621f507afc02a93abaaf5c03abc3f0bd8034d8043bf87edd6d9a60c101c315",
-      "patch_hash": "2bf2b6af74eeca5b1677a35b9a76806778d4dfc8f3e804a08447298bef280b93",
+      "mutated_hash": "6132928f80ebe60b4bcd3bf5f4e36274ceb86437c64c93666eea8ddd802bb966",
+      "patch_hash": "c33ec682ed552118c169eaa0f338df61b159b0818b0ceb59594e117cf2bd1ffa",
       "mutated_result": "FAIL (exit 1)",
       "eligibility": "yes",
       "exclusion_reason": "",
