@@ -1,5 +1,7 @@
 # O4B_PILOT2_DESIGN.md — design for the next experiment (draft, NOT frozen)
 
+> **Superseded** by [`O4B_FREEZE_PROPOSAL.md`](O4B_FREEZE_PROPOSAL.md); kept as history.
+
 Goal of pilot 2 (**design (c)**): test whether **PDI adds value over ordinary
 success-and-cost guidance**, on a corpus with a real difficulty range.
 

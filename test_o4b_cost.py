@@ -135,6 +135,17 @@ def test_support_counts_distinct_tasks() -> None:
           r2["support"][1] == 0.0, str(r2["support"][1]))
 
 
+def test_support_uses_task_weighting() -> None:
+    print("support uses the equal-task measure mu, not a fraction of raw runs")
+    tasks = ["t1"] * 4 + ["t2"] * 2 + ["t3"] * 2
+    costs = [F(1), F(2), F(3), F(4), F(0), F(0), F(5), F(5)]
+    lv = [[0] * 8, [0, 0, 0, 0, 0, 0, 1, 1]]     # block0 = t1+t2 (supported), block1 = t3
+    r = variance_shares(costs, tasks, lv, r_min=2)
+    check("support is the task-weighted 2/3", r["support"][1] == F(2, 3), str(r["support"][1]))
+    check("NOT the raw-run fraction 3/4", r["support"][1] != F(3, 4))
+    check("level has enough blocks and support -> admissible", r["level_admissible"][1] is True)
+
+
 def test_within_task_centring_invariance() -> None:
     print("within-task centring removes per-task offsets")
     base = variance_shares(COSTS4, TASKS4, LEVELS4)
@@ -167,6 +178,7 @@ if __name__ == "__main__":
     test_unresolved_residual()
     test_singleton_refinement_inadmissible()
     test_support_counts_distinct_tasks()
+    test_support_uses_task_weighting()
     test_within_task_centring_invariance()
     test_nesting_is_enforced()
     print("=" * 70)

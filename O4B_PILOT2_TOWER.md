@@ -1,5 +1,7 @@
 # O4B_PILOT2_TOWER.md — diagnostic tower proposal (DRAFT, NOT FROZEN)
 
+> **Superseded** by [`O4B_FREEZE_PROPOSAL.md`](O4B_FREEZE_PROPOSAL.md); kept as history.
+
 Companion to [`O4B_PREDECLARATION_PILOT2.md`](O4B_PREDECLARATION_PILOT2.md) §3.
 The tower localises **cost variation**; it is not a waste measure. Levels are small
 and cumulative. All categories are **proposed** until frozen.

@@ -98,17 +98,19 @@ def variance_shares(costs: Sequence[Optional[float]],
 
     support, n_blocks, mean_size, admissible = [], [], [], []
     m = len(idx)
+    total_mass = sum(sub_mu)                 # == 1 by construction
     for j in range(len(sub_levels)):
-        blocks: dict = defaultdict(set)
+        mass: dict = {}
+        taskset: dict = {}
         for pos, cls in enumerate(sub_levels[j]):
-            blocks[cls].add(sub_tasks[pos])
-        nb = len(blocks)
-        supported_runs = 0
-        for cls, ts in blocks.items():
-            if len(ts) >= k_tasks:
-                supported_runs += sum(1 for x in sub_levels[j] if x == cls)
+            mass[cls] = mass.get(cls, 0) + sub_mu[pos]
+            taskset.setdefault(cls, set()).add(sub_tasks[pos])
+        nb = len(mass)
+        # support is the DECLARED equal-task measure mu of runs in supported blocks,
+        # NOT a fraction of raw runs (which would let high-repetition tasks dominate).
+        supported_mass = sum(mass[c] for c in mass if len(taskset[c]) >= k_tasks)
         n_blocks.append(nb)
-        support.append(supported_runs / m)
+        support.append(supported_mass / total_mass)
         mean_size.append(m / nb if nb else 0.0)
         admissible.append(nb >= min_blocks and support[-1] >= support_frac)
 
