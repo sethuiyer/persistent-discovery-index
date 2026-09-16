@@ -208,7 +208,7 @@ with search bounds is [`SPINE.md`](SPINE.md) §0, and the long-form derivation i
 | `n_j` is survival-free; `Δ` moves while survival is held fixed | proved | [One question, or two?](#one-question-or-two-v0130) |
 | The ledger does **not** determine the structure (equal ledgers, non-isomorphic trees) | computed | [Keeping both](#keeping-both--and-keeping-the-edges-v0140) |
 | No finite prefix bounds a limsup — bound labels carry their hypothesis | proved | [Proof-aware?](#proof-aware-an-audit-of-the-warrants-v0170) |
-| **No injective transport loop** — irreversibility is structural | proved | [O2 resolved](#o2-resolved-irreversibility-is-structural-v0180) |
+| The single step is non-injective at a global optimum (**proved**); the composition to legs is **not** | proved (one step) + empirical (schedules) | [O2, partially resolved](#o2-partially-resolved-a-single-step-theorem) |
 | Ihara/Bass zeta is blind on the tree witness, sharp on the recurrent core | negative | [the essay](MATH.md#the-last-strand-and-why-it-closes-on-the-central-problem) |
 | Transport on the core is a monoid homomorphism, **not** a group representation | negative | [the essay](MATH.md#the-last-strand-and-why-it-closes-on-the-central-problem) |
 | Is the stable quotient presentation-independent? (O1) | **open** | [`SPINE.md`](SPINE.md) §16 |
@@ -876,10 +876,12 @@ python3 proof_awareness.py        # the audit and the three falsifications
 python3 test_proof_awareness.py   # 20 checks
 ```
 
-## O2 resolved: irreversibility is structural (v0.18.0)
+## O2, partially resolved: a single-step theorem
 
 O2 asked: **exhibit an injective transport loop, or prove non-injectivity is
-necessary.** It's the second. And the obstruction is a *single step*.
+necessary.** The **single step** is now proved non-injective. The **composition to
+legs is not** — and that step was wrong, so O2 is reopened. Corrected in place
+(§18.3 of the spine); `test_o2_theorem.py` pins the counterexample.
 
 ### The transport is a composition of memoryless legs
 
@@ -914,16 +916,30 @@ never worse than any alternative.** Verified **8096/8096**.
 Verified **400/400**, and **tight** — slack `0` at `n=8, d2=0`. For
 `n >= 2*d2(z) + 2` the one-step map is **not injective**.
 
-### The chain closes
+### The chain does **not** close (corrected)
 
 `run(·, λ, steps)` has `g` as its **first** step — the tabu list is empty there —
-so `run = h ∘ g` and inherits non-injectivity. Therefore:
+but the first step also **writes** the tabu list. So `run = h' ∘ G` with
+`G(x) = (g(x), tabu₁(x))`, and **`G` is injective**: the same `g(x)` *and* the same
+tabu forces `x = y`. The `g`-collision exists only because `run` projects the
+memory away.
 
-> **No schedule is injective.** Not for any length, any λ, any tabu length.
+```
+g-collisions that re-separate within a few steps : 528 / 1600
+example: n=8, λ=0.0, bits 0 and 1  →  different states by step 4
+```
 
-That also explains a fact the census produced but didn't predict: one-step image
-size is **identical across tabu lengths** — `{2:96, 3:96, 4:96, 5:96, 6:96, 8:96}`
-of 256. The first step is tabu-free, so tabu length can't touch it.
+So the earlier claim is **withdrawn**:
+
+> ~~No schedule is injective.~~ — **not proved.** Only the single step is.
+
+What still holds: the single-step theorem, and the **empirical** leg bound
+(**475/475** tested legs non-injective; 0 injective loops among 216). A valid
+proof must work on the augmented map `(x, tabu) → (x', tabu')`.
+
+The tabu-length fact survives and is explained by the same observation: one-step
+image size is **identical across tabu lengths** — `{2:96, 3:96, 4:96, 5:96, 6:96,
+8:96}` of 256 — because the first step is tabu-free.
 
 ### The mechanism
 

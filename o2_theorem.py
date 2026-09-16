@@ -31,12 +31,24 @@ THEOREM.  |g^-1(z)| = |S(z)| = |{ a : v(z^e_a) = a }|  >=  n - 2*d2(z).
     least n - 2*d2(z) such a.
     COROLLARY: for n >= 2*d2(z) + 2, |g^-1(z)| >= 2, so g is NOT INJECTIVE.
 
-CHAIN.  run(., lam, steps) begins with g (the tabu list is empty on the first
-    step), so run = h o g, and h o g is non-injective whenever g is. Then
-    T = f_k o ... o f_1 is non-injective whenever f_1 is (composition lemma).
-    THEREFORE NO SCHEDULE OF THESE LEGS IS INJECTIVE.
+CHAIN -- CORRECTED (v-next).  The single-step theorem above is about `g`, the
+    memoryless flip. It does NOT compose to the leg. `run(., lam, steps)` begins
+    with `g`, but the first step WRITES the tabu list, so
 
-This also explains an observation the census produced but did not predict: at
+        run = h' o G,   G(x) = (g(x), tabu_1(x)),
+
+    and G is INJECTIVE: if g(x) = g(y) with the same tabu, then v(x) = v(y) and
+    x = y. The g-collision is created by PROJECTING MEMORY AWAY, and 528 of 1600
+    tested g-collisions re-separate within a few steps (e.g. n=8, lam=0, bits 0
+    and 1, steps=4). So "non-injectivity composes" was WRONG as written.
+
+    What remains: the one-step theorem, plus an EMPIRICAL bound at leg level --
+    0 injective among 216 loops (N1), 475/475 tested legs non-injective. A valid
+    proof would have to argue about the AUGMENTED map (x, tabu) -> (x', tabu') and
+    exhibit a collision between states reachable from DIFFERENT empty-tabu starts,
+    then project to x. That is open.
+
+This still explains an observation the census produced but did not predict: at
 steps=1 the image size is IDENTICAL across tabu lengths, because the first step is
 tabu-free.
 
@@ -162,15 +174,14 @@ def test_lemma_b_and_theorem():
 
 def test_chain():
     print("=" * 84)
-    print("CHAIN - the theorem reaches every leg and therefore every schedule")
+    print("CHAIN (part 1) - the first step is tabu-free (this part is true)")
     print("=" * 84)
     print("""
-  run(., lam, steps) whose first step is g:
-      the tabu list is EMPTY on the first step, so the first step is exactly g.
-      Hence run = h o g, and h o g inherits non-injectivity from g.
-  T = f_k o ... o f_1:
-      if f_1(x) = f_1(y) then T(x) = T(y); so T injective forces f_1 injective.
-  Therefore NO schedule is injective.
+  run(., lam, steps) has the EMPTY tabu list on its first step, so the first step
+  is exactly g. That is why the one-step image is identical across tabu lengths.
+
+  It does NOT follow that run inherits g's non-injectivity -- see
+  test_composition_step_is_invalid() below.
 """)
     # verify: tabu length cannot affect a one-step leg's image (first step is tabu-free)
     n, es, opt = instances(count=1)[0]
@@ -186,6 +197,43 @@ def test_chain():
     print("     CONSTANT: n={:.0f}, |image|={} (max {}).".format(n, list(sizes.values())[0], 1 << n))
     print()
     return same
+
+
+def test_composition_step_is_invalid():
+    print("=" * 84)
+    print("CHAIN (part 2, CORRECTED) - a first-step collision does NOT always propagate")
+    print("=" * 84)
+    sep = tot = 0
+    example = None
+    for (n, es, opt) in instances():
+        S = Searcher(n=n, edges=es, tabu_len=3)
+        for lam in (0.0, 0.35, 0.5, 0.8, 1.0):
+            for z in opt:
+                Sset = []
+                for a in range(n):
+                    w = flip(z, a)
+                    y = S.run(w, lam, 1)
+                    d = [i for i in range(n) if w[i] != y[i]]
+                    if len(d) == 1 and d[0] == a:
+                        Sset.append(a)
+                if len(Sset) < 2:
+                    continue
+                a, b = Sset[0], Sset[1]
+                xa, xb = flip(z, a), flip(z, b)
+                for steps in (2, 4, 8):
+                    tot += 1
+                    if S.run(xa, lam, steps) != S.run(xb, lam, steps):
+                        sep += 1
+                        if example is None:
+                            example = (n, lam, a, b, steps)
+    print(f"  g-colliding pairs tested        : {tot}")
+    print(f"  re-separated after more steps   : {sep}")
+    print(f"  example (n, lam, a, b, steps)   : {example}")
+    print("  -> run is NOT an iterate of g: the first step writes the tabu list, so")
+    print("     run = h' o G with G(x) = (g(x), tabu_1(x)), and G is INJECTIVE.")
+    print("     'non-injectivity composes' was wrong as written.")
+    print()
+    return sep > 0
 
 
 def test_collapse_is_at_the_optima():
@@ -230,23 +278,25 @@ if __name__ == "__main__":
     okA = test_lemma_a()
     okT = test_lemma_b_and_theorem()
     okC = test_chain()
+    okX = test_composition_step_is_invalid()
     okM = test_collapse_is_at_the_optima()
     print("=" * 84)
     print("VERDICT")
     print("=" * 84)
     print("""
-  O2 is settled in the NEGATIVE, and structurally.
+  O2 is NOT settled. The single step is; the schedule is not.
 
-      No schedule of memoryless min-conflicts legs is injective, because the
-      FIRST step of every leg already is not, and non-injectivity composes.
+      PROVED: g is not injective at a global optimum (Lemma A + Theorem). At a
+      global optimum z, undoing a perturbation is never worse than any other
+      flip, so all n perturbations of z are pulled back to z.
 
-      The reason the first step is not injective is Lemma A: at a global optimum
-      z, undoing any single-bit perturbation is never worse than any other flip,
-      so all n perturbations of z are pulled back to z. The optimum has n
-      preimages under one step.
+      NOT PROVED: that this composes to the leg. The first step WRITES the tabu
+      list, so run = h' o G with G(x) = (g(x), tabu_1(x)), and G is INJECTIVE.
+      528 of 1600 tested g-collisions re-separate within a few steps.
 
-  So the many-to-one collapse is NOT an implementation accident and NOT a failure
-  of the loop search. It is forced by the energy landscape having a global optimum.
+      EMPIRICAL: 0 injective among 216 loops (N1); 475/475 tested legs
+      non-injective. The collapse is still not an implementation accident -- but
+      at LEG level the mechanism is an observation, not a theorem.
 
   This is the conjecture's premise, proved for this family:
 
@@ -257,6 +307,6 @@ if __name__ == "__main__":
   is the MAXIMAL place where invertibility can survive.
 """)
     for name, ok in (("Lemma A", okA), ("Theorem", okT), ("Chain", okC),
-                     ("Mechanism", okM)):
+                     ("Composition", okX), ("Mechanism", okM)):
         print(f"  {name:<12} : {'PASS' if ok else 'FAIL'}")
     print("=" * 84)

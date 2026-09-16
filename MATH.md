@@ -226,10 +226,16 @@ so at least n - 2d₂(z) bits win their tie-break outright.
 
 Corollary. For n ≥ 2d₂(z) + 2, |g⁻¹(z)| ≥ 2: the one-step map is not injective.
 
-The last step is a composition lemma. If T = fₖ ∘ ⋯ ∘ f₁ is injective then f₁ is injective, since f₁(x)
-= f₁(y) ⇒ T(x) = T(y). And run( · , λ, steps) has g as its first step, because the tabu list is empty
-there. Therefore every leg is non-injective, and non-injectivity composes: no schedule of these legs is
-injective. It also explains a fact the census produced without predicting: the one-step image size is
+The composition lemma is fine: if T = fₖ ∘ ⋯ ∘ f₁ is injective then f₁ is injective. The next step was
+wrong. `run( · , λ, steps)` has `g` as its first step because the tabu list is empty there — but the
+first step also *writes* the tabu list, so `run = h' ∘ G` with `G(x) = (g(x), tabu₁(x))`, and `G` is
+injective: the same `g(x)` and the same tabu forces `x = y`. The collision in `g` exists only because
+`run` projects the memory away. Of 1600 tested `g`-collisions, **528 re-separate** within a few steps,
+so non-injectivity does **not** compose. What remains proved is the single step; the leg and schedule
+claims are **empirical** (0 injective loops among 216; 475/475 tested legs non-injective), and O2 is
+reopened. A valid proof must argue on the augmented map `(x, tabu)`.
+
+The tabu-length fact survives and is explained by the same observation: the one-step image size is
 identical across tabu lengths, because the first step is tabu-free.
 
 The moral is not that the search is bad. It is that the map collapses hardest exactly where the search

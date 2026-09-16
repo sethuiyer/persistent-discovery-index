@@ -7,8 +7,10 @@ This pins the second outcome. Four things must hold:
 
   Lemma A   at a global optimum z, delta(z^e_a, b) >= delta(z^e_a, a) for all a,b
   Theorem   |g^-1(z)| >= n - 2*d2(z)
-  Chain     the first step of every leg is g, so non-injectivity reaches every
-            schedule; and tabu length cannot change the one-step image
+  Chain     the first step of every leg is g and is tabu-free (true); but a
+            first-step collision does NOT always compose -- the first step writes
+            the tabu list, so G(x) = (g(x), tabu_1(x)) is injective. Pinned.
+  Legs      legs with more steps are non-injective EMPIRICALLY, not inherited
   Mechanism the collapse is monotone in energy and maximal at the optima
 
 Run: python3 test_o2_theorem.py     (exit 0 on success)
@@ -106,7 +108,7 @@ def test_first_step_is_tabu_free() -> None:
 
 
 def test_legs_with_more_steps_are_non_injective() -> None:
-    print("Chain -- legs with more steps inherit it")
+    print("Legs -- more steps stay non-injective (EMPIRICAL, not inherited from g)")
     n, es, opt = instances(count=1)[0]
     S = Searcher(n=n, edges=es, tabu_len=3)
     for steps in (1, 2, 4, 8):
@@ -116,6 +118,34 @@ def test_legs_with_more_steps_are_non_injective() -> None:
             img[y] = img.get(y, 0) + 1
         collapse = (1 << n) - len(img)
         check(f"steps={steps}: leg is non-injective", collapse > 0, f"collapse={collapse}")
+
+
+def test_first_step_collision_does_not_compose() -> None:
+    print("Chain -- a first-step collision does NOT always compose (counterexample)")
+    found = None
+    for (n, es, opt) in instances():
+        S = Searcher(n=n, edges=es, tabu_len=3)
+        for lam in (0.0, 0.5, 1.0):
+            for z in opt:
+                Sset = []
+                for a in range(n):
+                    w = flip(z, a)
+                    y = S.run(w, lam, 1)
+                    d = [i for i in range(n) if w[i] != y[i]]
+                    if len(d) == 1 and d[0] == a:
+                        Sset.append(a)
+                if len(Sset) >= 2:
+                    a, b = Sset[0], Sset[1]
+                    if S.run(flip(z, a), lam, 4) != S.run(flip(z, b), lam, 4):
+                        found = (n, lam, a, b)
+                        break
+            if found:
+                break
+        if found:
+            break
+    check("at least one g-collision re-separates within 4 steps",
+          found is not None, str(found))
+    check("so 'non-injectivity composes' is FALSE as stated", found is not None, str(found))
 
 
 def test_collapse_is_at_the_optima() -> None:
@@ -156,6 +186,7 @@ if __name__ == "__main__":
     test_corollary_non_injective()
     test_first_step_is_tabu_free()
     test_legs_with_more_steps_are_non_injective()
+    test_first_step_collision_does_not_compose()
     test_collapse_is_at_the_optima()
     print("=" * 70)
     if FAILS:

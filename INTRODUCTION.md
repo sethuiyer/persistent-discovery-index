@@ -49,7 +49,7 @@ Concretely, when you write or change anything:
 | What is the whole mathematical chain? | `SPINE.md` §1–§11 |
 | Where did a reference come from? | `SPINE.md` §12 |
 | Is quantity X canonical? | `SPINE.md` §16 (canonicity is **absent**, quarantined) |
-| Why is search irreversible? | `SPINE.md` §18 (proved) |
+| Why is search irreversible? | `SPINE.md` §18 (one step proved; the composition to legs is not) |
 | Who is this for / how is it sold? | `PRODUCT_README.md` (strategy, not warrant) |
 | What is the commercial read / where is the value? | `CEO.md` (strategy, not warrant) |
 | Concrete applications (six) | `usecases/README.md` |
@@ -93,7 +93,7 @@ MIDDLE
   proof_awareness.py    <-- agent_profiler the warrant audit
   invariance_first.py   <-- pdi, quotient_tower
   collision_mechanism.py <-- transport     O2: the collision characterisation
-  o2_theorem.py         <-- transport      O2: the proof
+  o2_theorem.py         <-- transport      O2: the single-step theorem (composition unproved)
   invertibility.py      <-- stable_quotient, transport   Q1/Q2 attacks
 
 ENTRY POINTS (demos, run but not imported)
@@ -216,7 +216,7 @@ visible. That is the house style, not an accident.
 | The ledger does **not** determine the structure (non-isomorphic trees, equal ledgers) | §15 |
 | Canonicity is **absent**; the dependence is quarantined, not eliminated | §16 |
 | No finite prefix bounds a limsup; bound labels carry hypotheses | §17 |
-| **No injective transport loop exists** — irreversibility is structural | §18 |
+| The single step is non-injective at a global optimum; the composition to legs is **unproved** (O2 reopened) | §18 |
 | The Ihara/Bass zeta family is blind on the §15 pair and sharp on the recurrent core | §19 |
 
 ## 9. Open — where the work is

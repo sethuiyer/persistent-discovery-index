@@ -24,7 +24,7 @@ stated status.**
 | 6.2 | `T` restricted to the recurrent core is a permutation | **proved** (immediate from 6.1) |
 | 7.1 | `C_L ↪ F_p^×` when `L \| p−1`; character `φ: C_L → U(1)` | **standard** |
 | — | Particular quotient sizes, cycle lengths, collision counts | **computed**, instance-dependent |
-| 8.1 | No injective transport loop exists in this family | **PROVED** (§18) — was empirical |
+| 8.1 | The single-step map `g` is non-injective at a global optimum; no injective *loop* found, but the composition to legs is unproved | **proved (one step) + empirical (schedules)** (§18) |
 | 8.2 | Augmenting with tabu memory does not restore injectivity | **empirical negative** |
 | 8.3 | No `T`-stable quotient obtained from the branch or basin partition directly | **proved by counterexample** |
 | 9.1 | The stable fibre is loop-independent (canonical) | **open** — known to vary |
@@ -311,13 +311,18 @@ invertible, and `C_L ↪ F_p^×` gives it coordinates.**
 
 ## 8. Negative results
 
-**N1. No injective loop.** Over 216 loops (`n = 10`, varying schedule, `tabu`,
-`steps`), the induced map on the stable quotient was injective **0 times**.
-Quotient sizes ranged 4–33. The collapse is therefore not an artefact of a badly
-chosen schedule. **This is now a theorem, not an empirical negative** (§18): a
-global optimum has `n` preimages under a single step, every leg is therefore
-non-injective, and non-injectivity composes. The 216-loop search was answering a
-question that a per-leg check settles outright.
+**N1. No injective loop — empirical, bounded.** Over 216 loops (`n = 10`, varying
+schedule, `tabu`, `steps`), the induced map on the stable quotient was injective
+**0 times**. Quotient sizes ranged 4–33, so the collapse is not an artefact of a
+badly chosen schedule. At leg level it is likewise empirical: **475/475** tested
+legs were non-injective.
+
+**This was upgraded to PROVED in v0.18.0 and is downgraded again (v-next).** §18
+proves the single step `g` is non-injective at a global optimum, but that does
+**not** compose: the first step *writes* the tabu list, so `run = h' ∘ G` with
+`G(x) = (g(x), tabu₁(x))`, and `G` is injective — 528 of 1600 tested `g`-collisions
+re-separate within a few steps. N1 is therefore an **empirical negative over the
+tested range**, not a theorem.
 
 **N2. Augmenting with tabu memory does not restore invertibility.** Transporting
 `(x, tabu)` instead of `x`, the augmented map is still many-to-one, and the induced
@@ -344,11 +349,15 @@ correct fibre had to be constructed (§5), not guessed.
 `(tabu, steps)` yield 4, 12, 24, 40 blocks. Whether there is a schedule-independent
 fibre within a suitable class of loops is open.
 
-**O2. Injective transport.** ~~N1 is empirical. Either exhibit an injective loop,
-or prove that the induced map on the stable quotient of this family is necessarily
-non-injective.~~ **RESOLVED — the second branch, proved** in §18 (v0.18.0). The
-obstruction is a *single step*: a global optimum has `n` preimages, so every leg is
-non-injective and non-injectivity composes.
+**O2. Injective transport.** Either exhibit an injective loop, or prove that the
+induced map on the stable quotient of this family is necessarily non-injective.
+**Reopened (v-next).** v0.18.0 claimed the second branch; the composition step is
+invalid (§18.3). O2 is therefore **open** again. What *is* proved is one step of
+the obstruction: `g` is non-injective at a global optimum,
+`|g⁻¹(z)| ≥ n − 2d₂(z)`. What is not proved is that this reaches the **leg** —
+the first step writes the tabu list, and `G(x) = (g(x), tabu₁(x))` is injective.
+A valid proof must argue on the augmented map `(x, tabu)` and exhibit a collision
+between states reachable from **different empty-tabu starts**.
 
 **O3. Sufficient augmentation.** N2 rules out tabu memory as sufficient. Whether
 *some* finite augmentation makes the dynamics invertible is open — it is the same
@@ -901,7 +910,7 @@ opened.
 
 ---
 
-## 18. O2 resolved — irreversibility is structural
+## 18. O2, partially resolved — a single-step theorem, and an invalid composition step
 
 > *O2 should now be: find the collision mechanism.*
 
@@ -956,18 +965,29 @@ Verified on **400/400** (instance, λ, optimum) cases, with the bound **tight**
 **Corollary.** For `n ≥ 2 d₂(z) + 2`, `|g^{-1}(z)| ≥ 2`: the one-step map is
 **not injective**.
 
-### 18.3 The chain
+### 18.3 The chain — CORRECTED, it does not compose
 
 `run(·, λ, steps)` has `g` as its **first** step, because the tabu list is empty
-there. Hence `run = h ∘ g`, and `h ∘ g` is non-injective whenever `g` is. Combined
-with the composition lemma:
+there. **But the first step also *writes* the tabu list**, so `run` is not an
+iterate of `g`, and the composition does not hold. Write
 
-> **No schedule of these legs is injective.** Not for any length, not for any
-> choice of `λ`, not for any tabu length.
+$$G(x) = (g(x), \text{tabu}_1(x)), \qquad run = h' \circ G.$$
 
-This also explains an observation the census produced but did not predict: the
-one-step image size is **identical across tabu lengths** (`2…8` all give `96` of
-`256`). The first step is tabu-free, so the tabu length cannot affect it.
+`G` is **injective**: if `g(x) = g(y)` and the tabu lists agree, then `v(x) =
+v(y)` and `x ⊕ e_v = y ⊕ e_v`, so `x = y`. The collision in `g` is created by
+**projecting the memory away** — the very projection `run` performs. Computed: of
+**1600** tested `g`-collisions (global optima, five `λ`), **528 re-separate**
+within a few steps; e.g. `n = 8`, `λ = 0`, bits `0` and `1`, `steps = 4`.
+
+> **The composition step is invalid.** "No schedule of these legs is injective" is
+> **not proved** by this argument.
+
+What survives:
+
+- the single-step theorem (§18.2), unchanged;
+- the tabu-length observation: one-step image size is **identical across tabu
+  lengths** (`2…8` all give `96` of `256`), because the first step is tabu-free;
+- an **empirical** leg bound: **475/475** tested legs non-injective.
 
 ### 18.4 The mechanism
 
@@ -1002,6 +1022,26 @@ The theorem is proved for this search family (min-conflicts with argmin-`δ` fli
 The corollary needs `n ≥ 2 d₂(z) + 2` — satisfied with room to spare by every
 instance tested (`n ≥ 8`, `d₂ ≤ 1`), but it *is* a condition, and instances with
 many optima clustered at Hamming distance 2 from each other are the boundary case.
+
+### 18.7 Correction (v-next), and what would re-prove it
+
+**Correction, stated plainly.** Row 8.1 carried **PROVED** from v0.18.0. It is
+downgraded to **proved (one step) + empirical (schedules)**: the single-step
+collision theorem (§18.2) is correct; the composition step (§18.3) is not. O2 (§9)
+reopens.
+
+**Why.** `run` projects tabu away; the first step writes it. A collision of the
+*projection* is not a collision of the *state*, and `G(x) = (g(x), tabu₁(x))` is
+injective. Counterexample: `n = 8`, `λ = 0`, the two preimages of a global optimum
+under bits `0` and `1` — same state after step 1, different states by step 4.
+`test_o2_theorem.py` pins this so the claim cannot silently return.
+
+**Route to re-proving.** Argue on the **augmented** map
+`(x, tabu) → (x ⊕ e_{v(x,tabu)}, tabu′)` and exhibit a collision between two states
+reachable from **different empty-tabu starts**, then project to `x`. A collision at
+the *same* `x` with different tabu does **not** transfer to the leg. N2's collision
+counts (2,284–18,652) are evidence that such collisions exist; they are not a
+proof.
 
 ---
 
