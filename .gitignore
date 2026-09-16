@@ -6,3 +6,7 @@ local_traces/
 *.trace.jsonl
 *.corpus.jsonl
 report.html
+
+# real agent databases can contain prompts, paths and credentials in captured content
+*.db
+*.sqlite

@@ -24,7 +24,8 @@ from collections import Counter, defaultdict
 
 from adapters import TOOL_LEVEL_NAMES, tool_tower
 from agent_profiler import AgentProfiler, compare, format_profile, inflation_table
-from ingest import FORMATS, detect_format, load_any, load_paths, write_canonical
+from ingest import (FORMATS, CapabilityError, detect_format, load_any, load_paths,
+                    require_capabilities, write_canonical)
 from pdi import PDI
 from quotient_tower import prefix_tower
 
@@ -40,6 +41,20 @@ def ingest(paths, fmt):
     return runs
 
 
+def source_formats(paths, fmt):
+    """The set of source formats present, for the capability gate."""
+    fmts = Counter()
+    for p in paths:
+        if os.path.isfile(p):
+            fmts[fmt or detect_format(p)] += 1
+        elif os.path.isdir(p):
+            for root, _, fs in os.walk(p):
+                for f in fs:
+                    if f.endswith((".jsonl", ".json", ".db")):
+                        fmts[fmt or detect_format(os.path.join(root, f))] += 1
+    return set(fmts)
+
+
 def summarize(runs, paths, fmt):
     fmts = Counter()
     for p in paths:
@@ -48,7 +63,7 @@ def summarize(runs, paths, fmt):
         elif os.path.isdir(p):
             for root, _, fs in os.walk(p):
                 for f in fs:
-                    if f.endswith((".jsonl", ".json")):
+                    if f.endswith((".jsonl", ".json", ".db")):
                         fmts[fmt or detect_format(os.path.join(root, f))] += 1
     steps = sum(len(r.steps) for r in runs)
     errs = sum(1 for r in runs for s in r.steps if s.error)
@@ -129,6 +144,14 @@ def main(argv=None):
         return 0
 
     tower, names = build_tower(a.tower)
+
+    # Input warrants: an analysis may not claim more than ingestion recovered.
+    if a.group_by != "none" and not (a.demo or not a.paths):
+        try:
+            require_capabilities(source_formats(a.paths, a.format), "agent_comparison")
+        except CapabilityError as e:
+            print("\n" + str(e))
+            return 2
 
     if a.group_by == "none":
         groups = {"all runs": runs}

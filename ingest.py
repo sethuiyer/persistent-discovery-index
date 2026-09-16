@@ -64,6 +64,120 @@ FORMATS = (CANONICAL, PI, OPENAI, LANGSMITH, OTEL, AUTOGEN, CREWAI,
 
 
 # --------------------------------------------------------------------------
+# input warrants — what each loader's records actually support
+#
+# Parsing N steps does not mean two ecosystems are comparable. Every loader
+# declares, per semantic, one of four states, and every analysis declares a
+# minimum. The states are deliberately NOT collapsed:
+#
+#   SUPPORTED    recovered under a validated interpretation
+#   INFERRED     reconstructed from an undocumented / reverse-engineered format
+#   UNAVAILABLE  the source demonstrably cannot provide it
+#   UNKNOWN      we have not established whether it can be recovered
+#
+# UNKNOWN and UNAVAILABLE are different claims: one is a gap in our knowledge,
+# the other is a fact about the source.
+# --------------------------------------------------------------------------
+SUPPORTED, INFERRED, UNAVAILABLE, UNKNOWN = "supported", "inferred", "unavailable", "unknown"
+CAP_RANK = {SUPPORTED: 3, INFERRED: 2, UNKNOWN: 1, UNAVAILABLE: 0}
+
+SEMANTICS = ("steps", "run_boundaries", "task_identity", "tool_errors",
+             "cost", "tokens", "verified_outcome")
+
+
+def _caps(**kw) -> dict:
+    return {s: kw.get(s, UNAVAILABLE) for s in SEMANTICS}
+
+
+# Values are set from what each loader actually populates, not from intent.
+CAPABILITIES: dict[str, dict] = {
+    CANONICAL: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+                     tool_errors=SUPPORTED, verified_outcome=SUPPORTED),
+    PI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+              tool_errors=SUPPORTED),
+    OPENAI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED),
+    LANGSMITH: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+                     tool_errors=SUPPORTED),
+    OTEL: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED),
+    AUTOGEN: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED),
+    CREWAI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED),
+    CLAUDE: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+                  tool_errors=SUPPORTED),
+    CODEX: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+                 tool_errors=INFERRED),
+    OPENCODE: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+                    tool_errors=SUPPORTED, cost=SUPPORTED, tokens=SUPPORTED),
+    ANTIGRAVITY: _caps(steps=INFERRED),
+}
+
+ANALYSIS_REQUIREMENTS: dict[str, dict] = {
+    "steps_only": {
+        "requires": {"steps": INFERRED},
+        "message": "No step-level claim is warranted for this capture."},
+    "run_profile": {
+        "requires": {"steps": SUPPORTED, "run_boundaries": SUPPORTED},
+        "message": "No run-level claim is warranted for this capture."},
+    "agent_comparison": {
+        "requires": {"steps": SUPPORTED, "run_boundaries": SUPPORTED,
+                     "task_identity": SUPPORTED},
+        "message": "No agent-comparison claim is warranted for this capture."},
+    "o4b_cost": {
+        "requires": {"steps": SUPPORTED, "run_boundaries": SUPPORTED,
+                     "task_identity": SUPPORTED, "verified_outcome": SUPPORTED,
+                     "cost": SUPPORTED},
+        "message": "No O4b cost claim is warranted for this capture."},
+    "o4b_behavioral": {
+        "requires": {"steps": SUPPORTED, "run_boundaries": SUPPORTED,
+                     "task_identity": SUPPORTED, "verified_outcome": SUPPORTED,
+                     "tool_errors": SUPPORTED},
+        "message": "No O4b behavioural claim is warranted for this capture."},
+}
+
+
+class CapabilityError(ValueError):
+    """The input does not warrant the requested analysis."""
+
+
+def capabilities_of(fmt: str) -> dict:
+    return dict(CAPABILITIES.get(fmt, _caps()))
+
+
+def reconcile_capabilities(fmts) -> dict:
+    """The meet (weakest state per semantic) across the source formats."""
+    fmts = list(fmts)
+    if not fmts:
+        return _caps()
+    return {s: min((capabilities_of(f)[s] for f in fmts), key=lambda st: CAP_RANK[st])
+            for s in SEMANTICS}
+
+
+def require_capabilities(fmts, analysis: str) -> dict:
+    """Raise CapabilityError unless the input warrants `analysis`. Returns the
+    effective capabilities when it passes."""
+    if analysis not in ANALYSIS_REQUIREMENTS:
+        raise KeyError(f"unknown analysis {analysis!r}; known: {sorted(ANALYSIS_REQUIREMENTS)}")
+    spec = ANALYSIS_REQUIREMENTS[analysis]
+    have = reconcile_capabilities(fmts if isinstance(fmts, (list, tuple, set)) else [fmts])
+    if any(CAP_RANK[have[s]] < CAP_RANK[need] for s, need in spec["requires"].items()):
+        req = "\n".join(f"  {s:<15} >= {need}" for s, need in spec["requires"].items())
+        got = "\n".join(f"  {s:<15} = {have[s]}" for s in spec["requires"])
+        raise CapabilityError(
+            f"Analysis refused: {analysis}.\n\nRequires:\n{req}\n\n"
+            f"Input:\n{got}\n\n{spec['message']}")
+    return have
+
+
+def capability_table() -> str:
+    """The machine-readable matrix, rendered."""
+    head = f"{'format':<12} " + " ".join(f"{s[:9]:>9}" for s in SEMANTICS)
+    rows = [head, "-" * len(head)]
+    for f in FORMATS:
+        c = capabilities_of(f)
+        rows.append(f"{f:<12} " + " ".join(f"{c[s][:9]:>9}" for s in SEMANTICS))
+    return "\n".join(rows)
+
+
+# --------------------------------------------------------------------------
 # tolerant JSON reading
 # --------------------------------------------------------------------------
 def _iter_objects(path: str) -> Iterator[dict]:
@@ -734,7 +848,7 @@ def load_codex(path: str) -> list[Run]:
     def flush() -> None:
         nonlocal steps, by_id, prompt, started
         if started:
-            out.append(Run(steps=steps, outcome="stop", model="codex",
+            out.append(Run(steps=steps, outcome="unknown", model="codex",
                            project=project or "codex", session=session, prompt=prompt))
         steps, by_id, prompt, started = [], {}, "", False
 
@@ -807,13 +921,13 @@ def load_opencode(path: str) -> list[Run]:
                     started = True
                 elif ptype == "text" and roles.get(mid) == "user":
                     if started:
-                        out.append(Run(steps=steps, outcome="stop", model=str(model or "opencode"),
+                        out.append(Run(steps=steps, outcome="unknown", model=str(model or "opencode"),
                                        project="opencode", session=str(sid), prompt=prompt))
                         steps, prompt = [], ""
                     prompt = _clean_prompt(d.get("text") or "")
                     started = True
             if started:
-                out.append(Run(steps=steps, outcome="stop", model=str(model or "opencode"),
+                out.append(Run(steps=steps, outcome="unknown", model=str(model or "opencode"),
                                project="opencode", session=str(sid), prompt=prompt))
         return out
     finally:
@@ -891,7 +1005,7 @@ def load_antigravity(path: str) -> list[Run]:
                 steps.extend(_antigravity_steps(bytes(payload)))
         if not steps:
             return []
-        return [Run(steps=steps, outcome="stop", model="antigravity", project="antigravity",
+        return [Run(steps=steps, outcome="unknown", model="antigravity", project="antigravity",
                     session=os.path.basename(path).replace(".db", ""), prompt="")]
     finally:
         con.close()
@@ -987,7 +1101,7 @@ def load_any(path: str, fmt: Optional[str] = None) -> list[Run]:
 
 
 def load_paths(paths: Iterable[str], fmt: Optional[str] = None) -> list[Run]:
-    """Accept files or directories; walk directories for *.jsonl / *.json."""
+    """Accept files or directories; walk directories for *.jsonl / *.json / *.db."""
     out: list[Run] = []
     for p in paths:
         if os.path.isdir(p):
@@ -1004,3 +1118,11 @@ def load_paths(paths: Iterable[str], fmt: Optional[str] = None) -> list[Run]:
             except Exception:
                 continue
     return out
+
+
+if __name__ == "__main__":
+    import sys as _sys
+    if len(_sys.argv) == 1 or "--capabilities" in _sys.argv:
+        print(capability_table())
+    else:
+        print("usage: python3 ingest.py [--capabilities]")

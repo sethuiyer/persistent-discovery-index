@@ -24,6 +24,7 @@ Stdlib only.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from typing import Any, Iterable, Optional, Sequence
 
@@ -126,11 +127,14 @@ def require_disjoint(train: Sequence[Any], held: Sequence[Any]) -> None:
 
 
 # --------------------------------------------------------------------------
-def report(runs: Sequence[Any]) -> dict:
+def report(runs: Sequence[Any], fmt: Optional[str] = None) -> dict:
     """Preconditions only. No usefulness claim is computed or implied here."""
+    from ingest import capabilities_of
     cov = coverage_report(runs)
     out: dict = {"coverage": cov, "status": "preconditions only; O4b NOT evaluated",
                  "usefulness": None}
+    if fmt:
+        out["capabilities"] = capabilities_of(fmt)
     try:
         out["evaluator"] = require_single_evaluator(runs)
     except ProtocolError as e:
@@ -151,12 +155,24 @@ def report(runs: Sequence[Any]) -> dict:
 
 
 def main() -> None:
-    from ingest import load_any
+    from ingest import CapabilityError, detect_format, load_any, require_capabilities
     if len(sys.argv) < 2:
         print("usage: python3 o4b.py <labelled-traces>")
         raise SystemExit(2)
-    runs = load_any(sys.argv[1])
-    print(json.dumps(report(runs), indent=2))
+    path = sys.argv[1]
+    fmt = detect_format(path) if os.path.isfile(path) else None
+    # Executable input warrant: refuse the experiment if the capture cannot
+    # warrant it (O4_SCOPE.md §5).
+    if fmt:
+        try:
+            require_capabilities([fmt], "o4b_cost")
+        except CapabilityError as e:
+            print(f"\n[input: {fmt}]")
+            print(str(e))
+            print("\nO4b remains OPEN. This capture cannot warrant the cost claim.")
+            raise SystemExit(2)
+    runs = load_any(path)
+    print(json.dumps(report(runs, fmt), indent=2))
     print("\nNOTE: this report verifies the protocol only. O4b (cost reduction at "
           "preserved quality) is NOT evaluated and remains open.")
 

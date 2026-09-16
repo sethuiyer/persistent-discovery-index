@@ -83,6 +83,31 @@ loaders in total (`otel`, `autogen`, `crewai` are covered below).
 `ingest.detect_format()` sniffs the file; `load_any()` dispatches. Add a framework
 by writing one loader that returns `list[Run]`.
 
+### Input warrants — what the records actually support
+
+Parsing N steps is not the same as warranting a comparison. Every loader declares,
+per semantic, one of four states — `supported` / `inferred` / `unavailable` /
+`unknown` — and every analysis declares a minimum. An analysis that the input does
+not warrant is **refused**, not performed:
+
+```text
+Analysis refused: agent_comparison.
+
+Requires:
+  run_boundaries  >= supported
+  task_identity   >= supported
+
+Input:
+  run_boundaries  = unavailable
+  task_identity   = unavailable
+
+No agent-comparison claim is warranted for this capture.
+```
+
+`python3 ingest.py` prints the matrix. `SPINE.md` governs what a conclusion
+*means*; these input warrants govern whether the capture *permits* it. `unknown`
+and `unavailable` are different claims and are not collapsed.
+
 ### The canonical format — the whole contract
 
 One JSON object per line:
@@ -1074,13 +1099,13 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - **Core monodromy — closed, negative** (`core_monodromy.py`): `γ ↦ T_γ|_R` is a
   monoid homomorphism but not a group representation — the core is
   loop-dependent (O1) and the inverse axiom fails (§18).
-- **Twenty-seven self-checking suites**, including closed-form toy validation, the
+- **Twenty-eight self-checking suites**, including closed-form toy validation, the
   refinement law verified over a full real corpus, edge-preservation checks on
   every ingest format, the dense-mesh / sparse-witness contract of §2.3–§2.5
   (`cofinal_mesh.py`, `test_cofinal_mesh.py`, `test_ingest_integrity.py`), the
   weighted detail operator of O4 (`multiresolution.py`, `test_multiresolution.py`),
-  the O4b protocol harness (`o4b.py`, `test_o4b.py`), and the CLI agent stores
-  (`test_ingest_cli.py`).
+  the O4b protocol harness (`o4b.py`, `test_o4b.py`), the CLI agent stores
+  (`test_ingest_cli.py`), and the input-warrant matrix (`test_capabilities.py`).
 
 ## Roadmap
 

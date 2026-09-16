@@ -187,6 +187,12 @@ evaluation, assesses on held-out tasks, and reports sampling stability by
 separation with no generalisable information; a negative cost–success covariance
 is an **experiment to run**, not a causal finding.
 
+**Input warrants gate the experiment.** Every loader declares what its records
+support (`ingest.CAPABILITIES`); `require_capabilities(fmts, "o4b_cost")` refuses
+the analysis on a capture that cannot warrant it, rather than running it on
+best-effort data. O4b needs `verified_outcome` and `cost` at `supported`, which no
+current loader provides together — so O4b is refused by construction today.
+
 ---
 
 ## 6. Non-goals
