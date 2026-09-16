@@ -210,6 +210,15 @@ accepted endings A–D are frozen before any baseline run in
 predeclared — the selection *rule* is, because the claim is that PDI says where to
 intervene.
 
+**Pilot 1 has run and closed. Outcome: C (no stable actionable signal).**
+24/24 discovery baseline runs were verified successes with complete cost, so under
+failure-linked liveness `L_j = n_j` and `τ_j = 0` at every level. Traces were not
+persisted by that runner version, so C is established by implication, not by
+computed profile counts; the outcomes+cost are preserved verbatim. See
+[`O4B_PILOT1_RESULT.md`](O4B_PILOT1_RESULT.md). The lesson — *failure-linked
+liveness cannot localise inefficiency inside uniformly successful runs* — and the
+next experiment are in [`O4B_PILOT2_DESIGN.md`](O4B_PILOT2_DESIGN.md).
+
 ---
 
 ## 6. Non-goals

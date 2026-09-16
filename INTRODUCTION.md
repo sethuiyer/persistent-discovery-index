@@ -82,6 +82,8 @@ MIDDLE
   o4b.py                <-- adapters, ingest  O4b protocol harness (preconditions only)
   o4b_stat.py           (none)            the frozen decision statistic
   o4b_inject.py         (none)            seeded defect injector + sealed corpus
+  o4b_run.py            <-- o4b_inject      discovery-baseline runner (pi RPC, fresh
+                                           trees, verifier protection)
   evaluators.py         <-- adapters       independent outcome evaluation (never reads
                                            the trajectory)
   stable_quotient.py    <-- transport      partition refinement to T-stability

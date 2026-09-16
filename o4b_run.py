@@ -39,6 +39,7 @@ from o4b_inject import HERE, OPERATORS, SKIP_DIRS, apply_operator, sha  # noqa: 
 
 CORPUS = os.path.join(HERE, "o4b_corpus", "corpus.json")
 RESULTS = os.path.join(HERE, "o4b_corpus", "baseline.json")
+RUNS = os.path.join(HERE, "o4b_corpus", "runs")   # persisted session traces (PDI input)
 MODEL = "deepseek-flash"
 AGENT_TIMEOUT = 900
 # never expose the O4b apparatus (mutation metadata, the ruler, the corpus) to the agent
@@ -160,6 +161,11 @@ def run_one(task: dict, run_index: int, pristine: str, agent: str, model: str,
             rec["agent_status"], rec["agent_detail"] = st, det
             c, ti, to, sp = session_usage(sdir)
             rec.update(cost=c, tokens_input=ti, tokens_output=to, session=sp)
+            if sp:                      # PERSIST the trace: PDI profiles it, so it
+                os.makedirs(RUNS, exist_ok=True)      # must outlive the workdir
+                dest = os.path.join(RUNS, f"{task['task_id']}_r{run_index}.jsonl")
+                shutil.copy2(sp, dest)
+                rec["trace"] = os.path.relpath(dest, HERE)
         restore_tests(work, pristine)
         outcome, ev = command_exit([sys.executable, suite], cwd=work, timeout=300)
         rec["verified_outcome"], rec["evaluator"] = outcome, str(ev)
