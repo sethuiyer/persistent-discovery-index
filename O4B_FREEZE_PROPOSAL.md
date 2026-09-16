@@ -104,21 +104,19 @@ cost **centred within task** with the same `μ`; `E_j = ‖D_j c‖²`; residual
 `‖c − P_J c‖²`; **zero denominator → abstain** (never 0); a task with `< R_min`
 priced runs is excluded and counted.
 
-**Unknown can still become signal — so it is excluded from selection.** Any class
-labelled `unknown` is undetermined, and a refinement whose contrast touches an
-unknown class is split exactly (the run partition is disjoint, so the weighted
-norms add):
+**Unknown can still become signal — masking is not enough.** Removing unknown rows
+from an energy sum leaves them inside the parent means **and** inside the within-task
+centring, so a "known" energy can be manufactured by unknown costs. Verified on the
+current code: two tasks each holding a known-cost-0 run and an unknown-cost-2 run
+gave positive `E_known` despite **zero variation among the known observations**.
 
-```
-E_j        = Σ_i μ_i (D_j c)_i²
-E_j^known  = Σ_{i : neither endpoint unknown} μ_i (D_j c)_i²
-E_j^unknown= E_j − E_j^known
-```
-
-**Selection uses the known share only:** `s_j = E_j^known / total`. The
-unknown-dependent mass `u_j = E_j^unknown / total` is **reported separately** (with
-`total_unknown_mass`), and a refinement with `u_j > u_max` is **inadmissible**. A
-parser failure can never be selected, and never silently inflates a share.
+**Fix — selection is recomputed on the declared known cohort.** The runs whose
+classes are known at **every** level are selected; **centring, weights and both
+projections (`P_j` and `P_{j+1}`) are recomputed on that cohort**; the **excluded
+μ-mass** is reported; and a refinement is inadmissible if that mass exceeds `u_max`.
+The **full-cohort** decomposition is returned **separately as a descriptive report**
+(with an exact known/unknown energy split) and is **never used for selection**.
+Selection shares are therefore invariant to the costs of unknown runs.
 
 **Support uses `μ`** (not raw runs): a block is *supported* iff it holds runs from
 `≥ k_tasks` distinct tasks; a level's support is the **μ-mass** of its supported

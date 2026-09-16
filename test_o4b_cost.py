@@ -117,26 +117,36 @@ def test_singleton_refinement_inadmissible() -> None:
 
 
 def test_unknown_is_not_signal() -> None:
-    print("unknown-dependent contrasts are excluded from selection and reported")
-    tasks = ["t1", "t1", "t2", "t2"]
-    costs = [F(1), F(1), F(5), F(1)]
-    levels = [[0, 0, 0, 0], [0, 0, "unknown", 1]]
+    print("unknown rows are removed from the SELECTION cohort, not just masked")
+    # two tasks, each with two known-cost-0 runs and one unknown-cost-9 run.
+    # The known observations have ZERO cost variation, so selection must abstain.
+    tasks = ["t1", "t1", "t1", "t2", "t2", "t2"]
+    costs = [F(0), F(0), F(9), F(0), F(0), F(9)]
+    levels = [[0] * 6, [0, 0, "unknown", 0, 0, "unknown"]]
     r = variance_shares(costs, tasks, levels)
-    print(f"    E={r['E']} E_known={r['E_known']} E_unknown={r['E_unknown']} "
-          f"shares={r['shares']} unknown_mass={r['unknown_mass']}")
-    check("total energy is 2", r["total"] == F(2), str(r["total"]))
-    check("known energy is 1", r["E_known"][0] == F(1), str(r["E_known"][0]))
-    check("unknown energy is 1", r["E_unknown"][0] == F(1), str(r["E_unknown"][0]))
-    check("selection share uses KNOWN energy only (1/2, not the full 1)",
-          r["shares"][0] == F(1, 2), str(r["shares"][0]))
-    check("unknown mass is reported separately", r["unknown_mass"][0] == F(1, 2),
-          str(r["unknown_mass"][0]))
-    check("total unknown mass reported", r["total_unknown_mass"] == F(1, 2))
-    # a refinement dominated by unknown-dependent energy is inadmissible
-    strict = variance_shares(costs, tasks, levels, u_max=0.4)
-    check("unknown mass above u_max makes the refinement inadmissible",
-          strict["level_admissible"][1] is False)
-    check("best_level abstains under the strict bound", best_level(strict, 0.0) is None)
+    print(f"    selection: abstain={r['abstain']} reason={r['reason']!r} "
+          f"excluded_mass={r['unknown_excluded_mass']}")
+    print(f"    descriptive full-cohort total={r['full']['total']} "
+          f"E_unknown={r['full']['E_unknown']}")
+    check("selection abstains: the known runs have no variation", r["abstain"] is True,
+          str(r.get("shares")))
+    check("reason names zero variance", "zero" in r["reason"], r["reason"])
+    check("excluded mass is reported", r["unknown_excluded_mass"] > 0)
+    check("the descriptive full-cohort report still shows energy",
+          r["full"]["total"] > 0, str(r["full"]["total"]))
+
+    # and changing an unknown run's cost must NOT move the selection numbers
+    tasks2 = ["t1", "t1", "t1", "t2", "t2", "t2"]
+    lv2 = [[0] * 6, [0, 1, "unknown", 0, 1, "unknown"]]
+    a = variance_shares([F(0), F(2), F(9), F(0), F(2), F(9)], tasks2, lv2)
+    b = variance_shares([F(0), F(2), F(1000), F(0), F(2), F(1)], tasks2, lv2)
+    check("selection shares are invariant to unknown-run costs",
+          a["shares"] == b["shares"], f"{a['shares']} vs {b['shares']}")
+    check("selection energy invariant too", a["E"] == b["E"])
+    check("the descriptive report DOES change with unknown-run costs",
+          a["full"]["total"] != b["full"]["total"])
+    check("unknown mass is reported in the descriptive report",
+          sum(a["full"]["E_unknown"]) > 0)
 
 
 def test_support_counts_distinct_tasks() -> None:
