@@ -71,7 +71,7 @@ class Step:
 class Turn:
     """One agent run: a user turn and the tool calls it produced."""
     steps: list[Step]
-    outcome: str                 # terminal stopReason of the last assistant msg
+    outcome: str                 # TERMINAL, observational: what the runtime said
     model: str = "unknown"
     project: str = "unknown"
     cwd: str = ""
@@ -80,6 +80,10 @@ class Turn:
     # --- independent label (optional; absent means "not evaluated") ---------
     verified_outcome: Optional[str] = None   # success | failure | unknown
     evaluator: Optional[Evaluator] = None    # provenance of verified_outcome
+    # --- observability the store may provide (optional) ---------------------
+    cost: Optional[float] = None
+    tokens_input: Optional[int] = None
+    tokens_output: Optional[int] = None
 
     def __post_init__(self) -> None:
         if self.verified_outcome is not None and self.verified_outcome not in VERIFIED_OUTCOMES:
@@ -88,6 +92,16 @@ class Turn:
                 f"got {self.verified_outcome!r}")
         if self.verified_outcome is not None and self.evaluator is None:
             raise ValueError("verified_outcome requires evaluator provenance")
+
+    @property
+    def terminal_outcome(self) -> str:
+        """Observational runtime state (`stop` / `error` / `unknown` / ...).
+
+        This is what the agent or runtime *said* happened. It is NOT task success
+        and must never be read as success: `verified_outcome` is a separate claim
+        from an independent evaluator (O4_SCOPE.md §4).
+        """
+        return self.outcome
 
     @property
     def labelled(self) -> bool:

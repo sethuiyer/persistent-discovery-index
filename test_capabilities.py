@@ -63,10 +63,23 @@ def test_matrix_complete() -> None:
 def test_values_are_what_we_built() -> None:
     print("values match what each loader actually populates")
     oc = capabilities_of(OPENCODE)
-    check("opencode is the only cost/token-bearing loader",
-          oc["cost"] == SUPPORTED and oc["tokens"] == SUPPORTED)
-    check("no other loader claims cost",
-          all(capabilities_of(f)["cost"] != SUPPORTED for f in FORMATS if f != OPENCODE))
+    check("opencode carries cost + tokens", oc["cost"] == SUPPORTED and oc["tokens"] == SUPPORTED)
+    check("only opencode and canonical claim cost",
+          {f for f in FORMATS if capabilities_of(f)["cost"] == SUPPORTED} == {OPENCODE, "canonical"})
+    check("canonical carries cost/tokens as a passthrough",
+          capabilities_of("canonical")["cost"] == SUPPORTED
+          and capabilities_of("canonical")["tokens"] == SUPPORTED)
+    check("terminal_outcome and verified_outcome are separate dimensions",
+          "terminal_outcome" in SEMANTICS and "verified_outcome" in SEMANTICS)
+    check("canonical terminal_outcome supported",
+          capabilities_of("canonical")["terminal_outcome"] == SUPPORTED)
+    check("claude terminal_outcome inferred (derived from the transcript)",
+          capabilities_of(CLAUDE)["terminal_outcome"] == INFERRED)
+    check("codex/opencode terminal_outcome unknown (field exists, mapping unvalidated)",
+          capabilities_of(CODEX)["terminal_outcome"] == UNKNOWN
+          and capabilities_of(OPENCODE)["terminal_outcome"] == UNKNOWN)
+    check("antigravity terminal_outcome unavailable",
+          capabilities_of(ANTIGRAVITY)["terminal_outcome"] == UNAVAILABLE)
     check("no CLI loader claims verified_outcome",
           all(capabilities_of(f)["verified_outcome"] != SUPPORTED
               for f in (CLAUDE, CODEX, OPENCODE, ANTIGRAVITY)))
@@ -97,13 +110,20 @@ def test_supported_formats_pass() -> None:
     check("opencode: agent_comparison allowed", bool(require_capabilities([OPENCODE], "agent_comparison")))
 
 
-def test_o4b_refused_everywhere_today() -> None:
-    print("O4b is refused for every format (no verified outcome; cost only on opencode)")
+def test_o4b_gate() -> None:
+    print("O4b gate: canonical can warrant it once it carries labels + cost")
     for f in FORMATS:
-        check(f"{f}: o4b_cost refused", bool(refused([f], "o4b_cost")))
+        if f == "canonical":
+            check("canonical: o4b_cost allowed (passthrough of labels + cost)",
+                  bool(require_capabilities([f], "o4b_cost")))
+        else:
+            check(f"{f}: o4b_cost refused", bool(refused([f], "o4b_cost")))
     msg = refused([OPENCODE], "o4b_cost")
-    check("opencode refusal is about verified_outcome, not cost",
-          "verified_outcome" in msg and "cost" in msg, msg)
+    check("opencode refusal names verified_outcome (it has cost, not labels)",
+          "verified_outcome" in msg, msg)
+    msg2 = refused([CLAUDE], "o4b_cost")
+    check("claude refusal names verified_outcome and cost",
+          "verified_outcome" in msg2 and "cost" in msg2, msg2)
 
 
 def test_reconcile_is_the_meet() -> None:
@@ -187,7 +207,7 @@ if __name__ == "__main__":
     test_values_are_what_we_built()
     test_antigravity_refused_for_run_level()
     test_supported_formats_pass()
-    test_o4b_refused_everywhere_today()
+    test_o4b_gate()
     test_reconcile_is_the_meet()
     test_no_fabricated_success()
     test_live_refusal_demo()

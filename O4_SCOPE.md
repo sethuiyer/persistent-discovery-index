@@ -144,14 +144,22 @@ auditable rather than asserted.
 | terminal status of the agent | `outcome`, `stopReason` | no — encodes the label |
 | evaluator result / encodings | `verified_outcome`, derived pass/fail flags | no |
 
-**Schema (buildable now; population validation later).** The canonical record
-gains, alongside the existing terminal `outcome`:
+**Schema (implemented v0.33.0; population validation later).** `Terminal_outcome`
+is `Turn.outcome` (observational runtime state). The canonical record also carries
+the independent label and its provenance:
 
 | field | meaning |
 |---|---|
 | `terminal_outcome` | what the agent did (the existing `outcome`, kept) |
 | `verified_outcome` | `success` \| `failure` \| `unknown` |
 | `evaluator` | id, version, method (provenance of the label) |
+
+Implemented in `adapters.Evaluator` / `adapters.Turn`, produced by
+[`evaluators.py`](evaluators.py) — command exit status, artifact presence, file
+content, exact answer — and carried by `ingest.to_canonical`. Cost/tokens
+(`cost`, `tokens_input`, `tokens_output`) travel the same way. **No evaluator
+reads `Turn.outcome`**: the `agent stopped -> task succeeded` route is closed by
+construction, with a test in [`test_evaluators.py`](test_evaluators.py).
 
 ### Unknown is not failure
 
@@ -190,8 +198,11 @@ is an **experiment to run**, not a causal finding.
 **Input warrants gate the experiment.** Every loader declares what its records
 support (`ingest.CAPABILITIES`); `require_capabilities(fmts, "o4b_cost")` refuses
 the analysis on a capture that cannot warrant it, rather than running it on
-best-effort data. O4b needs `verified_outcome` and `cost` at `supported`, which no
-current loader provides together — so O4b is refused by construction today.
+best-effort data. O4b needs `verified_outcome` and `cost` at `supported`: no native
+store provides both, but a **canonical** trace can — labels from an independent
+evaluator ([`evaluators.py`](evaluators.py)), cost/tokens carried through from the
+store. So the gate refuses every native store and admits a canonical trace that
+actually carries the fields; presence is then reported as coverage.
 
 ---
 

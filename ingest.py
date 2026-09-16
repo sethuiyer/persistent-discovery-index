@@ -82,7 +82,7 @@ SUPPORTED, INFERRED, UNAVAILABLE, UNKNOWN = "supported", "inferred", "unavailabl
 CAP_RANK = {SUPPORTED: 3, INFERRED: 2, UNKNOWN: 1, UNAVAILABLE: 0}
 
 SEMANTICS = ("steps", "run_boundaries", "task_identity", "tool_errors",
-             "cost", "tokens", "verified_outcome")
+             "terminal_outcome", "cost", "tokens", "verified_outcome")
 
 
 def _caps(**kw) -> dict:
@@ -92,21 +92,27 @@ def _caps(**kw) -> dict:
 # Values are set from what each loader actually populates, not from intent.
 CAPABILITIES: dict[str, dict] = {
     CANONICAL: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
-                     tool_errors=SUPPORTED, verified_outcome=SUPPORTED),
+                     tool_errors=SUPPORTED, terminal_outcome=SUPPORTED,
+                     cost=SUPPORTED, tokens=SUPPORTED, verified_outcome=SUPPORTED),
     PI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
-              tool_errors=SUPPORTED),
-    OPENAI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED),
+              tool_errors=SUPPORTED, terminal_outcome=SUPPORTED),
+    OPENAI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
+                  terminal_outcome=SUPPORTED),
     LANGSMITH: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
-                     tool_errors=SUPPORTED),
-    OTEL: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED),
-    AUTOGEN: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED),
-    CREWAI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED),
+                     tool_errors=SUPPORTED, terminal_outcome=SUPPORTED),
+    OTEL: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED,
+                terminal_outcome=SUPPORTED),
+    AUTOGEN: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED,
+                   terminal_outcome=SUPPORTED),
+    CREWAI: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, tool_errors=SUPPORTED,
+                  terminal_outcome=SUPPORTED),
     CLAUDE: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
-                  tool_errors=SUPPORTED),
+                  tool_errors=SUPPORTED, terminal_outcome=INFERRED),
     CODEX: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
-                 tool_errors=INFERRED),
+                 tool_errors=INFERRED, terminal_outcome=UNKNOWN),
     OPENCODE: _caps(steps=SUPPORTED, run_boundaries=SUPPORTED, task_identity=SUPPORTED,
-                    tool_errors=SUPPORTED, cost=SUPPORTED, tokens=SUPPORTED),
+                    tool_errors=SUPPORTED, terminal_outcome=UNKNOWN,
+                    cost=SUPPORTED, tokens=SUPPORTED),
     ANTIGRAVITY: _caps(steps=INFERRED),
 }
 
@@ -233,11 +239,13 @@ def _mk(tool: str, args: Any, error: Optional[str] = None) -> Step:
 
 
 def _run(steps, outcome, model="unknown", project="unknown", path="", prompt="",
-         verified_outcome=None, evaluator=None):
+         verified_outcome=None, evaluator=None, cost=None,
+         tokens_input=None, tokens_output=None):
     return Run(steps=list(steps), outcome=outcome or "unknown", model=model or "unknown",
                project=project or "unknown",
                session=os.path.basename(path), prompt=prompt, cwd=project or "",
-               verified_outcome=verified_outcome, evaluator=evaluator)
+               verified_outcome=verified_outcome, evaluator=evaluator,
+               cost=cost, tokens_input=tokens_input, tokens_output=tokens_output)
 
 
 def _evaluator(x):
@@ -268,7 +276,9 @@ def load_canonical(path: str) -> list[Run]:
         out.append(_run(steps, o.get("outcome"), o.get("model"), o.get("project"),
                         path, o.get("prompt", ""),
                         verified_outcome=o.get("verified_outcome"),
-                        evaluator=_evaluator(o.get("evaluator"))))
+                        evaluator=_evaluator(o.get("evaluator")),
+                        cost=o.get("cost"), tokens_input=o.get("tokens_input"),
+                        tokens_output=o.get("tokens_output")))
     return out
 
 
@@ -284,6 +294,12 @@ def to_canonical(run: Run) -> dict:
     if run.evaluator is not None:
         d["evaluator"] = {"id": run.evaluator.id, "version": run.evaluator.version,
                           "method": run.evaluator.method}
+    if run.cost is not None:
+        d["cost"] = run.cost
+    if run.tokens_input is not None:
+        d["tokens_input"] = run.tokens_input
+    if run.tokens_output is not None:
+        d["tokens_output"] = run.tokens_output
     return d
 
 
@@ -890,20 +906,41 @@ def load_opencode(path: str) -> list[Run]:
     """OpenCode SQLite store (`~/.local/share/opencode/opencode.db`).
 
     `part.data` is JSON; a `tool` part carries {tool, state:{input,output,status}}.
+    Per-message `cost` / `tokens` are summed onto the run they belong to, so the
+    capability claim (cost + tokens supported) is actually carried by the data.
     """
     con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
     try:
-        roles: dict = {}
+        meta: dict = {}
         for mid, data in con.execute("select id, data from message"):
             try:
-                roles[mid] = json.loads(data).get("role")
+                d = json.loads(data)
             except Exception:
-                roles[mid] = None
+                d = {}
+            toks = d.get("tokens") if isinstance(d.get("tokens"), dict) else {}
+            meta[mid] = {"role": d.get("role"), "cost": d.get("cost"),
+                         "tin": toks.get("input"), "tout": toks.get("output")}
         out: list[Run] = []
         for sid, model in con.execute("select id, model from session"):
             steps: list[Step] = []
             prompt = ""
             started = False
+            msgs: list[str] = []
+
+            def flush() -> None:
+                nonlocal steps, prompt, started, msgs
+                if not started:
+                    return
+                costs = [meta[m]["cost"] for m in msgs if meta.get(m, {}).get("cost") is not None]
+                tins = [meta[m]["tin"] for m in msgs if meta.get(m, {}).get("tin") is not None]
+                touts = [meta[m]["tout"] for m in msgs if meta.get(m, {}).get("tout") is not None]
+                out.append(Run(steps=steps, outcome="unknown", model=str(model or "opencode"),
+                               project="opencode", session=str(sid), prompt=prompt,
+                               cost=(sum(costs) if costs else None),
+                               tokens_input=(sum(tins) if tins else None),
+                               tokens_output=(sum(touts) if touts else None)))
+                steps, prompt, started, msgs = [], "", False, []
+
             for mid, data in con.execute(
                     "select message_id, data from part where session_id=? order by time_created, id",
                     (sid,)):
@@ -912,23 +949,25 @@ def load_opencode(path: str) -> list[Run]:
                 except Exception:
                     continue
                 ptype = d.get("type")
+                if ptype == "text" and meta.get(mid, {}).get("role") == "user":
+                    if started:
+                        flush()
+                    prompt = _clean_prompt(d.get("text") or "")
+                    msgs = [mid]
+                    started = True
+                    continue
+                if started and mid not in msgs:
+                    msgs.append(mid)
                 if ptype == "tool":
+                    if mid not in msgs:
+                        msgs.append(mid)
                     st = d.get("state") if isinstance(d.get("state"), dict) else {}
                     err = str(st.get("output") or "error")[:200] if st.get("status") == "error" else None
                     steps.append(Step(tool=str(d.get("tool") or "?"),
                                       args=st.get("input") if isinstance(st.get("input"), dict) else {},
                                       error=err))
                     started = True
-                elif ptype == "text" and roles.get(mid) == "user":
-                    if started:
-                        out.append(Run(steps=steps, outcome="unknown", model=str(model or "opencode"),
-                                       project="opencode", session=str(sid), prompt=prompt))
-                        steps, prompt = [], ""
-                    prompt = _clean_prompt(d.get("text") or "")
-                    started = True
-            if started:
-                out.append(Run(steps=steps, outcome="unknown", model=str(model or "opencode"),
-                               project="opencode", session=str(sid), prompt=prompt))
+            flush()
         return out
     finally:
         con.close()
