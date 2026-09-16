@@ -80,6 +80,7 @@ MIDDLE
   agent_profiler.py     <-- pdi            profile, asymptotic layer, statuses
   ingest.py             <-- adapters       11 trace-format loaders
   o4b.py                <-- adapters, ingest  O4b protocol harness (preconditions only)
+  o4b_stat.py           (none)            the frozen decision statistic
   evaluators.py         <-- adapters       independent outcome evaluation (never reads
                                            the trajectory)
   stable_quotient.py    <-- transport      partition refinement to T-stability
@@ -107,7 +108,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-29 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+30 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.
