@@ -65,6 +65,7 @@ LEAF MODULES (stdlib only — safe to change, nothing depends on your edits
 
   pdi.py                the index, ledgers, exponents, statuses
   quotient_tower.py     the refinement law + TowerViolation
+  cofinal_mesh.py       §2.3 dense-mesh theorem + §2.4 sparse witness
   transport.py          the stateful min-conflicts searcher
   adapters.py           trace dataclasses, pi-session loader
   sudoku.py             the worked stress case
@@ -99,7 +100,7 @@ for f in test_*.py toys.py; do python3 "$f" || echo "FAIL $f"; done
 python3 test_repo_consistency.py     # docs vs code vs each other
 ```
 
-22 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
+24 suites, all exit nonzero on failure. CI runs them on Python 3.10 and 3.12.
 
 **Green means the claims in the ledger are still backed.** It does not mean the
 code is correct in any broader sense — most of this repo has no external oracle.
@@ -180,6 +181,8 @@ visible. That is the house style, not an accident.
 | Claim | Status |
 |---|---|
 | The tower law, the two ledgers, `Δ = S − D` | §1–§3 |
+| `D` and `S` are dense-mesh invariant; `Δ` is not *sparse-mesh* invariant | §2.3–§2.5 |
+| On a fixed finite corpus every asymptotic exponent is 0; empty persistence is a convention | §2.5 |
 | Transport exists but is state drift, not monodromy | §8 |
 | The stable quotient exists and is computable | §5 |
 | `T` on the recurrent core is a permutation | §6 |

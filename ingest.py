@@ -128,7 +128,10 @@ def load_canonical(path: str) -> list[Run]:
     for o in _iter_objects(path):
         steps = [_mk(s.get("tool"), s.get("args"), s.get("error"))
                  for s in (o.get("steps") or []) if isinstance(s, dict)]
-        if not steps:
+        # A zero-tool episode ("steps": []) is a real run: the agent answered
+        # without calling a tool. Only an object with no `steps` key at all is
+        # not a canonical run. v0.27.0 dropped the zero-tool case (`if not steps`).
+        if "steps" not in o:
             continue
         out.append(_run(steps, o.get("outcome"), o.get("model"), o.get("project"),
                         path, o.get("prompt", "")))

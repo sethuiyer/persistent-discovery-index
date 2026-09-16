@@ -156,7 +156,7 @@ with search bounds is [`SPINE.md`](SPINE.md) §0, and the long-form derivation i
 
 | What | Warrant | Where |
 |---|---|---|
-| Two ledgers `n_j` / `L_j`; `Δ = S − D`; `D` cofinal-invariant, `Δ` not | proved | [The invariant underneath](#the-invariant-underneath) |
+| Two ledgers `n_j` / `L_j`; `Δ = S − D`; `D`, `S` dense-mesh invariant; `Δ` not sparse-mesh invariant | proved | [The invariant underneath](#the-invariant-underneath) |
 | The refinement law is enforced at construction, not assumed | proved | [The zoom levels](#the-zoom-levels) |
 | Same solutions, 137× less search; 76.2% of the naive work in depths 21–30 | computed | [Sudoku](#worked-example-sudoku) |
 | A closed loop of presentations drifts state — **no monodromy** | negative | [holonomy](#does-discovery-have-holonomy-a-negative-result) |
@@ -581,8 +581,8 @@ And two systems with identical `L_j` and identical `D` differ in `S` and `Δ`:
 
 `Δ` is not a function of the survival predicate. It is `S − D` — a survival-free
 growth rate minus a survival growth rate. This is *also* why `D` is
-cofinal-invariant and `Δ` is not: the survival side is intrinsic, the cost side
-isn't.
+**dense-mesh** invariant (§2.3) while `Δ` is not under sparse sampling (§2.4): the
+survival side is intrinsic, the cost side isn't.
 
 ### The sharpened thesis
 
@@ -736,7 +736,7 @@ STABLE / TRENDING_UP / TRENDING_DOWN / UNRESOLVED / NONE
 ### (b) Canonicity is absent — and the dependence is *quarantined*
 
 The tower is an **input** (`tower=None`), not derived. So the LT guarantee isn't
-available: row 2.3 proves only **cofinal** invariance, row 9.1 leaves **canonicity
+available: row 2.3 proves only **dense-mesh** invariance, row 9.1 leaves **canonicity
 open, known to vary**.
 
 Same traces, same marks, index shifted by one prepended symbol. Both pass the gate.
@@ -924,17 +924,20 @@ python3 test_o2_theorem.py         # 16 checks across many instances
 overhead:
 
 ```
-D     = limsup_j log L_j / (-log eps_j)   intrinsic, cofinal-invariant  (proved)
+D     = limsup_j log L_j / (-log eps_j)   intrinsic, dense-mesh invariant  (proved)
 S     = limsup_j log n_j / (-log eps_j)   presentation-dependent
 Delta = S - D  >= 0                       presentation-dependent
 ```
 
-`L` is a **covering count** — it answers a question about the boundary, so it is a
-function of *physical resolution* and cannot be moved by reindexing the tower.
-`n` is not a covering count: dead ends cover nothing. Hence `D` survives cofinal
-reindexing and `Delta` does not (refuted by explicit realizable counterexample:
-`L_j = 2^j` with `n_j` exponential on odd shells gives `Delta = 1` for `P` and
-`Delta = 0` for `P' = P_{2j}`).
+Two exponents, and the invariance each does *not* have. `L` is a **covering
+count** — a function of *physical resolution* — and `n` is not (dead ends cover
+nothing). Cofinality alone is not enough to transfer either: the subsampled mesh
+must be **asymptotically dense in log-scale** (`s_{m+1}/s_m → 1`, `s = −log ε`).
+Under that hypothesis a monotone sandwich preserves `D` and `S` alike (`SPINE.md`
+§2.3). Under a **sparse** cofinal subsample it does not: with `k_m = 2^{2^m}`,
+`L_j = 2^j` and `n_j = 2^j + 2^{2k_m}` on `k_m ≤ j < k_{m+1}`, the full tower has
+`D = 1, S = 2, Δ = 1` while the subsample `j_m = k_m − 1` has `D = 1, S = 1,
+Δ = 0` (`SPINE.md` §2.4, `cofinal_mesh.py`).
 
 The distinction is classical elsewhere — coaccessible vs all states in automata,
 essential vs transient in sofic shifts, where entropy is a function of the
@@ -1054,9 +1057,10 @@ less than Y"* must state the horizon or be backed by a growth-rate estimate.
 - **Core monodromy — closed, negative** (`core_monodromy.py`): `γ ↦ T_γ|_R` is a
   monoid homomorphism but not a group representation — the core is
   loop-dependent (O1) and the inverse axiom fails (§18).
-- **Twenty-two self-checking suites**, including closed-form toy validation, the
-  refinement law verified over a full real corpus, and edge-preservation checks
-  on every ingest format.
+- **Twenty-four self-checking suites**, including closed-form toy validation, the
+  refinement law verified over a full real corpus, edge-preservation checks on
+  every ingest format, and the dense-mesh / sparse-witness contract of §2.3–§2.5
+  (`cofinal_mesh.py`, `test_cofinal_mesh.py`, `test_ingest_integrity.py`).
 
 ## Roadmap
 

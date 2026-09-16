@@ -13,9 +13,10 @@ stated status.**
 |---|---|---|
 | 2.1 | Gauge law: `dim_{d^β} = β⁻¹ dim_d` | **proved** (standard metric scaling) |
 | 2.2 | `dim_B(∂T) = limsup_j log L_j / (−log ε_j)` | **proved** (§2.2) |
-| 2.3 | Cofinal invariance of the persistent exponent `D` | **proved** (§2.3) |
-| 2.4 | `Δ = S − D` is not cofinal-invariant | **proved by counterexample** (§2.4) |
-| 2.5 | `L_j` non-decreasing at fixed horizon | **proved** (injectivity) |
+| 2.3 | Dense-mesh invariance of `D` **and** `S` | **proved** (§2.3) |
+| 2.4 | `Δ = S − D` is not *sparse-mesh* invariant | **proved by counterexample** (§2.4) |
+| 2.5 | Finite corpora have `S = D = 0`; empty persistence is a convention | **computed / stated** (§2.5) |
+| 2.2b | `L_j` non-decreasing at fixed horizon | **proved** (injectivity) |
 | 3.1 | The finite-window sup is not the limsup | **proved by counterexample** (§3) |
 | 4.1 | Transport is a total deterministic map on the state space | **proved** (construction) |
 | 5.1 | The coarsest `T`-stable refinement exists and is computable | **proved** (§5) |
@@ -107,7 +108,7 @@ The mechanism matters: `L_j` is a **covering count**, a function of physical sca
 `n_j` is not — dead ends cover nothing — so `n_j` has no intrinsic scale-function
 interpretation and only exists as a shell-indexed sequence.
 
-### 2.3 Cofinal invariance of `D`
+### 2.3 Dense-mesh invariance of `D` and `S`
 
 **Definition.** Define
 
@@ -117,32 +118,81 @@ S \;=\; \limsup_j \frac{\log n_j}{-\log\varepsilon_j},
 \qquad
 \Delta \;=\; S - D. \tag{2.3}$$
 
-**Proposition.** Let `P, P'` be towers on the same space with `ε_j → 0`, cofinal
-in resolution and with the same boundary. Then `D_P = D_{P'}`.
+Cofinality is a statement about the **set** of levels, not their spacing, and on
+its own it is not enough. Write `s_j = −log ε_j` and let a subsampled tower have
+levels `j_m` with `s_{j_m} → ∞`. The hypothesis that makes reindexing harmless is
+that the subsampled mesh is **asymptotically dense in log-scale**:
 
-*Proof.* By (2.2), `D` is the upper box dimension of the boundary in the metric
-built from the mesh sequence of the *base space*, which the towers share. Cofinality
-supplies the same physical scales up to constants, so the covering functions agree
-asymptotically. ∎
+$$s_{j_{m+1}} \;/\; s_{j_m} \;\to\; 1. \tag{2.3b}$$
+
+**Proposition (dense-mesh sandwich).** If (2.3b) holds and the counts are
+non-decreasing, then the `limsup` over the subsample equals the `limsup` over all
+levels — for `L_j` and `n_j` alike, hence for `D`, `S` and `Δ`.
+
+*Proof.* For `j_m ≤ j ≤ j_{m+1}`, monotonicity of the counts and of `s` gives
+
+$$\frac{\log c_{j_m}}{s_{j_{m+1}}} \;\le\; \frac{\log c_j}{s_j} \;\le\;
+\frac{\log c_{j_{m+1}}}{s_{j_m}},$$
+
+and each side is the corresponding subsample ratio multiplied by
+`s_{j_m}/s_{j_{m+1}}` or `s_{j_{m+1}}/s_{j_m}` — both `→ 1` by (2.3b). The squeeze
+is uniform, so the two `limsup`s coincide. ∎
+
+**Why cofinality alone fails.** A cofinal subsample can be sparse. If
+`s_{j_{m+1}}/s_{j_m} → ∞` the squeeze is vacuous and the subsample `limsup` can
+differ (§2.4). `D` inherits more robustness than `S` because `L_j` is a *covering
+count* (§2.2); but the finite-window estimator of either can miss a growth
+subsequence under sparse sampling.
 
 **Caveat, and it matters.** This is a statement about the *asymptotic* quantity.
 The finite-window estimator of §3 computes `max` over the observed levels and does
-**not** inherit the invariance automatically — a `limsup` over a cofinal
-subsequence can be smaller than the `limsup` over all levels. The invariance is a
-property of `D` itself, not of the number the implementation prints, and §3 exists
+**not** inherit the invariance automatically. The invariance is a property of `D`
+and `S` themselves, not of the numbers the implementation prints, and §3 exists
 because of exactly that gap.
 
-### 2.4 `Δ` is not invariant
+### 2.4 `Δ` is not sparse-mesh invariant
 
-**Proposition.** `Δ` is not cofinal-invariant.
+**Proposition.** Under **sparse** reindexing, `Δ` is not invariant — and neither is
+`S`. (Under the dense-mesh hypothesis of §2.3 both *are*, so the non-invariance
+claim must name the sparse mesh; it is not a claim about cofinality as such.)
 
-*Proof (counterexample).* Take `L_j = 2^j` with `n_j = 4^j` on odd shells and `2^j`
-on even shells — realizable, since `L_j` is non-decreasing is the only constraint
-beyond `L_j ≤ n_j`. Then `Δ = 1` for `P` and `Δ = 0` for `P' = P_{2j}`, while
-`D` is unchanged. ∎
+*Proof (counterexample).* Let `k_m = 2^{2^m}` (so `k_{m+1} = k_m²`), `ε_j = 2^{−j}`,
+and set the explicit first level `L_1 = 2`, `n_1 = 3`. For `k_m ≤ j < k_{m+1}` let
+
+$$L_j = 2^j, \qquad n_j = 2^j + 2^{2k_m}.$$
+
+`L` and `n` are non-decreasing (within a band `n` rises with `2^j`; at each burst
+`j = k_m` it jumps), and so is the gap `n_j − L_j`. On **all** levels the burst
+gives `log₂ n_j / j → 2` while `log₂ L_j / j = 1`, so `D = 1`, `S = 2`, `Δ = 1`.
+On the cofinal subsample `j_m = k_m − 1` the constant `2^{2k_{m−1}}` is negligible
+against `2^{j}`, so `log₂ n_j / j → 1`: `D = 1`, `S = 1`, `Δ = 0`. The mesh ratios
+`s_{j_{m+1}}/s_{j_m} = (k_{m+1}−1)/(k_m−1) → ∞`, so this lies outside (2.3b). ∎
+
+`cofinal_mesh.py` computes the counterexample from the exact identity
+`log₂ n_j / j = max(j, 2k_m)/j + log₂(1 + 2^{−|j−2k_m|})/j` without materialising
+the tower; `test_cofinal_mesh.py` checks the analytic bounds. (The v0.27.0 witness
+used `n_j = 4^j` on odd shells, which *decreases* at `j = 4` and so is not a
+quotient tower at all: refinement forces `n_j` non-decreasing.)
 
 **Corollary.** `Δ ≥ 0` always, with equality iff `limsup log n_j/(−log ε_j) =
 limsup log L_j/(−log ε_j)` — i.e. iff dead ends do not asymptotically dominate.
+
+### 2.5 Finite corpora, and the empty-persistence convention
+
+A corpus with at most `N` histories has `n_j, L_j ≤ N` at every level, so with
+`s_j → ∞` both ratios are `≤ log₂ N / s_j → 0`:
+
+$$S = 0, \qquad D = 0 \quad\text{(nonempty persistence)}.$$
+
+So on a **fixed finite corpus every asymptotic exponent is zero.** A nonzero
+number the implementation prints is a finite-window statistic (§3), not a rate.
+The asymptotic layer is only meaningful for a tower whose boundary is genuinely
+infinite — an explicitly growing or infinite model.
+
+If `L_j = 0` for all `j` the ratio `log 0 / s_j` is undefined. The convention is
+explicit: an empty ledger contributes nothing, so `D = 0`. `pdi.PDI.exponents`
+implements this by skipping `c == 0`; the convention is named here rather than
+left implicit.
 
 ---
 

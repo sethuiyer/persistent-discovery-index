@@ -19,7 +19,7 @@
 * **The PDI Fix:** PDI acts as an automated CI/CD regression gate. If a code change makes an agent wander or thrash, PDI blocks the pull request before bad prompts reach production.
 
 ### 2. To the FinOps Lead & Engineering Director
-> *"We find the 35% to 70% of your LLM token spend that went to dead-end wandering, without hurting your success rate."*
+> PDI identifies behavioral distinctions and associated costs for investigation. Savings and preservation of task quality must be established through controlled, matched-task evaluation.
 
 * **The Pain:** The company receives a $30,000 monthly bill from OpenAI or Anthropic. Finance asks why token costs are skyrocketing while active users only grew 10%. Engineering shows span logs, but nobody can distinguish productive reasoning from useless trial-and-error.
 * **The PDI Fix:** PDI measures the **Reasoning Signal-to-Noise Ratio (SNR)**. It separates necessary steps from pure exploratory waste, showing management exactly how many dollars were incinerated on dead branches.
@@ -107,10 +107,8 @@ When speaking to an Engineering VP, Head of AI, or FinOps Lead, ask these questi
 
 ---
 
-## 6. The Commercial Offer & ROI Guarantee
+## 6. The Commercial Offer
 
 * **Low-Friction Wedge (Free):** Open-source normalizer and local terminal profiler (`python3 pdi_profile.py`).
 * **Team Tier ($299/mo):** Automated GitHub Action regression gate for up to 5 repositories.
 * **Enterprise Tier ($999/mo - $2,500/mo):** Production trace integration (OpenTelemetry / Langfuse exporter) + continuous waste localization dashboard.
-* **The Sales Closing Guarantee:**
-  > *"If PDI does not identify at least 3× its annual subscription cost in wasted token spend during your 14-day trial, you owe us nothing."*

@@ -96,17 +96,20 @@ Hence the minimal covering number is exactly the live count:
 
 $$N(\partial T,\, 2^{-j}) = L_j, \qquad \dim_B(\partial T) = \limsup_j \frac{\log L_j}{-\log \varepsilon_j}. \tag{4}$$
 
-So D is a box dimension. It is a covering count, a function of physical scale. And that is exactly why
-it is cofinal-invariant: two towers that are cofinal in resolution and share a boundary compute the same
-box dimension, because they are covering the same set at the same scales. Reindexing the tower does not
-change D.
+So D is a box dimension. It is a covering count, a function of physical scale. It is invariant under
+reindexing **provided the subsampled mesh is asymptotically dense in log-scale** — `s_{m+1}/s_m → 1`
+with `s = -log ε`. Under that hypothesis a monotone sandwich pins the intermediate ratios and both D
+and S are preserved; cofinality on its own is a statement about the set of levels, not their spacing,
+and is not sufficient.
 
 S has no such interpretation, and this is not a defect of the definition but a fact about what it
 counts. Dead ends cover nothing. There is no set whose covering number is nⱼ, because the transient
 branches do not survive to be covered. So S is intrinsically a shell-indexed sequence with no scale-free
-meaning, and Δ = S - D inherits that. It is not cofinal-invariant. Concretely, take Lⱼ = 2ʲ and nⱼ = 4ʲ
-on odd shells, 2ʲ on even shells. Then Δ = 1 for one indexing and Δ = 0 for the cofinal subsequence of
-even shells, while D is unchanged.
+meaning, and Δ = S - D inherits that. Under a **sparse** cofinal subsample it need not be preserved.
+Concretely, with k_m = 2^(2^m), Lⱼ = 2ʲ and nⱼ = 2ʲ + 2^(2k_m) on k_m ≤ j < k_{m+1} (both counts
+non-decreasing), the full tower gives D = 1, S = 2, Δ = 1, while the subsample j_m = k_m - 1 gives
+D = 1, S = 1, Δ = 0. The mesh ratio (k_{m+1}-1)/(k_m-1) → ∞, so this is outside the dense-mesh theorem
+— which is exactly why the theorem has to name its hypothesis.
 
 This is the interpretive core of the instrument. D is a property of the task — how much structure there
 is to find. Δ is a property of the algorithm — how much of its walk was wasted. Δ is a legitimate

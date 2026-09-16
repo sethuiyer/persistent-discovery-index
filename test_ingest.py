@@ -119,7 +119,9 @@ with tempfile.TemporaryDirectory() as d:
     # ---------------- malformed input is skipped, not fatal ----------------
     bad = os.path.join(d, "bad.jsonl")
     open(bad, "w").write("not json\n{\"steps\": []}\n")
-    check("malformed lines skipped", load_any(bad) == [])
+    got = load_any(bad)
+    check("malformed line skipped, zero-tool run kept",
+          len(got) == 1 and got[0].steps == [])
 
 print()
 print("ALL PASS" if not FAILS else f"{len(FAILS)} FAILED: {FAILS}")

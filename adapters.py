@@ -115,6 +115,54 @@ def normalize_args(step: Step) -> Any:
     return json.dumps(a, sort_keys=True)[:160]
 
 
+def _canon(x: Any) -> Any:
+    """A complete, hashable normal form for a decoded payload — no truncation.
+
+    Comparison keys must be lossless; shortening is a *display* concern. If a
+    key shortens, distinct behaviours collapse to one class.
+    """
+    if isinstance(x, dict):
+        return tuple(sorted((str(k), _canon(v)) for k, v in x.items()))
+    if isinstance(x, (list, tuple)):
+        return tuple(_canon(v) for v in x)
+    if x is None or isinstance(x, (str, int, float, bool)):
+        return x
+    return repr(x)
+
+
+def canonical_args(step: Step) -> Any:
+    """The complete semantic argument payload, for COMPARISON KEYS.
+
+    `normalize_args` above is display-only: it shortens and drops fields. Using
+    it as a partition key is a correctness bug — v0.27.0 gave two reads of the
+    same file at different ranges, and two edits with different bodies, the same
+    Q6 class. This function keeps offsets/limits and full edit bodies.
+
+    NOT a claim of injectivity. The key preserves the declared normalised
+    argument representation; normalisation may identify distinct raw inputs, and
+    a fixed-width digest would additionally admit collisions. It distinguishes
+    the demonstrated collisions, no more.
+    """
+    a = step.args or {}
+    t = step.tool
+    if t == "bash":
+        return _WS.sub(" ", (a.get("command") or "")).strip()
+    if t in ("read", "write", "edit"):
+        payload = [str(a.get("path") or a.get("file_path") or a.get("filePath") or "")]
+        for k in ("offset", "limit", "start", "end", "range", "line", "lines"):
+            if a.get(k) is not None:
+                payload.append(f"{k}={a[k]}")
+        for k in ("content", "new_string", "old_string", "new_str", "old_str",
+                  "newText", "oldText", "text"):
+            if a.get(k) is not None:
+                payload.append(f"{k}#{len(str(a[k]))}:{a[k]}")
+        return tuple(payload)
+    if t.startswith("mcp"):
+        return (str(a.get("tool") or a.get("name") or t),
+                _canon(a.get("args") if a.get("args") is not None else a.get("arguments")))
+    return _canon(a)
+
+
 # --------------------------------------------------------------------------
 # loader
 # --------------------------------------------------------------------------
@@ -226,7 +274,7 @@ def tool_tower():
                    tuple(arg_class(s) for s in h.steps)),
         lambda h: (h.outcome, h.family_multiset, h.family_sequence, h.error_classes,
                    tuple(arg_class(s) for s in h.steps),
-                   tuple((s.tool, normalize_args(s)) for s in h.steps)),
+                   tuple((s.tool, canonical_args(s)) for s in h.steps)),
     ])
 
 
